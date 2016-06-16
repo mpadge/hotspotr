@@ -14,14 +14,14 @@ strength of autocorrelation in time and space}
 }
 \value{
 A vector of four values as estimated by the neutral model:
-\begin{itemize}
+\enumerate{
   \item Temporal autocorrelation coefficient
   \item Spatial autocorrelation coefficient
   \item Number of successive layers of spatio-temporal autocorrelation
   required to reproduce statistical properties of observed data
   \item Absolute difference between observed and modelled rank--scale
   distributions
-\end{itemize}
+}
 }
 \description{
 Tests an observed matrix of data (\code{ydat}) against a one-dimensional

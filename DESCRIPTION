@@ -11,6 +11,7 @@ SystemRequirements: C++11
 NeedsCompilation: yes
 LazyData: true
 Imports:
+    msm,
     Rcpp (>= 0.12.4)
 Suggests:
     testthat

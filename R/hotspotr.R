@@ -5,7 +5,7 @@
 #'
 #' @section Functions:
 #' \tabular{ll}{
-#' \code{gearyc}\tab Geary's C statistic on square grid
+#' \code{gearyc}\tab Geary's C statistic on square grid\cr
 #' \code{getisord}\tab Getis-Ord spatial association statistic on square grid\cr
 #' \code{ives2D}\tab Simulate 2D square grid using model of Ives & Klopfer
 #' (Ecology 1997)\cr
@@ -22,6 +22,9 @@
 #'
 #' @name hotspotr
 #' @docType package
+#' @importFrom stats rnorm t.test wilcox.test optim optimise
+#' @importFrom graphics lines legend
+#' @importFrom msm rtnorm
 #' @importFrom Rcpp evalCpp
 #' @useDynLib hotspotr
 NULL

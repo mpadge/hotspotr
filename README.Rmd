@@ -12,7 +12,8 @@ devtools::install_github ('mpadge/hotspotr')
 ```
 ```{r load, echo=FALSE, message=FALSE}
 setwd ("..")
-#devtools::document ("hotspotr")
+devtools::document ("hotspotr")
+devtools::check ("hotspotr")
 devtools::load_all ("hotspotr")
 setwd ("./hotspotr")
 ```

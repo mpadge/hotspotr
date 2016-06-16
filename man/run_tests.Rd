@@ -4,7 +4,8 @@
 \alias{run_tests}
 \title{run_tests}
 \usage{
-run_tests(size = 10, alpha = c(0.1, 0.1), ydat, separate = FALSE, seed)
+run_tests(size = 10, alpha = c(0.1, 0.1), ntests = 100, ydat,
+  separate = FALSE, seed)
 }
 \arguments{
 \item{size}{Size of the square grid on which to generate model. Total number
@@ -13,6 +14,9 @@ value is determined by its dimensions)}
 
 \item{alpha}{Vector of two components providing starting values for the
 strength of autocorrelation in time and space}
+
+\item{ntests}{Number of tests to run, with statistics calculated from the
+mean of \code{ntests}}
 
 \item{ydat}{Square matrix of observed values to be tested. If not given, will
 be generated with specified values of \code{size} and \code{alpha}}

@@ -10,19 +10,29 @@ test2d(ydat, size = 10, alpha = c(0.1, 0.1), sann = FALSE,
 \arguments{
 \item{ydat}{Square matrix of observed values to be tested}
 
+\item{size}{Size of the square grid on which to generate model. Total number
+of points is size ^ 2}
+
 \item{alpha}{Vector of two components providing starting values for the
 strength of autocorrelation in time and space}
+
+\item{sann}{Use simulated annealing to find optimum}
+
+\item{separate}{If TRUE, models temporal autocorrelation separately from
+spatial autocorrelation}
+
+\item{plot}{If TRUE, produces a plot of rank--scale distributions}
 }
 \value{
 A vector of four values as estimated by the neutral model:
-\begin{itemize}
+\enumerate{
   \item Temporal autocorrelation coefficient
   \item Spatial autocorrelation coefficient
   \item Number of successive layers of spatio-temporal autocorrelation
   required to reproduce statistical properties of observed data
   \item Absolute difference between observed and modelled rank--scale
   distributions
-\end{itemize}
+}
 }
 \description{
 Tests an observed matrix of data (\code{ydat}) against a two-dimensional

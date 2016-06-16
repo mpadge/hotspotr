@@ -4,18 +4,24 @@
 #' neutral model
 #'
 #' @param ydat Square matrix of observed values to be tested
+#' @param size Size of the square grid on which to generate model. Total number
+#' of points is size ^ 2
 #' @param alpha Vector of two components providing starting values for the
 #' strength of autocorrelation in time and space
+#' @param sann Use simulated annealing to find optimum
+#' @param separate If TRUE, models temporal autocorrelation separately from
+#' spatial autocorrelation
+#' @param plot If TRUE, produces a plot of rank--scale distributions
 #'
 #' @return A vector of four values as estimated by the neutral model:
-#' \begin{itemize}
+#' \enumerate{
 #'   \item Temporal autocorrelation coefficient
 #'   \item Spatial autocorrelation coefficient
 #'   \item Number of successive layers of spatio-temporal autocorrelation
 #'   required to reproduce statistical properties of observed data
 #'   \item Absolute difference between observed and modelled rank--scale
 #'   distributions
-#' \end{itemize}
+#' }
 #'
 #' @seealso \code{test1d}
 #'

@@ -1,0 +1,97 @@
+#' run_tests
+#'
+#' Tests observed data (\code{ydat}) against a series of neutral models
+#'
+#' @param size Size of the square grid on which to generate model. Total number
+#' of points is size ^ 2. (Has no effect if \code{ydat} is given, in which case
+#' value is determined by its dimensions)
+#' @param alpha Vector of two components providing starting values for the
+#' strength of autocorrelation in time and space
+#' @param ydat Square matrix of observed values to be tested. If not given, will
+#' be generated with specified values of \code{size} and \code{alpha}
+#' @param separate If TRUE, implements temporal autocorrelation separately from
+#' spatial autocorrelation
+#' @param seed Random seed
+#'
+#' @return Nothing (dumps statistics to screen)
+#'
+#' @seealso \code{test1d}, \code{test2d}
+#'
+#' @export
+run_tests <- function (size=10, alpha=c(0.1, 0.1), ydat, separate=FALSE, seed)
+{
+    size <- dim (ydat) [1]
+
+    sann <- FALSE # Simulated annealing
+    # interesting seeds: 9
+    if (missing (ydat))
+    {
+        if (missing (seed))
+            ydat <- ives2D (size, 1000, sd0=0.1, alpha=alpha, separate=separate)
+        else
+            ydat <- ives2D (size, 1000, sd0=0.1, alpha=alpha, separate=separate,
+                            seed=seed)
+    }
+    ydat <- sort (ydat, decreasing=TRUE)
+    ydat <- (ydat - min (ydat)) / diff (range (ydat))
+
+    #if (!missing (seed)) set.seed (seed)
+    # To see how repeatable the tests are, they are performed with a different
+    # seed
+    set.seed (Sys.time ())
+    
+    cat ("  dim\t|\talpha\tdiff\tp(w)\tp(T)\t|\talpha\t\tn\t|\n", sep="")
+    cat (rep ("-", 8), "|", rep ("-", 39), "|", rep ("-", 31), "|\n", sep="")
+    alpha1 <- c (0.1, 0)
+    ntests <- 100
+    for (i in 1:2)
+    {
+        #t1 <- test1d (ydat, alpha=c(alpha1 [i], 0.1), sann=sann)
+        t1 <- test1da (ydat, alpha=c(alpha1 [i], 0.1))
+        dd <- rep (NA, ntests)
+        y1s <- rep (0, size ^ 2)
+        for (j in 1:ntests)
+        {
+            y1 <- brown1d (size, alpha=t1 [1:2], n=t1 [3])
+            y1 <- (y1 - min (y1)) / diff (range (y1))
+            y1s <- y1s + y1
+            dd [j] <- sum (y1 - ydat) 
+        }
+        wt <- wilcox.test (y1, ydat, paired=TRUE)
+        y1s <- y1s / ntests
+        cat ("  1\t|   (", alpha1 [i], ", 0.1)\t",
+             formatC (sum ((y1s - ydat) ^ 2), format="f", digits=2), "\t",
+             formatC (wt$p.value, format="f", digits=4), "\t",
+             formatC (t.test (dd)$p.value, format="f", digits=4), "\t|   (",
+             formatC (t1 [1], format="f", digits=2), ", ",
+             formatC (t1 [2], format="f", digits=2), ")\t",
+             round (t1 [3]), "\t|\n", sep="")
+    }
+
+    alpha1 <- c (1, 0, 1) / 10
+    alpha2 <- c (1, 1, 0) / 10
+    for (i in 1:3)
+    {
+        t2 <- test2d (ydat, alpha=c(alpha1 [i], alpha2 [i]), 
+                      separate=separate, sann=sann)
+        dd <- rep (NA, ntests)
+        y2s <- rep (0, size ^ 2)
+        for (j in 1:ntests)
+        {
+            y2 <- brown2d (size, alpha=t2 [1:2], n=t2 [3])
+            y2 <- (y2 - min (y2)) / diff (range (y2))
+            y2s <- y2s + y2
+            dd [j] <- sum (y2 - ydat) 
+        }
+        y2s <- y2s / ntests
+        wt <- wilcox.test (y2s, ydat, paired=TRUE)
+        cat ("  2\t|   (", alpha1 [i], ", ", alpha2 [i], ")\t",
+             formatC (sum ((y2s - ydat) ^ 2), format="f", digits=2), "\t",
+             formatC (wt$p.value, format="f", digits=4), "\t",
+             formatC (t.test (dd)$p.value, format="f", digits=4), "\t|   (",
+             formatC (t2 [1], format="f", digits=2), ", ",
+             formatC (t2 [2], format="f", digits=2), ")\t",
+             round (t2 [3]), "\t|\n", sep="")
+    }
+    cat (rep ("-", 81), "\n", sep="")
+}

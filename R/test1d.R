@@ -50,7 +50,7 @@ test1d <- function (ydat, alpha=c(0.1, 0.1), plot=FALSE)
     while (conv > tol & count < max_count)
     {
         flags <- rep (FALSE, 2)
-        op1 <- optimise (fn_n, c (0, 200))
+        op1 <- optimise (fn_n, c (1, 200))
         if (op1$objective < conv) 
         {
             conv <- op1$objective

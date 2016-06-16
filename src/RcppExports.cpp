@@ -21,3 +21,18 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// rcpp_neutral1d
+Rcpp::NumericVector rcpp_neutral1d(int size, double alpha_t, double alpha_s, int nt, Rcpp::NumericVector yvec);
+RcppExport SEXP hotspotr_rcpp_neutral1d(SEXP sizeSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP ntSEXP, SEXP yvecSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha_t(alpha_tSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha_s(alpha_sSEXP);
+    Rcpp::traits::input_parameter< int >::type nt(ntSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type yvec(yvecSEXP);
+    __result = Rcpp::wrap(rcpp_neutral1d(size, alpha_t, alpha_s, nt, yvec));
+    return __result;
+END_RCPP
+}

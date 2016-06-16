@@ -8,28 +8,19 @@
 #' autocorrelation in time and space.
 #' @param n Number of successive layers of temporal and spatial autocorrelation
 #' used to generate final modelled values
+#' @param sd0 Standard deviation of truncated normal distribution used to model
+#' environmental variation (with mean of 1)
 #'
 #' @return A vector of hotspot values sorted from high to low
 #'
 #' @seealso \code{neutral2d}
 #'
 #' @export
-neutral1d <- function (size=10, alpha=c(0.1, 0.1), n=1)
+neutral1d <- function (size=10, alpha=c(0.1, 0.1), n=1, sd0=0.1)
 {
-    yn <- rep (1, size * size)
-    for (i in 1:n)
-    {
-        # temporal autocorrelation with alpha [1]
-        yn <- yn * rnorm (size * size, 1, 0.1)
-        indx <- 1:(length (yn) - 1)
-        yn [indx+1] <- (1 - alpha [1]) * yn [indx] + alpha [1] * yn [indx + 1]
-        # spatial autocorrelation with alpha [2]
-        yn <- c (yn [size * size], yn, yn [1])
-        indx <- 1:(size^2) + 1
-        yn [indx] <- (1 - 2 * alpha [2]) * yn [indx] +
-                        alpha [2] * (yn [indx - 1] + yn [indx + 1])
-        yn <- yn [indx]
-    }
-
-    sort (yn, decreasing=TRUE)
+    # generate truncated normal distribution in R and pass to Rcpp:
+    yvec <- msm::rtnorm (size * size, mean=1, sd=sd0, lower=0, upper=2)
+    y <- rcpp_neutral1d (size=size, alpha_t=alpha [1], alpha_s=alpha [2], 
+                         nt=n, yvec=yvec)
+    sort (y, decreasing=TRUE)
 }

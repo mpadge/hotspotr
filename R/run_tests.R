@@ -48,10 +48,10 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
     
     cat ("  dim\t|\talpha\tdiff\tp(w)\tp(T)\t|\talpha\t\tn\t|\n", sep="")
     cat (rep ("-", 8), "|", rep ("-", 39), "|", rep ("-", 31), "|\n", sep="")
-    alpha1 <- c (0.1, 0)
+    alpha_s <- c (0.1, 0)
     for (i in 1:2)
     {
-        t1 <- test1d (ydat, alpha=c(alpha1 [i], 0.1))
+        t1 <- test1d (ydat, alpha=c(0.1, alpha_s [i]))
         dd <- rep (NA, ntests)
         y1s <- rep (0, size ^ 2)
         for (j in 1:ntests)
@@ -63,7 +63,7 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
         }
         wt <- wilcox.test (y1, ydat, paired=TRUE)
         y1s <- y1s / ntests
-        cat ("  1\t|   (", alpha1 [i], ", 0.1)\t",
+        cat ("  1\t|   (0.1, ", alpha_s [i], ")\t",
              formatC (sum ((y1s - ydat) ^ 2), format="f", digits=2), "\t",
              formatC (wt$p.value, format="f", digits=4), "\t",
              formatC (t.test (dd)$p.value, format="f", digits=4), "\t|   (",

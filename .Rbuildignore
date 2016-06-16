@@ -1,0 +1,11 @@
+^\.travis\.yml$
+makefile$
+\.md$
+^README\.Rmd$
+^README\.html$
+^src/*.o$
+^src/*.so$
+^src/*.gcda$
+^src/*.gcno$
+^src/Makevars$
+^figure/

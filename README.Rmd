@@ -16,3 +16,9 @@ setwd ("..")
 devtools::load_all ("hotspotr")
 setwd ("./hotspotr")
 ```
+
+## Test
+
+```{r}
+run_tests ()
+```

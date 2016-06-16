@@ -2,10 +2,10 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 rcpp_ives2D <- function(size, nt, alpha_t, alpha_s, svec, rvec) {
-    .Call('hotspots_rcpp_ives2D', PACKAGE = 'hotspots', size, nt, alpha_t, alpha_s, svec, rvec)
+    .Call('hotspotr_rcpp_ives2D', PACKAGE = 'hotspotr', size, nt, alpha_t, alpha_s, svec, rvec)
 }
 
 rcpp_ives2D_separate <- function(size, nt, alpha_t, alpha_s, svec, rvec) {
-    .Call('hotspots_rcpp_ives2D_separate', PACKAGE = 'hotspots', size, nt, alpha_t, alpha_s, svec, rvec)
+    .Call('hotspotr_rcpp_ives2D_separate', PACKAGE = 'hotspotr', size, nt, alpha_t, alpha_s, svec, rvec)
 }
 

@@ -20,8 +20,6 @@
 #' @export
 run_tests <- function (size=10, alpha=c(0.1, 0.1), ydat, separate=FALSE, seed)
 {
-    size <- dim (ydat) [1]
-
     sann <- FALSE # Simulated annealing
     # interesting seeds: 9
     if (missing (ydat))
@@ -34,6 +32,8 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ydat, separate=FALSE, seed)
     }
     ydat <- sort (ydat, decreasing=TRUE)
     ydat <- (ydat - min (ydat)) / diff (range (ydat))
+
+    size <- dim (ydat) [1]
 
     #if (!missing (seed)) set.seed (seed)
     # To see how repeatable the tests are, they are performed with a different

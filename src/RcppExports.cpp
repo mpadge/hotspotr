@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // rcpp_ives2D
 Rcpp::NumericMatrix rcpp_ives2D(int size, int nt, double alpha_t, double alpha_s, Rcpp::NumericVector svec, Rcpp::NumericVector rvec);
-RcppExport SEXP hotspots_rcpp_ives2D(SEXP sizeSEXP, SEXP ntSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP svecSEXP, SEXP rvecSEXP) {
+RcppExport SEXP hotspotr_rcpp_ives2D(SEXP sizeSEXP, SEXP ntSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP svecSEXP, SEXP rvecSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -23,7 +23,7 @@ END_RCPP
 }
 // rcpp_ives2D_separate
 Rcpp::NumericMatrix rcpp_ives2D_separate(int size, int nt, double alpha_t, double alpha_s, Rcpp::NumericVector svec, Rcpp::NumericVector rvec);
-RcppExport SEXP hotspots_rcpp_ives2D_separate(SEXP sizeSEXP, SEXP ntSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP svecSEXP, SEXP rvecSEXP) {
+RcppExport SEXP hotspotr_rcpp_ives2D_separate(SEXP sizeSEXP, SEXP ntSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP svecSEXP, SEXP rvecSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;

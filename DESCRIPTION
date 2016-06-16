@@ -1,4 +1,4 @@
-Package: hotspots
+Package: hotspotr
 Version: 0.0.0
 Authors@R: person("Mark", "Padgham", email = "mark.padgham@email.com", role = c("aut", "cre"))
 Title: Compare spatial structure of hotspots with neutral models

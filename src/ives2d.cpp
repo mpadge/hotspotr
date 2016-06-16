@@ -33,7 +33,7 @@ Rcpp::NumericMatrix rcpp_ives2D (int size, int nt,
         // then spatial autocorrelation
         for (int i=1; i<(size - 1); i++)
             for (int j=1; j<(size - 1); j++)
-                x2 (i, j) = (1.0 - 4 * alpha_t) * x (i ,j) + alpha_t * 
+                x2 (i, j) = (1.0 - 4 * alpha_s) * x (i ,j) + alpha_s * 
                     (x(i-1, j) + x(i+1, j) + x(i, j-1) + x(i, j+1));
         // wrap edges
         for (int i=1; i<(size - 1); i++)
@@ -54,8 +54,9 @@ Rcpp::NumericMatrix rcpp_ives2D (int size, int nt,
             (x (0, size-2) + x (0, 0) + x (1, size-1) + x (size-1, size-1));
         x2 (size-1, 0) = (1.0 - 4 * alpha_s) * x (size-1, 0) + alpha_s *
             (x (size-1, 1) + x (size-1, size-1) + x (0, 0) + x (size-2, 0));
-        x2 (size-1, size-1) = (1.0 - 4 * alpha_s) * x (size-1, size-1) + alpha_s *
-            (x (size-2, size-1) + x (0, size-1) + x (size-1, 0) + x (size-1, size-2));
+        x2 (size-1, size-1) = (1.0 - 4 * alpha_s) * x (size-1, size-1) + 
+            alpha_s * (x (size-2, size-1) + x (0, size-1) + 
+                    x (size-1, 0) + x (size-1, size-2));
 
         x = Rcpp::clone (x2);
     }

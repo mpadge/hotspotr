@@ -60,7 +60,7 @@ test1d <- function (ydat, alpha=c(0.1, 0.1), ntests=100, plot=FALSE)
     while (conv > tol & count < max_count)
     {
         flags <- rep (FALSE, 2)
-        op1 <- optimise (fn_n, c (1, 200))
+        op1 <- optimise (fn_n, c (1, 20))
         if (op1$objective < conv) 
         {
             conv <- op1$objective
@@ -85,18 +85,16 @@ test1d <- function (ydat, alpha=c(0.1, 0.1), ntests=100, plot=FALSE)
     }
     # Parameters for ydat have been estimated; now generate equivalent neutral
     # values
-    dd <- rep (NA, ntests)
-    y1s <- rep (0, size ^ 2)
+    ytest <- rep (0, size ^ 2)
     for (j in 1:ntests)
     {
         y1 <- neutral1d (size, alpha=a0, n=n0)
         y1 <- (y1 - min (y1)) / diff (range (y1))
-        dd [j] <- sum (y1 - ydat) 
-        y1s <- y1s + y1
+        ytest <- ytest + y1
     }
-    y1s <- y1s / ntests
-    pval <- t.test (dd)$p.value
-    val <- sum ((y1s - ydat) ^ 2)
+    ytest <- ytest / ntests
+    pval <- t.test (ytest, ydat, paired=TRUE)$p.value
+    val <- sum ((ytest - ydat) ^ 2)
 
     if (plot)
     {
@@ -107,5 +105,5 @@ test1d <- function (ydat, alpha=c(0.1, 0.1), ntests=100, plot=FALSE)
     }
 
     pars <- list (alpha=alpha, n=n)
-    list (pars=pars, difference=val, p.value=pval, y=y1s)
+    list (pars=pars, difference=val, p.value=pval, y=ytest)
 }

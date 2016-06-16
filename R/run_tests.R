@@ -31,7 +31,6 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
         if (dim (ydat) [1] != dim (ydat) [2]) stop ('ydat must be square')
     }
 
-    sann <- FALSE # Simulated annealing
     # interesting seeds: 9
     if (missing (ydat))
     {
@@ -70,7 +69,7 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
     alpha_s <- c (0.1, 0)
     for (i in 1:2)
     {
-        t2 <- test2d (ydat, alpha=c(alpha_t, alpha_s [i]), sann=sann)
+        t2 <- test2d (ydat, alpha=c(alpha_t, alpha_s [i]))
         wt <- wilcox.test (t2$y, ydat, paired=TRUE)
         cat ("  2\t|   (0.1, ", alpha_s [i], ")\t",
              formatC (sum ((t2$y - ydat) ^ 2), format="f", digits=2), "\t",

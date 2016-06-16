@@ -16,7 +16,7 @@
 #' @return A matrix of (size, size)
 #'
 #' @export
-ives2D <- function (size=100, nt=1000, sd0=0.1, alpha=c(0.1, 0.1), seed)
+ives2D <- function (size=10, nt=1000, sd0=0.1, alpha=c(0.1, 0.1), seed)
 {
     if (!missing (seed)) set.seed (seed)
     s0 <- 0.5

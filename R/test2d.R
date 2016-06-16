@@ -4,13 +4,12 @@
 #' neutral model
 #'
 #' @param ydat Square matrix of observed values to be tested
-#' @param size Size of the square grid on which to generate model. Total number
-#' of points is size ^ 2
 #' @param alpha Vector of two components providing starting values for the
 #' strength of autocorrelation in time and space
 #' @param ntests Number of repeats of neutral model used to calculate mean
 #' rank--scale distribution
-#' @param sann Use simulated annealing to find optimum
+#' @param upper Upper limit for portions of rank-scale distributions to be
+#' compared, presuming the lower tail beyond this to be noise
 #' @param plot If TRUE, produces a plot of rank--scale distributions
 #'
 #' @return A vector of four values as estimated by the neutral model:
@@ -33,44 +32,72 @@
 #' }
 #'
 #' @export
-test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), ntests=100, sann=FALSE, plot=FALSE)
+test2d <- function (ydat, alpha=c(0.1, 0.1), ntests=100, 
+                    plot=FALSE)
 {
+    size <- dim (ydat) [1]
     ydat <- sort (ydat, decreasing=TRUE)
     ydat <- (ydat - min (ydat)) / diff (range (ydat))
     ytest <- NULL # remove no visible binding warning
-    fn1 <- function (x)
+    fn_n <- function (x)
     {
         ytest <- neutral2d (size=size, alpha=alpha, n=x)
         ytest <- (ytest - min (ytest)) / diff (range (ytest))
         sum ((ytest - ydat) ^ 2)
     }
-    n <- round (optimise (fn1, c (0, 200))$minimum)
-    fn2 <- function (x)
+    n <- round (optimise (fn_n, c (0, 200))$minimum)
+    fn_a <- function (x)
     {
         ytest <- neutral2d (size=size, alpha=x, n=n)
         ytest <- (ytest - min (ytest)) / diff (range (ytest))
         sum ((ytest - ydat) ^ 2)
     }
 
-    if (sann)
-        op <- optim (alpha, fn2, method='SANN')
-    else
-        op <- optim (alpha, fn2)
+    conv <- 1e99
+    tol <- 1e-3
+    n0 <- c0 <- 100
+    a0 <- a <- alpha
+    count <- 0
+    max_count <- 10
+    while (conv > tol & count < max_count)
+    {
+        flags <- rep (FALSE, 2)
+        op1 <- optimise (fn_n, c (1, 20))
+        if (op1$objective < conv) 
+        {
+            conv <- op1$objective
+            n <- op1$minimum
+            flags [1] <- TRUE
+        }
+        op <- optim (alpha, fn_a)
+        if (op$value < conv) 
+        {
+            conv <- op$value
+            alpha <- op$par
+            flags [2] <- TRUE
+        }
+
+        if (!all (flags) & c0 == conv) 
+            count <- count + 1
+        else
+            count <- 0
+        a0 <- alpha
+        n0 <- n
+        c0 <- conv
+    }
 
     # Parameters for ydat have been estimated; now generate equivalent neutral
     # values
-    dd <- rep (NA, ntests)
-    y1s <- rep (0, size ^ 2)
+    ytest <- rep (0, size ^ 2)
     for (j in 1:ntests)
     {
-        y1 <- neutral1d (size=size, alpha=op$par, n=n)
+        y1 <- neutral2d (size=size, alpha=a0, n=n0)
         y1 <- (y1 - min (y1)) / diff (range (y1))
-        dd [j] <- sum (y1 - ydat) 
-        y1s <- y1s + y1
+        ytest <- ytest + y1
     }
-    y1s <- y1s / ntests
-    pval <- t.test (dd)$p.value
-    val <- sum ((y1s - ydat) ^ 2)
+    ytest <- ytest / ntests
+    pval <- t.test (ytest, ydat, paired=TRUE)$p.value
+    val <- sum ((ytest - ydat) ^ 2)
 
     if (plot)
     {
@@ -80,6 +107,6 @@ test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), ntests=100, sann=FALSE, pl
                 legend=c("observed", "neutral2d"))
     }
 
-    pars <- list (alpha=op$par, n=n)
-    list (pars=pars, difference=val, p.value=pval, y=y1s)
+    pars <- list (alpha=a0, n=n)
+    list (pars=pars, difference=val, p.value=pval, y=ytest)
 }

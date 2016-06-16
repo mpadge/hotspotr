@@ -33,9 +33,11 @@ Tests an observed matrix of data (\code{ydat}) against a one-dimensional
 neutral model
 }
 \examples{
+\dontrun{
 alpha <- c (0.1, 0.1)
 ydat <- ives2D (size=10, nt=1000, sd0=0.1, alpha=alpha)
 result <- test1d (ydat, alpha, ntests=10)
+}
 
 }
 \seealso{

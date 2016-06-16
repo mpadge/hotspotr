@@ -20,22 +20,22 @@
 #' @seealso \code{test2d}
 #'
 #' @export
-test1da <- function (ydat, alpha=c(0.1, 0.1))
+test1d <- function (ydat, alpha=c(0.1, 0.1))
 {
     # progressive optimisation until convergence
-    size <- dim (ydat) [1]
+    size <- sqrt (length (ydat))
 
     ydat <- sort (ydat, decreasing=TRUE)
     ydat <- (ydat - min (ydat)) / diff (range (ydat))
     fn_n <- function (x)
     {
-        ytest <- brown1d (size, alpha=alpha, n=x)
+        ytest <- neutral1d (size, alpha=alpha, n=x)
         ytest <- (ytest - min (ytest)) / diff (range (ytest))
         sum ((ytest - ydat) ^ 2)
     }
     fn_a <- function (x)
     {
-        ytest <- brown1d (size, alpha=x, n=n)
+        ytest <- neutral1d (size, alpha=x, n=n)
         ytest <- (ytest - min (ytest)) / diff (range (ytest))
         sum ((ytest - ydat) ^ 2)
     }
@@ -72,7 +72,7 @@ test1da <- function (ydat, alpha=c(0.1, 0.1))
         n0 <- n
         c0 <- conv
     }
-    ytest <- brown1d (size, alpha=alpha, n=n)
+    ytest <- neutral1d (size, alpha=alpha, n=n)
     ytest <- (ytest - min (ytest)) / diff (range (ytest))
     val <- sum ((ytest - ydat) ^ 2)
 

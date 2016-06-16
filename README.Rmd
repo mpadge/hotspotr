@@ -10,7 +10,7 @@ for gridded data.
 ```{r, eval=FALSE}
 devtools::install_github ('mpadge/hotspotr')
 ```
-```{r, echo=FALSE, message=FALSE}
+```{r load, echo=FALSE, message=FALSE}
 setwd ("..")
 #devtools::document ("hotspotr")
 devtools::load_all ("hotspotr")
@@ -19,6 +19,8 @@ setwd ("./hotspotr")
 
 ## Test
 
-```{r}
-run_tests ()
+Just a demonstration ....
+
+```{r run_tests}
+run_tests (ntests=10)
 ```

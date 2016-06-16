@@ -7,6 +7,8 @@
 #' value is determined by its dimensions)
 #' @param alpha Vector of two components providing starting values for the
 #' strength of autocorrelation in time and space
+#' @param ntests Number of tests to run, with statistics calculated from the
+#' mean of \code{ntests}
 #' @param ydat Square matrix of observed values to be tested. If not given, will
 #' be generated with specified values of \code{size} and \code{alpha}
 #' @param separate If TRUE, implements temporal autocorrelation separately from
@@ -18,8 +20,15 @@
 #' @seealso \code{test1d}, \code{test2d}
 #'
 #' @export
-run_tests <- function (size=10, alpha=c(0.1, 0.1), ydat, separate=FALSE, seed)
+run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat,
+                       separate=FALSE, seed) 
 {
+    if (!missing (ydat))
+    {
+        if (!is.matrix (ydat)) stop ('ydat must be a matrix')
+        if (dim (ydat) [1] != dim (ydat) [2]) stop ('ydat must be square')
+    }
+
     sann <- FALSE # Simulated annealing
     # interesting seeds: 9
     if (missing (ydat))
@@ -30,10 +39,10 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ydat, separate=FALSE, seed)
             ydat <- ives2D (size, 1000, sd0=0.1, alpha=alpha, separate=separate,
                             seed=seed)
     }
+    size <- dim (ydat) [1]
     ydat <- sort (ydat, decreasing=TRUE)
     ydat <- (ydat - min (ydat)) / diff (range (ydat))
 
-    size <- dim (ydat) [1]
 
     #if (!missing (seed)) set.seed (seed)
     # To see how repeatable the tests are, they are performed with a different
@@ -43,16 +52,14 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ydat, separate=FALSE, seed)
     cat ("  dim\t|\talpha\tdiff\tp(w)\tp(T)\t|\talpha\t\tn\t|\n", sep="")
     cat (rep ("-", 8), "|", rep ("-", 39), "|", rep ("-", 31), "|\n", sep="")
     alpha1 <- c (0.1, 0)
-    ntests <- 100
     for (i in 1:2)
     {
-        #t1 <- test1d (ydat, alpha=c(alpha1 [i], 0.1), sann=sann)
-        t1 <- test1da (ydat, alpha=c(alpha1 [i], 0.1))
+        t1 <- test1d (ydat, alpha=c(alpha1 [i], 0.1))
         dd <- rep (NA, ntests)
         y1s <- rep (0, size ^ 2)
         for (j in 1:ntests)
         {
-            y1 <- brown1d (size, alpha=t1 [1:2], n=t1 [3])
+            y1 <- neutral1d (size, alpha=t1 [1:2], n=t1 [3])
             y1 <- (y1 - min (y1)) / diff (range (y1))
             y1s <- y1s + y1
             dd [j] <- sum (y1 - ydat) 
@@ -78,7 +85,7 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ydat, separate=FALSE, seed)
         y2s <- rep (0, size ^ 2)
         for (j in 1:ntests)
         {
-            y2 <- brown2d (size, alpha=t2 [1:2], n=t2 [3])
+            y2 <- neutral2d (size, alpha=t2 [1:2], n=t2 [3])
             y2 <- (y2 - min (y2)) / diff (range (y2))
             y2s <- y2s + y2
             dd [j] <- sum (y2 - ydat) 

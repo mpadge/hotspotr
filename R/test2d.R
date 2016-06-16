@@ -23,32 +23,28 @@
 test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), sann=FALSE,
                     separate=FALSE, plot=FALSE)
 {
-    if (separate) fnb <- 'brown2d'
-    else fnb <- 'brown2d_separate'
-
     ydat <- sort (ydat, decreasing=TRUE)
     ydat <- (ydat - min (ydat)) / diff (range (ydat))
     fn1 <- function (x)
     {
-        #ytest <- brown2d (size, n=x)
-        ytest <- do.call (fnb, list (size, n=x))
+        ytest <- neutral2d (size=size, alpha=alpha, n=x, separate=separate)
         ytest <- (ytest - min (ytest)) / diff (range (ytest))
         sum ((ytest - ydat) ^ 2)
     }
     n <- round (optimise (fn1, c (0, 200))$minimum)
     fn2 <- function (x)
     {
-        #ytest <- brown2d (size, alpha=x)
-        ytest <- do.call (fnb, list (size, alpha=x))
+        ytest <- neutral2d (size=size, alpha=x, n=n, separate=separate)
         ytest <- (ytest - min (ytest)) / diff (range (ytest))
         sum ((ytest - ydat) ^ 2)
     }
+
     if (sann)
         op <- optim (alpha, fn2, method='SANN')
     else
         op <- optim (alpha, fn2)
-    #ytest <- brown2d (size, alpha=op$par, n=n)
-    ytest <- do.call (fnb, list (alpha=op$par, n=n))
+
+    ytest <- neutral2d (size=size, alpha=op$par, n=n, separate=separate)
     ytest <- (ytest - min (ytest)) / diff (range (ytest))
     val <- sum ((ytest - ydat) ^ 2)
 
@@ -57,7 +53,7 @@ test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), sann=FALSE,
         plot (seq (ytest), ydat, "l", xlab="rank", ylab="scale")
         lines (seq (ytest), ytest, col="gray")
         legend ("topright", lwd=1, col=c("black", "gray"), bty="n",
-                legend=c("observed", "brown2d"))
+                legend=c("observed", "neutral2d"))
     }
 
     c (op$par, n, val)

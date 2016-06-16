@@ -1,5 +1,6 @@
 ^\.travis\.yml$
-makefile$
+^makefile$
+^tmux-start.bash$
 \.md$
 ^README\.Rmd$
 ^README\.html$

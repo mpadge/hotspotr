@@ -6,6 +6,7 @@
 #' @param ydat Square matrix of observed values to be tested
 #' @param alpha Vector of two components providing starting values for the
 #' strength of autocorrelation in time and space
+#' @param plot If TRUE, produces a plot of rank--scale distributions
 #'
 #' @return A vector of four values as estimated by the neutral model:
 #' \enumerate{
@@ -20,7 +21,7 @@
 #' @seealso \code{test2d}
 #'
 #' @export
-test1d <- function (ydat, alpha=c(0.1, 0.1))
+test1d <- function (ydat, alpha=c(0.1, 0.1), plot=FALSE)
 {
     # progressive optimisation until convergence
     size <- sqrt (length (ydat))
@@ -75,6 +76,14 @@ test1d <- function (ydat, alpha=c(0.1, 0.1))
     ytest <- neutral1d (size, alpha=alpha, n=n)
     ytest <- (ytest - min (ytest)) / diff (range (ytest))
     val <- sum ((ytest - ydat) ^ 2)
+
+    if (plot)
+    {
+        plot (seq (ytest), ydat, "l", xlab="rank", ylab="scale")
+        lines (seq (ytest), ytest, col="gray")
+        legend ("topright", lwd=1, col=c("black", "gray"), bty="n",
+                legend=c("observed", "neutral1d"))
+    }
 
     c (alpha, n, val)
 }

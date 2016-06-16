@@ -9,8 +9,6 @@
 #' @param alpha Vector of two components providing starting values for the
 #' strength of autocorrelation in time and space
 #' @param sann Use simulated annealing to find optimum
-#' @param separate If TRUE, models temporal autocorrelation separately from
-#' spatial autocorrelation
 #' @param plot If TRUE, produces a plot of rank--scale distributions
 #'
 #' @return A vector of four values as estimated by the neutral model:
@@ -26,21 +24,20 @@
 #' @seealso \code{test1d}
 #'
 #' @export
-test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), sann=FALSE,
-                    separate=FALSE, plot=FALSE)
+test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), sann=FALSE, plot=FALSE)
 {
     ydat <- sort (ydat, decreasing=TRUE)
     ydat <- (ydat - min (ydat)) / diff (range (ydat))
     fn1 <- function (x)
     {
-        ytest <- neutral2d (size=size, alpha=alpha, n=x, separate=separate)
+        ytest <- neutral2d (size=size, alpha=alpha, n=x)
         ytest <- (ytest - min (ytest)) / diff (range (ytest))
         sum ((ytest - ydat) ^ 2)
     }
     n <- round (optimise (fn1, c (0, 200))$minimum)
     fn2 <- function (x)
     {
-        ytest <- neutral2d (size=size, alpha=x, n=n, separate=separate)
+        ytest <- neutral2d (size=size, alpha=x, n=n)
         ytest <- (ytest - min (ytest)) / diff (range (ytest))
         sum ((ytest - ydat) ^ 2)
     }
@@ -50,7 +47,7 @@ test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), sann=FALSE,
     else
         op <- optim (alpha, fn2)
 
-    ytest <- neutral2d (size=size, alpha=op$par, n=n, separate=separate)
+    ytest <- neutral2d (size=size, alpha=op$par, n=n)
     ytest <- (ytest - min (ytest)) / diff (range (ytest))
     val <- sum ((ytest - ydat) ^ 2)
 

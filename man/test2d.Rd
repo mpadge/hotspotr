@@ -4,8 +4,7 @@
 \alias{test2d}
 \title{test2d}
 \usage{
-test2d(ydat, size = 10, alpha = c(0.1, 0.1), sann = FALSE,
-  separate = FALSE, plot = FALSE)
+test2d(ydat, size = 10, alpha = c(0.1, 0.1), sann = FALSE, plot = FALSE)
 }
 \arguments{
 \item{ydat}{Square matrix of observed values to be tested}
@@ -17,9 +16,6 @@ of points is size ^ 2}
 strength of autocorrelation in time and space}
 
 \item{sann}{Use simulated annealing to find optimum}
-
-\item{separate}{If TRUE, models temporal autocorrelation separately from
-spatial autocorrelation}
 
 \item{plot}{If TRUE, produces a plot of rank--scale distributions}
 }

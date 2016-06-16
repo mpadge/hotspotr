@@ -4,8 +4,7 @@
 \alias{neutral2d}
 \title{neutral2d}
 \usage{
-neutral2d(size = 10, alpha = c(0.1, 0.1), n = 100, separate = FALSE,
-  seed)
+neutral2d(size = 10, alpha = c(0.1, 0.1), n = 100, seed)
 }
 \arguments{
 \item{size}{Size of the square grid on which to generate model. Total number
@@ -16,9 +15,6 @@ autocorrelation in time and space.}
 
 \item{n}{Number of successive layers of temporal and spatial autocorrelation
 used to generate final modelled values}
-
-\item{separate}{If TRUE, models temporal autocorrelation separately from
-spatial autocorrelation}
 
 \item{seed}{Random seed}
 }

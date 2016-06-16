@@ -11,8 +11,6 @@
 #' mean of \code{ntests}
 #' @param ydat Square matrix of observed values to be tested. If not given, will
 #' be generated with specified values of \code{size} and \code{alpha}
-#' @param separate If TRUE, implements temporal autocorrelation separately from
-#' spatial autocorrelation
 #' @param seed Random seed
 #'
 #' @return Nothing (dumps statistics to screen)
@@ -20,8 +18,7 @@
 #' @seealso \code{test1d}, \code{test2d}
 #'
 #' @export
-run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat,
-                       separate=FALSE, seed) 
+run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed) 
 {
     if (!missing (ydat))
     {
@@ -34,9 +31,9 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat,
     if (missing (ydat))
     {
         if (missing (seed))
-            ydat <- ives2D (size, 1000, sd0=0.1, alpha=alpha, separate=separate)
+            ydat <- ives2D (size, 1000, sd0=0.1, alpha=alpha)
         else
-            ydat <- ives2D (size, 1000, sd0=0.1, alpha=alpha, separate=separate,
+            ydat <- ives2D (size, 1000, sd0=0.1, alpha=alpha,
                             seed=seed)
     }
     size <- dim (ydat) [1]
@@ -79,8 +76,7 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat,
     alpha2 <- c (1, 1, 0) / 10
     for (i in 1:3)
     {
-        t2 <- test2d (ydat, alpha=c(alpha1 [i], alpha2 [i]), 
-                      separate=separate, sann=sann)
+        t2 <- test2d (ydat, alpha=c(alpha1 [i], alpha2 [i]), sann=sann)
         dd <- rep (NA, ntests)
         y2s <- rep (0, size ^ 2)
         for (j in 1:ntests)

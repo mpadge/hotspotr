@@ -4,7 +4,7 @@
 \alias{neutral2d}
 \title{neutral2d}
 \usage{
-neutral2d(size = 10, alpha = c(0.1, 0.1), n = 100, seed)
+neutral2d(size = 10, alpha = c(0.1, 0.1), n = 100, sd0 = 0.1, seed)
 }
 \arguments{
 \item{size}{Size of the square grid on which to generate model. Total number
@@ -15,6 +15,9 @@ autocorrelation in time and space.}
 
 \item{n}{Number of successive layers of temporal and spatial autocorrelation
 used to generate final modelled values}
+
+\item{sd0}{Standard deviation of truncated normal distribution used to model
+environmental variation (with mean of 1)}
 
 \item{seed}{Random seed}
 }

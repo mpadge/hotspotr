@@ -72,11 +72,11 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
              round (t1 [3]), "\t|\n", sep="")
     }
 
-    alpha1 <- c (1, 0, 1) / 10
-    alpha2 <- c (1, 1, 0) / 10
-    for (i in 1:3)
+    alpha_t <- 0.1
+    alpha_s <- c (0.1, 0)
+    for (i in 1:2)
     {
-        t2 <- test2d (ydat, alpha=c(alpha1 [i], alpha2 [i]), sann=sann)
+        t2 <- test2d (ydat, alpha=c(alpha_t, alpha_s [i]), sann=sann)
         dd <- rep (NA, ntests)
         y2s <- rep (0, size ^ 2)
         for (j in 1:ntests)
@@ -88,7 +88,7 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
         }
         y2s <- y2s / ntests
         wt <- wilcox.test (y2s, ydat, paired=TRUE)
-        cat ("  2\t|   (", alpha1 [i], ", ", alpha2 [i], ")\t",
+        cat ("  2\t|   (0.1, ", alpha_s [i], ")\t",
              formatC (sum ((y2s - ydat) ^ 2), format="f", digits=2), "\t",
              formatC (wt$p.value, format="f", digits=4), "\t",
              formatC (t.test (dd)$p.value, format="f", digits=4), "\t|   (",

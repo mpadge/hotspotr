@@ -9,3 +9,7 @@ rcpp_neutral1d <- function(size, alpha_t, alpha_s, nt, yvec) {
     .Call('hotspotr_rcpp_neutral1d', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, nt, yvec)
 }
 
+rcpp_neutral2d <- function(size, alpha_t, alpha_s, nt, ymat) {
+    .Call('hotspotr_rcpp_neutral2d', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, nt, ymat)
+}
+

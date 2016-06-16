@@ -20,7 +20,7 @@
 neutral2d <- function (size=10, alpha=c(0.1, 0.1), n=100, sd0=0.1, seed)
 {
     if (alpha [1] <= 0)
-        stop ('neutral model only mades sense with finite temporal autocorrelation')
+        stop ('neutral model only makes sense with finite temporal autocorrelation')
 
     if (!missing (seed)) set.seed (seed)
 

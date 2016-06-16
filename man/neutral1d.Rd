@@ -4,7 +4,7 @@
 \alias{neutral1d}
 \title{neutral1d}
 \usage{
-neutral1d(size = 10, alpha = c(0.1, 0.1), n = 1, sd0 = 0.1)
+neutral1d(size = 10, alpha = c(0.1, 0.1), n = 100, sd0 = 0.1, seed)
 }
 \arguments{
 \item{size}{Size of the square grid on which to generate model. Total number
@@ -18,6 +18,8 @@ used to generate final modelled values}
 
 \item{sd0}{Standard deviation of truncated normal distribution used to model
 environmental variation (with mean of 1)}
+
+\item{seed}{Random seed}
 }
 \value{
 A vector of hotspot values sorted from high to low

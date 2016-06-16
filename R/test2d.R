@@ -8,6 +8,8 @@
 #' of points is size ^ 2
 #' @param alpha Vector of two components providing starting values for the
 #' strength of autocorrelation in time and space
+#' @param ntests Number of repeats of neutral model used to calculate mean
+#' rank--scale distribution
 #' @param sann Use simulated annealing to find optimum
 #' @param plot If TRUE, produces a plot of rank--scale distributions
 #'
@@ -24,10 +26,11 @@
 #' @seealso \code{test1d}
 #'
 #' @export
-test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), sann=FALSE, plot=FALSE)
+test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), ntests=100, sann=FALSE, plot=FALSE)
 {
     ydat <- sort (ydat, decreasing=TRUE)
     ydat <- (ydat - min (ydat)) / diff (range (ydat))
+    ytest <- NULL # remove no visible binding warning
     fn1 <- function (x)
     {
         ytest <- neutral2d (size=size, alpha=alpha, n=x)
@@ -47,9 +50,20 @@ test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), sann=FALSE, plot=FALSE)
     else
         op <- optim (alpha, fn2)
 
-    ytest <- neutral2d (size=size, alpha=op$par, n=n)
-    ytest <- (ytest - min (ytest)) / diff (range (ytest))
-    val <- sum ((ytest - ydat) ^ 2)
+    # Parameters for ydat have been estimated; now generate equivalent neutral
+    # values
+    dd <- rep (NA, ntests)
+    y1s <- rep (0, size ^ 2)
+    for (j in 1:ntests)
+    {
+        y1 <- neutral1d (size=size, alpha=op$par, n=n)
+        y1 <- (y1 - min (y1)) / diff (range (y1))
+        dd [j] <- sum (y1 - ydat) 
+        y1s <- y1s + y1
+    }
+    y1s <- y1s / ntests
+    pval <- t.test (dd)$p.value
+    val <- sum ((y1s - ydat) ^ 2)
 
     if (plot)
     {
@@ -59,5 +73,6 @@ test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), sann=FALSE, plot=FALSE)
                 legend=c("observed", "neutral2d"))
     }
 
-    c (op$par, n, val)
+    pars <- list (alpha=op$par, n=n)
+    list (pars=pars, difference=val, p.value=pval, y=y1s)
 }

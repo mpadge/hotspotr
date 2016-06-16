@@ -6,6 +6,8 @@
 #' @param ydat Square matrix of observed values to be tested
 #' @param alpha Vector of two components providing starting values for the
 #' strength of autocorrelation in time and space
+#' @param ntests Number of repeats of neutral model used to calculate mean
+#' rank--scale distribution
 #' @param plot If TRUE, produces a plot of rank--scale distributions
 #'
 #' @return A vector of four values as estimated by the neutral model:
@@ -21,13 +23,14 @@
 #' @seealso \code{test2d}
 #'
 #' @export
-test1d <- function (ydat, alpha=c(0.1, 0.1), plot=FALSE)
+test1d <- function (ydat, alpha=c(0.1, 0.1), ntests=100, plot=FALSE)
 {
     # progressive optimisation until convergence
     size <- sqrt (length (ydat))
 
     ydat <- sort (ydat, decreasing=TRUE)
     ydat <- (ydat - min (ydat)) / diff (range (ydat))
+    ytest <- NULL # remove no visible binding warning
     fn_n <- function (x)
     {
         ytest <- neutral1d (size, alpha=alpha, n=x)
@@ -73,9 +76,20 @@ test1d <- function (ydat, alpha=c(0.1, 0.1), plot=FALSE)
         n0 <- n
         c0 <- conv
     }
-    ytest <- neutral1d (size, alpha=alpha, n=n)
-    ytest <- (ytest - min (ytest)) / diff (range (ytest))
-    val <- sum ((ytest - ydat) ^ 2)
+    # Parameters for ydat have been estimated; now generate equivalent neutral
+    # values
+    dd <- rep (NA, ntests)
+    y1s <- rep (0, size ^ 2)
+    for (j in 1:ntests)
+    {
+        y1 <- neutral1d (size, alpha=a0, n=n0)
+        y1 <- (y1 - min (y1)) / diff (range (y1))
+        dd [j] <- sum (y1 - ydat) 
+        y1s <- y1s + y1
+    }
+    y1s <- y1s / ntests
+    pval <- t.test (dd)$p.value
+    val <- sum ((y1s - ydat) ^ 2)
 
     if (plot)
     {
@@ -85,5 +99,6 @@ test1d <- function (ydat, alpha=c(0.1, 0.1), plot=FALSE)
                 legend=c("observed", "neutral1d"))
     }
 
-    c (alpha, n, val)
+    pars <- list (alpha=alpha, n=n)
+    list (pars=pars, difference=val, p.value=pval, y=y1s)
 }

@@ -4,13 +4,16 @@
 \alias{test1d}
 \title{test1d}
 \usage{
-test1d(ydat, alpha = c(0.1, 0.1), plot = FALSE)
+test1d(ydat, alpha = c(0.1, 0.1), ntests = 100, plot = FALSE)
 }
 \arguments{
 \item{ydat}{Square matrix of observed values to be tested}
 
 \item{alpha}{Vector of two components providing starting values for the
 strength of autocorrelation in time and space}
+
+\item{ntests}{Number of repeats of neutral model used to calculate mean
+rank--scale distribution}
 
 \item{plot}{If TRUE, produces a plot of rank--scale distributions}
 }

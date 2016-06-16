@@ -40,7 +40,6 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
     ydat <- sort (ydat, decreasing=TRUE)
     ydat <- (ydat - min (ydat)) / diff (range (ydat))
 
-
     #if (!missing (seed)) set.seed (seed)
     # To see how repeatable the tests are, they are performed with a different
     # seed
@@ -51,25 +50,15 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
     alpha_s <- c (0.1, 0)
     for (i in 1:2)
     {
-        t1 <- test1d (ydat, alpha=c(0.1, alpha_s [i]))
-        dd <- rep (NA, ntests)
-        y1s <- rep (0, size ^ 2)
-        for (j in 1:ntests)
-        {
-            y1 <- neutral1d (size, alpha=t1 [1:2], n=t1 [3])
-            y1 <- (y1 - min (y1)) / diff (range (y1))
-            y1s <- y1s + y1
-            dd [j] <- sum (y1 - ydat) 
-        }
-        wt <- wilcox.test (y1, ydat, paired=TRUE)
-        y1s <- y1s / ntests
+        t1 <- test1d (ydat, alpha=c(0.1, alpha_s [i]), ntests=ntests)
+        wt <- wilcox.test (t1$y, ydat, paired=TRUE)
         cat ("  1\t|   (0.1, ", alpha_s [i], ")\t",
-             formatC (sum ((y1s - ydat) ^ 2), format="f", digits=2), "\t",
+             formatC (sum ((t1$y - ydat) ^ 2), format="f", digits=2), "\t",
              formatC (wt$p.value, format="f", digits=4), "\t",
-             formatC (t.test (dd)$p.value, format="f", digits=4), "\t|   (",
-             formatC (t1 [1], format="f", digits=2), ", ",
-             formatC (t1 [2], format="f", digits=2), ")\t",
-             round (t1 [3]), "\t|\n", sep="")
+             formatC (t1$p.value, format="f", digits=4), "\t|   (",
+             formatC (t1$pars$alpha [1], format="f", digits=2), ", ",
+             formatC (t1$pars$alpha [2], format="f", digits=2), ")\t",
+             round (t1$pars$n), "\t|\n", sep="")
     }
 
     alpha_t <- 0.1
@@ -77,24 +66,14 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
     for (i in 1:2)
     {
         t2 <- test2d (ydat, alpha=c(alpha_t, alpha_s [i]), sann=sann)
-        dd <- rep (NA, ntests)
-        y2s <- rep (0, size ^ 2)
-        for (j in 1:ntests)
-        {
-            y2 <- neutral2d (size, alpha=t2 [1:2], n=t2 [3])
-            y2 <- (y2 - min (y2)) / diff (range (y2))
-            y2s <- y2s + y2
-            dd [j] <- sum (y2 - ydat) 
-        }
-        y2s <- y2s / ntests
-        wt <- wilcox.test (y2s, ydat, paired=TRUE)
+        wt <- wilcox.test (t2$y, ydat, paired=TRUE)
         cat ("  2\t|   (0.1, ", alpha_s [i], ")\t",
-             formatC (sum ((y2s - ydat) ^ 2), format="f", digits=2), "\t",
+             formatC (sum ((t2$y - ydat) ^ 2), format="f", digits=2), "\t",
              formatC (wt$p.value, format="f", digits=4), "\t",
-             formatC (t.test (dd)$p.value, format="f", digits=4), "\t|   (",
-             formatC (t2 [1], format="f", digits=2), ", ",
-             formatC (t2 [2], format="f", digits=2), ")\t",
-             round (t2 [3]), "\t|\n", sep="")
+             formatC (t2$p.value, format="f", digits=4), "\t|   (",
+             formatC (t2$pars$alpha [1], format="f", digits=2), ", ",
+             formatC (t2$pars$alpha [2], format="f", digits=2), ")\t",
+             round (t2$pars$n), "\t|\n", sep="")
     }
     cat (rep ("-", 81), "\n", sep="")
 }

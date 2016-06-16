@@ -4,7 +4,8 @@
 \alias{test2d}
 \title{test2d}
 \usage{
-test2d(ydat, size = 10, alpha = c(0.1, 0.1), sann = FALSE, plot = FALSE)
+test2d(ydat, size = 10, alpha = c(0.1, 0.1), ntests = 100, sann = FALSE,
+  plot = FALSE)
 }
 \arguments{
 \item{ydat}{Square matrix of observed values to be tested}
@@ -14,6 +15,9 @@ of points is size ^ 2}
 
 \item{alpha}{Vector of two components providing starting values for the
 strength of autocorrelation in time and space}
+
+\item{ntests}{Number of repeats of neutral model used to calculate mean
+rank--scale distribution}
 
 \item{sann}{Use simulated annealing to find optimum}
 

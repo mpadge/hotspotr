@@ -17,6 +17,11 @@
 #'
 #' @seealso \code{test1d}, \code{test2d}
 #'
+#' @examples
+#' \dontrun{
+#' run_tests ()
+#' }
+#'
 #' @export
 run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed) 
 {

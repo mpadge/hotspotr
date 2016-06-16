@@ -38,6 +38,12 @@ A vector of four values as estimated by the neutral model:
 Tests an observed matrix of data (\code{ydat}) against a two-dimensional
 neutral model
 }
+\examples{
+alpha <- c (0.1, 0.1)
+ydat <- ives2D (size=10, nt=1000, sd0=0.1, alpha=alpha)
+result <- test2d (ydat, alpha=alpha, ntests=10)
+
+}
 \seealso{
 \code{test1d}
 }

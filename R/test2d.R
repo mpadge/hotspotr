@@ -25,6 +25,13 @@
 #'
 #' @seealso \code{test1d}
 #'
+#' @examples
+#' \dontrun{
+#' alpha <- c (0.1, 0.1)
+#' ydat <- ives2D (size=10, nt=1000, sd0=0.1, alpha=alpha)
+#' result <- test2d (ydat, alpha=alpha, ntests=10)
+#' }
+#'
 #' @export
 test2d <- function (ydat, size=10, alpha=c(0.1, 0.1), ntests=100, sann=FALSE, plot=FALSE)
 {

@@ -28,6 +28,12 @@ Nothing (dumps statistics to screen)
 \description{
 Tests observed data (\code{ydat}) against a series of neutral models
 }
+\examples{
+\dontrun{
+run_tests ()
+}
+
+}
 \seealso{
 \code{test1d}, \code{test2d}
 }

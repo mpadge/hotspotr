@@ -27,6 +27,10 @@ A vector of hotspot values sorted from high to low
 \description{
 Implements neutral model in one dimension
 }
+\examples{
+y <- neutral1d ()
+
+}
 \seealso{
 \code{neutral2d}
 }

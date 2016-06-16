@@ -5,7 +5,3 @@ rcpp_ives2D <- function(size, nt, alpha_t, alpha_s, svec, rvec) {
     .Call('hotspotr_rcpp_ives2D', PACKAGE = 'hotspotr', size, nt, alpha_t, alpha_s, svec, rvec)
 }
 
-rcpp_ives2D_separate <- function(size, nt, alpha_t, alpha_s, svec, rvec) {
-    .Call('hotspotr_rcpp_ives2D_separate', PACKAGE = 'hotspotr', size, nt, alpha_t, alpha_s, svec, rvec)
-}
-

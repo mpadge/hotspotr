@@ -31,5 +31,6 @@ neutral2d <- function (size=10, alpha=c(0.1, 0.1), n=100, sd0=0.1, seed)
     ymat <- matrix (ymat, nrow=size, ncol=size)
     y <- rcpp_neutral2d (size=size, alpha_t=alpha [1], alpha_s=alpha [2], 
                          nt=n, ymat=ymat)
+    y <- (y - min (y)) / diff (range (y))
     sort (y, decreasing=TRUE)
 }

@@ -84,14 +84,13 @@ test1d <- function (ydat, alpha=c(0.1, 0.1), ntests=100, plot=FALSE)
         c0 <- conv
     }
     # Parameters for ydat have been estimated; now generate equivalent neutral
-    # values
+    # values. The whole routine with the following 2 lapply lines took 1.55s,
+    # while the for-loop version took 1.61s.
+    #ytest <- lapply (seq (ntests), function (i) neutral1d (size, alpha=a0, n=n0))
+    #ytest <- colSums (do.call (rbind, ytest)) / ntests
     ytest <- rep (0, size ^ 2)
-    for (j in 1:ntests)
-    {
-        y1 <- neutral1d (size, alpha=a0, n=n0)
-        y1 <- (y1 - min (y1)) / diff (range (y1))
-        ytest <- ytest + y1
-    }
+    for (i in 1:ntests)
+        ytest <- ytest + neutral1d (size, alpha=a0, n=n0)
     ytest <- ytest / ntests
     pval <- t.test (ytest, ydat, paired=TRUE)$p.value
     val <- sum ((ytest - ydat) ^ 2)
@@ -102,6 +101,8 @@ test1d <- function (ydat, alpha=c(0.1, 0.1), ntests=100, plot=FALSE)
         lines (seq (ytest), ytest, col="gray")
         legend ("topright", lwd=1, col=c("black", "gray"), bty="n",
                 legend=c("observed", "neutral1d"))
+        p <- formatC (t.test (ydat, ytest)$p.value, format="f", digits=4)
+        title (main=paste0 ("p = ", p))
     }
 
     pars <- list (alpha=alpha, n=n)

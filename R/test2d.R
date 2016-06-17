@@ -89,12 +89,8 @@ test2d <- function (ydat, alpha=c(0.1, 0.1), ntests=100,
     # Parameters for ydat have been estimated; now generate equivalent neutral
     # values
     ytest <- rep (0, size ^ 2)
-    for (j in 1:ntests)
-    {
-        y1 <- neutral2d (size=size, alpha=a0, n=n0)
-        y1 <- (y1 - min (y1)) / diff (range (y1))
-        ytest <- ytest + y1
-    }
+    for (i in 1:ntests)
+        ytest <- ytest + neutral2d (size, alpha=a0, n=n0)
     ytest <- ytest / ntests
     pval <- t.test (ytest, ydat, paired=TRUE)$p.value
     val <- sum ((ytest - ydat) ^ 2)
@@ -105,6 +101,8 @@ test2d <- function (ydat, alpha=c(0.1, 0.1), ntests=100,
         lines (seq (ytest), ytest, col="gray")
         legend ("topright", lwd=1, col=c("black", "gray"), bty="n",
                 legend=c("observed", "neutral2d"))
+        p <- formatC (t.test (ydat, ytest)$p.value, format="f", digits=4)
+        title (main=paste0 ("p = ", p))
     }
 
     pars <- list (alpha=a0, n=n)

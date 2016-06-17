@@ -37,7 +37,8 @@ Tests observed data (\code{ymat}) against a series of neutral models
 }
 \examples{
 \dontrun{
-run_tests ()
+run_tests () # should give low p-values
+run_tests (neutral=TRUE) # should give high p-values
 }
 
 }

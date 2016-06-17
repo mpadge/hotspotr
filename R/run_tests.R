@@ -23,7 +23,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' run_tests ()
+#' run_tests () # should give low p-values
+#' run_tests (neutral=TRUE) # should give high p-values
 #' }
 #'
 #' @export

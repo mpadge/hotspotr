@@ -4,7 +4,7 @@
 \alias{ives2D}
 \title{ives2D}
 \usage{
-ives2D(size = 100, nt = 1000, sd0 = 0.1, alpha = c(0.1, 0.1), seed)
+ives2D(size = 10, nt = 1000, sd0 = 0.1, alpha = c(0.1, 0.1), seed)
 }
 \arguments{
 \item{size}{Size of the square grid on which to generate model. Total number

@@ -4,13 +4,10 @@
 \alias{test2d}
 \title{test2d}
 \usage{
-test2d(ydat, size = 10, alpha = c(0.1, 0.1), ntests = 100, plot = FALSE)
+test2d(ydat, alpha = c(0.1, 0.1), ntests = 100, plot = FALSE)
 }
 \arguments{
 \item{ydat}{Square matrix of observed values to be tested}
-
-\item{size}{Size of the square grid on which to generate model. Total number
-of points is size ^ 2}
 
 \item{alpha}{Vector of two components providing starting values for the
 strength of autocorrelation in time and space}
@@ -19,6 +16,9 @@ strength of autocorrelation in time and space}
 rank--scale distribution}
 
 \item{plot}{If TRUE, produces a plot of rank--scale distributions}
+
+\item{upper}{Upper limit for portions of rank-scale distributions to be
+compared, presuming the lower tail beyond this to be noise}
 }
 \value{
 A vector of four values as estimated by the neutral model:

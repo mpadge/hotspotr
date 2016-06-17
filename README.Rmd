@@ -24,17 +24,22 @@ First a demonstration with a seed that produces a 2D field very similar to
 neutral fields.
 
 ```{r demo, fig.width=12, fig.height=6}
+plot.new ()
 seed <- 18
-ydat <- ives2D (size=10, seed=seed)
-x11 ()
-par (mfrow=c(1,2))
-test <- test1d (ydat, plot=TRUE)
-test <- test2d (ydat, plot=TRUE)
+ymat <- ives2D (size=10, seed=seed)
+test <- test2d (ymat, plot=TRUE)
 ```
+
+Even though the raw data are similarly distributed, the spatial autocorrelation
+statistics are not.
 
 Then the text output of `run_tests` for a random seed giving more typically low
 p-values
 ```{r run_tests}
-run_tests (ntests=1000)
+run_tests (size=10, ntests=1000)
 ```
-
+`run_tests` can also be used to test a neutral field against a statistial
+ensemble of neutral fields:
+```{r run_tests_neutral}
+run_tests (size=10, ntests=1000, neutral=TRUE)
+```

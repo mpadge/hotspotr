@@ -9,4 +9,4 @@
 ^src/*.gcda$
 ^src/*.gcno$
 ^src/Makevars$
-^figure/
+^fig/

@@ -4,7 +4,7 @@
 \alias{neutral2d}
 \title{neutral2d}
 \usage{
-neutral2d(size = 10, alpha = c(0.1, 0.1), n = 100, sd0 = 0.1)
+neutral2d(size = 10, alpha = c(0.1, 0.1), nt = 100, sd0 = 0.1, seed)
 }
 \arguments{
 \item{size}{Size of the square grid on which to generate model. Total number
@@ -13,11 +13,13 @@ of points is size ^ 2}
 \item{alpha}{Vector of two components respectively specifying the strength of
 autocorrelation in time and space.}
 
-\item{n}{Number of successive layers of temporal and spatial autocorrelation
+\item{nt}{Number of successive layers of temporal and spatial autocorrelation
 used to generate final modelled values}
 
 \item{sd0}{Standard deviation of truncated normal distribution used to model
 environmental variation (with mean of 1)}
+
+\item{seed}{Random seed}
 }
 \value{
 A vector of hotspot values sorted from high to low

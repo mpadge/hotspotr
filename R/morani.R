@@ -23,5 +23,6 @@ morani <- function (z0)
                                     z[indx+1,indx] + z [indx,indx-1] +
                                     z[indx,indx+1]) - 4 * xmn) / 5
     s2 <- sum ((z0 - mean (z0)) ^ 2) / size ^ 2
-    wx / s2 # global statistic is simply mean value
+    wx <- wx / s2 # global statistic is simply mean value
+    sort ((wx - min (wx)) / diff (range (wx)), decreasing=TRUE)
 }

@@ -4,10 +4,10 @@
 \alias{test1d}
 \title{test1d}
 \usage{
-test1d(ydat, alpha = c(0.1, 0.1), ntests = 100, plot = FALSE)
+test1d(ymat, alpha = c(0.1, 0.1), ntests = 100, plot = FALSE)
 }
 \arguments{
-\item{ydat}{Square matrix of observed values to be tested}
+\item{ymat}{Square matrix of observed values to be tested}
 
 \item{alpha}{Vector of two components providing starting values for the
 strength of autocorrelation in time and space}
@@ -29,14 +29,14 @@ A vector of four values as estimated by the neutral model:
 }
 }
 \description{
-Tests an observed matrix of data (\code{ydat}) against a one-dimensional
+Tests an observed matrix of data (\code{ymat}) against a one-dimensional
 neutral model
 }
 \examples{
 \dontrun{
 alpha <- c (0.1, 0.1)
-ydat <- ives2D (size=10, nt=1000, sd0=0.1, alpha=alpha)
-result <- test1d (ydat, alpha, ntests=10)
+ymat <- ives2D (size=10, nt=1000, sd0=0.1, alpha=alpha)
+result <- test1d (ymat, alpha, ntests=10)
 }
 
 }

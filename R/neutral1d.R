@@ -6,7 +6,7 @@
 #' of points is size ^ 2
 #' @param alpha Vector of two components respectively specifying the strength of
 #' autocorrelation in time and space.
-#' @param n Number of successive layers of temporal and spatial autocorrelation
+#' @param nt Number of successive layers of temporal and spatial autocorrelation
 #' used to generate final modelled values
 #' @param sd0 Standard deviation of truncated normal distribution used to model
 #' environmental variation (with mean of 1)
@@ -19,7 +19,7 @@
 #' y <- neutral1d ()
 #'
 #' @export
-neutral1d <- function (size=10, alpha=c(0.1, 0.1), n=100, sd0=0.1)
+neutral1d <- function (size=10, alpha=c(0.1, 0.1), nt=100, sd0=0.1)
 {
     if (alpha [1] <= 0)
         stop ('neutral model only makes sense with finite temporal autocorrelation')
@@ -28,7 +28,6 @@ neutral1d <- function (size=10, alpha=c(0.1, 0.1), n=100, sd0=0.1)
     yvec <- msm::rtnorm (size * size, mean=1, sd=sd0, lower=0, upper=2)
 
     y <- rcpp_neutral1d (size=size, alpha_t=alpha [1], alpha_s=alpha [2], 
-                         nt=n, yvec=yvec)
-    y <- (y - min (y)) / diff (range (y))
-    sort (y, decreasing=TRUE)
+                         nt=nt, yvec=yvec)
+    matrix (y, nrow=size, ncol=size)
 }

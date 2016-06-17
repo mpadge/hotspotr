@@ -1,9 +1,9 @@
 #' test2d
 #'
-#' Tests an observed matrix of data (\code{ydat}) against a two-dimensional
+#' Tests an observed matrix of data (\code{ymat}) against a two-dimensional
 #' neutral model
 #'
-#' @param ydat Square matrix of observed values to be tested
+#' @param ymat Square matrix of observed values to be tested
 #' @param alpha Vector of two components providing starting values for the
 #' strength of autocorrelation in time and space
 #' @param ntests Number of repeats of neutral model used to calculate mean
@@ -25,35 +25,47 @@
 #' @examples
 #' \dontrun{
 #' alpha <- c (0.1, 0.1)
-#' ydat <- ives2D (size=10, nt=1000, sd0=0.1, alpha=alpha)
-#' result <- test2d (ydat, alpha=alpha, ntests=10)
+#' ymat <- ives2D (size=10, nt=1000, sd0=0.1, alpha=alpha)
+#' result <- test2d (ymat, alpha=alpha, ntests=10)
 #' }
 #'
 #' @export
-test2d <- function (ydat, alpha=c(0.1, 0.1), ntests=100, 
+test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, 
                     plot=FALSE)
 {
-    size <- sqrt (length (ydat))
-    ydat <- sort (ydat, decreasing=TRUE)
-    ydat <- (ydat - min (ydat)) / diff (range (ydat))
+    if (!is.matrix (ymat)) 
+        stop ('ymat must be a matrix')
+    else if (dim (ymat) [1] != dim (ymat) [2])
+        stop ('ymat must be a square matrix')
+
+    # Optimise until convergence based on raw values, with rank--scale
+    # distributions for spatial AC statistics compared using the resultant
+    # models. (Convergence for both raw data and AC statistics would be too
+    # time-consuming.)
+    size <- dim (ymat) [1]
+
+    mdat <- morani (ymat)
+    ydat <- sort ((ymat - min (ymat)) / diff (range (ymat)), decreasing=TRUE)
     ytest <- NULL # remove no visible binding warning
     fn_n <- function (x)
     {
-        ytest <- neutral2d (size=size, alpha=alpha, n=x)
+        ytest <- neutral2d (size=size, alpha=alpha, nt=x)
         ytest <- (ytest - min (ytest)) / diff (range (ytest))
+        ytest <- sort (ytest, decreasing=TRUE)
         sum ((ytest - ydat) ^ 2)
     }
-    n <- round (optimise (fn_n, c (0, 200))$minimum)
+    nt <- round (optimise (fn_n, c (0, 200))$minimum)
     fn_a <- function (x)
     {
-        ytest <- neutral2d (size=size, alpha=x, n=n)
+        ytest <- neutral2d (size=size, alpha=x, nt=nt)
         ytest <- (ytest - min (ytest)) / diff (range (ytest))
+        ytest <- sort (ytest, decreasing=TRUE)
         sum ((ytest - ydat) ^ 2)
     }
 
     conv <- 1e99
     tol <- 1e-3
-    n0 <- c0 <- 100
+    nt0 <- c0 <- 100
     a0 <- a <- alpha
     count <- 0
     max_count <- 10
@@ -64,7 +76,7 @@ test2d <- function (ydat, alpha=c(0.1, 0.1), ntests=100,
         if (op1$objective < conv) 
         {
             conv <- op1$objective
-            n <- op1$minimum
+            nt <- op1$minimum
             flags [1] <- TRUE
         }
         op <- optim (alpha, fn_a)
@@ -80,31 +92,52 @@ test2d <- function (ydat, alpha=c(0.1, 0.1), ntests=100,
         else
             count <- 0
         a0 <- alpha
-        n0 <- n
+        nt0 <- nt
         c0 <- conv
     }
 
     # Parameters for ydat have been estimated; now generate equivalent neutral
     # values
-    ytest <- rep (0, size ^ 2)
+    yt <- ym <- rep (0, size ^ 2)
     for (i in 1:ntests)
-        ytest <- ytest + neutral2d (size, alpha=a0, n=n0)
-    ytest <- ytest / ntests
+    {
+        yi <- neutral2d (size, alpha=a0, nt=nt0)
+        yt <- yt + sort ((yi - min (yi)) / diff (range (yi)), decreasing=TRUE)
+        mi <- morani (yi)
+        ym <- ym + sort ((mi - min (mi)) / diff (range (mi)), decreasing=TRUE)
+    }
+    yt <- yt / ntests
+    ym <- ym / ntests
     # Note paired=TRUE is not appropriate because the positions in the sorted
     # lists are arbitrary and not directly related
-    pval <- t.test (ytest, ydat, paired=FALSE)$p.value
-    val <- sum ((ytest - ydat) ^ 2)
+    pval_t <- t.test (yt, ydat, paired=FALSE)$p.value
+    pval_m <- t.test (ym, mdat, paired=FALSE)$p.value
+    val_t <- sum ((yt - ydat) ^ 2)
+    val_m <- sum ((ym - ydat) ^ 2)
 
     if (plot)
     {
+        plot.new ()
+        par (mfrow=c(1,2))
         cols <- c ('blue', 'red')
-        plot (seq (ytest), ydat, 'l', xlab='rank', ylab='scale', col=cols [1])
-        lines (seq (ytest), ytest, col=cols [2])
-        legend ('topright', lwd=1, col=cols, bty='n',
-                legend=c('observed', 'neutral2d'))
-        title (main=paste0 ('p = ', formatC (pval, format='f', digits=4)))
+        y1 <- list (ydat, mdat)
+        y2 <- list (yt, ym)
+        pvals <- c (pval_t, pval_m)
+        mt <- c ('raw', 'AC')
+        for (i in 1:2)
+        {
+            plot (seq (y1 [[i]]), y1 [[i]], 'l', col=cols [1],
+                  xlab='rank', ylab='scale')
+            lines (seq (y2 [[i]]), y2 [[i]], col=cols [2])
+            legend ('topright', lwd=1, col=cols, bty='n',
+                    legend=c('observed', 'neutral2d'))
+            title (main=paste0 (mt [i], ': p = ', 
+                                formatC (pvals [i], format='f', digits=4)))
+        }
     }
 
-    pars <- list (alpha=a0, n=n)
-    list (pars=pars, difference=val, p.value=pval, y=ytest)
+    pars <- list (alpha=alpha, nt=nt)
+    pvals <- list (raw=pval_t, ac=pval_m)
+    data <- list (y=yt, ac=ym)
+    list (pars=pars, pvals=pvals, data=data)
 }

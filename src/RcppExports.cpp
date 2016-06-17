@@ -22,8 +22,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_neutral1d
-Rcpp::NumericVector rcpp_neutral1d(int size, double alpha_t, double alpha_s, int nt, Rcpp::NumericVector yvec);
-RcppExport SEXP hotspotr_rcpp_neutral1d(SEXP sizeSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP ntSEXP, SEXP yvecSEXP) {
+Rcpp::NumericVector rcpp_neutral1d(int size, double alpha_t, double alpha_s, int nt, Rcpp::NumericVector eps);
+RcppExport SEXP hotspotr_rcpp_neutral1d(SEXP sizeSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP ntSEXP, SEXP epsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -31,14 +31,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type alpha_t(alpha_tSEXP);
     Rcpp::traits::input_parameter< double >::type alpha_s(alpha_sSEXP);
     Rcpp::traits::input_parameter< int >::type nt(ntSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type yvec(yvecSEXP);
-    __result = Rcpp::wrap(rcpp_neutral1d(size, alpha_t, alpha_s, nt, yvec));
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type eps(epsSEXP);
+    __result = Rcpp::wrap(rcpp_neutral1d(size, alpha_t, alpha_s, nt, eps));
     return __result;
 END_RCPP
 }
 // rcpp_neutral2d
-Rcpp::NumericMatrix rcpp_neutral2d(int size, double alpha_t, double alpha_s, int nt, Rcpp::NumericMatrix ymat);
-RcppExport SEXP hotspotr_rcpp_neutral2d(SEXP sizeSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP ntSEXP, SEXP ymatSEXP) {
+Rcpp::NumericMatrix rcpp_neutral2d(int size, double alpha_t, double alpha_s, int nt, Rcpp::NumericVector eps);
+RcppExport SEXP hotspotr_rcpp_neutral2d(SEXP sizeSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP ntSEXP, SEXP epsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -46,8 +46,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type alpha_t(alpha_tSEXP);
     Rcpp::traits::input_parameter< double >::type alpha_s(alpha_sSEXP);
     Rcpp::traits::input_parameter< int >::type nt(ntSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type ymat(ymatSEXP);
-    __result = Rcpp::wrap(rcpp_neutral2d(size, alpha_t, alpha_s, nt, ymat));
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type eps(epsSEXP);
+    __result = Rcpp::wrap(rcpp_neutral2d(size, alpha_t, alpha_s, nt, eps));
     return __result;
 END_RCPP
 }

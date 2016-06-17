@@ -27,9 +27,8 @@ neutral2d <- function (size=10, alpha=c(0.1, 0.1), nt=100, sd0=0.1, seed)
 
     if (!missing (seed)) set.seed (seed)
 
-    ymat <- msm::rtnorm (size * size, mean=1, sd=sd0, lower=0, upper=2)
-    ymat <- matrix (ymat, nrow=size, ncol=size)
+    eps <- rnorm (size * size * nt, mean=0, sd=sd0)
     y <- rcpp_neutral2d (size=size, alpha_t=alpha [1], alpha_s=alpha [2], 
-                         nt=nt, ymat=ymat)
+                         nt=nt, eps=eps)
     matrix (y, nrow=size, ncol=size)
 }

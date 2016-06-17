@@ -5,11 +5,11 @@ rcpp_ives2d <- function(size, nt, alpha_t, alpha_s, svec, rvec) {
     .Call('hotspotr_rcpp_ives2d', PACKAGE = 'hotspotr', size, nt, alpha_t, alpha_s, svec, rvec)
 }
 
-rcpp_neutral1d <- function(size, alpha_t, alpha_s, nt, yvec) {
-    .Call('hotspotr_rcpp_neutral1d', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, nt, yvec)
+rcpp_neutral1d <- function(size, alpha_t, alpha_s, nt, eps) {
+    .Call('hotspotr_rcpp_neutral1d', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, nt, eps)
 }
 
-rcpp_neutral2d <- function(size, alpha_t, alpha_s, nt, ymat) {
-    .Call('hotspotr_rcpp_neutral2d', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, nt, ymat)
+rcpp_neutral2d <- function(size, alpha_t, alpha_s, nt, eps) {
+    .Call('hotspotr_rcpp_neutral2d', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, nt, eps)
 }
 

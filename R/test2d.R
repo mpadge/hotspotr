@@ -101,9 +101,12 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, actype='moran',
         }
 
         if (!all (flags) & c0 == conv) 
+        {
             count <- count + 1
-        else
+        } else
+        {
             count <- 0
+        }
         a0 <- alpha
         nt0 <- nt
         c0 <- conv

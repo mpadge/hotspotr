@@ -119,10 +119,12 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, actype='moran',
     {
         yi <- neutral2d (size, alpha=a0, nt=nt0)
         yt <- yt + sort ((yi - min (yi)) / diff (range (yi)), decreasing=TRUE)
-        mi <- do.call (fn_ac, list (yi))
-        ym <- ym + sort ((mi - min (mi)) / diff (range (mi)), decreasing=TRUE)
+        #mi <- do.call (fn_ac, list (yi))
+        #ym <- ym + sort ((mi - min (mi)) / diff (range (mi)), decreasing=TRUE)
+        ym <- ym + rcpp_morani (yi)
     }
     yt <- yt / ntests
+    yt <- rcpp_neutral2d_ntests (size, alpha [1], alpha [2], 0.1, nt, ntests)
     ym <- ym / ntests
     # Note paired=TRUE is not appropriate because the positions in the sorted
     # lists are arbitrary and not directly related

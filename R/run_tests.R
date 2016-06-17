@@ -42,7 +42,6 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
     }
     size <- sqrt (length (ydat))
 
-    #if (!missing (seed)) set.seed (seed)
     # To see how repeatable the tests are, they are performed with a different
     # seed
     set.seed (Sys.time ())

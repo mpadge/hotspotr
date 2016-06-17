@@ -35,7 +35,7 @@
 test2d <- function (ydat, alpha=c(0.1, 0.1), ntests=100, 
                     plot=FALSE)
 {
-    size <- dim (ydat) [1]
+    size <- sqrt (length (ydat))
     ydat <- sort (ydat, decreasing=TRUE)
     ydat <- (ydat - min (ydat)) / diff (range (ydat))
     ytest <- NULL # remove no visible binding warning
@@ -92,7 +92,9 @@ test2d <- function (ydat, alpha=c(0.1, 0.1), ntests=100,
     for (i in 1:ntests)
         ytest <- ytest + neutral2d (size, alpha=a0, n=n0)
     ytest <- ytest / ntests
-    pval <- t.test (ytest, ydat, paired=TRUE)$p.value
+    # Note paired=TRUE is not appropriate because the positions in the sorted
+    # lists are arbitrary and not directly related
+    pval <- t.test (ytest, ydat, paired=FALSE)$p.value
     val <- sum ((ytest - ydat) ^ 2)
 
     if (plot)
@@ -101,8 +103,7 @@ test2d <- function (ydat, alpha=c(0.1, 0.1), ntests=100,
         lines (seq (ytest), ytest, col="gray")
         legend ("topright", lwd=1, col=c("black", "gray"), bty="n",
                 legend=c("observed", "neutral2d"))
-        p <- formatC (t.test (ydat, ytest)$p.value, format="f", digits=4)
-        title (main=paste0 ("p = ", p))
+        title (main=paste0 ("p = ", formatC (pval, format="f", digits=4)))
     }
 
     pars <- list (alpha=a0, n=n)

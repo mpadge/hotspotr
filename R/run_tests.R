@@ -40,25 +40,21 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
             ydat <- ives2D (size, 1000, sd0=0.1, alpha=alpha,
                             seed=seed)
     }
-    size <- dim (ydat) [1]
-    ydat <- sort (ydat, decreasing=TRUE)
-    ydat <- (ydat - min (ydat)) / diff (range (ydat))
+    size <- sqrt (length (ydat))
 
     #if (!missing (seed)) set.seed (seed)
     # To see how repeatable the tests are, they are performed with a different
     # seed
     set.seed (Sys.time ())
     
-    cat ("  dim\t|\talpha\tdiff\tp(w)\tp(T)\t|\talpha\t\tn\t|\n", sep="")
-    cat (rep ("-", 8), "|", rep ("-", 39), "|", rep ("-", 31), "|\n", sep="")
+    cat ("  dim\t|\talpha\tdiff\tp(T)\t|\talpha\t\tn\t|\n", sep="")
+    cat (rep ("-", 8), "|", rep ("-", 31), "|", rep ("-", 31), "|\n", sep="")
     alpha_s <- c (0.1, 0)
     for (i in 1:2)
     {
         t1 <- test1d (ydat, alpha=c(0.1, alpha_s [i]), ntests=ntests)
-        wt <- wilcox.test (t1$y, ydat, paired=TRUE)
         cat ("  1\t|   (0.1, ", alpha_s [i], ")\t",
              formatC (sum ((t1$y - ydat) ^ 2), format="f", digits=2), "\t",
-             formatC (wt$p.value, format="f", digits=4), "\t",
              formatC (t1$p.value, format="f", digits=4), "\t|   (",
              formatC (t1$pars$alpha [1], format="f", digits=2), ", ",
              formatC (t1$pars$alpha [2], format="f", digits=2), ")\t",
@@ -69,15 +65,13 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), ntests=100, ydat, seed)
     alpha_s <- c (0.1, 0)
     for (i in 1:2)
     {
-        t2 <- test2d (ydat, alpha=c(alpha_t, alpha_s [i]))
-        wt <- wilcox.test (t2$y, ydat, paired=TRUE)
+        t2 <- test2d (ydat, alpha=c(alpha_t, alpha_s [i]), ntests=ntests)
         cat ("  2\t|   (0.1, ", alpha_s [i], ")\t",
              formatC (sum ((t2$y - ydat) ^ 2), format="f", digits=2), "\t",
-             formatC (wt$p.value, format="f", digits=4), "\t",
              formatC (t2$p.value, format="f", digits=4), "\t|   (",
              formatC (t2$pars$alpha [1], format="f", digits=2), ", ",
              formatC (t2$pars$alpha [2], format="f", digits=2), ")\t",
              round (t2$pars$n), "\t|\n", sep="")
     }
-    cat (rep ("-", 81), "\n", sep="")
+    cat (rep ("-", 73), "\n", sep="")
 }

@@ -92,7 +92,9 @@ test1d <- function (ydat, alpha=c(0.1, 0.1), ntests=100, plot=FALSE)
     for (i in 1:ntests)
         ytest <- ytest + neutral1d (size, alpha=a0, n=n0)
     ytest <- ytest / ntests
-    pval <- t.test (ytest, ydat, paired=TRUE)$p.value
+    # Note paired=TRUE is not appropriate because the positions in the sorted
+    # lists are arbitrary and not directly related
+    pval <- t.test (ytest, ydat, paired=FALSE)$p.value
     val <- sum ((ytest - ydat) ^ 2)
 
     if (plot)
@@ -101,8 +103,7 @@ test1d <- function (ydat, alpha=c(0.1, 0.1), ntests=100, plot=FALSE)
         lines (seq (ytest), ytest, col="gray")
         legend ("topright", lwd=1, col=c("black", "gray"), bty="n",
                 legend=c("observed", "neutral1d"))
-        p <- formatC (t.test (ydat, ytest)$p.value, format="f", digits=4)
-        title (main=paste0 ("p = ", p))
+        title (main=paste0 ("p = ", formatC (pval, format="f", digits=4)))
     }
 
     pars <- list (alpha=alpha, n=n)

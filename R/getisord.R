@@ -5,8 +5,8 @@
 #'
 #' @param z0 Square data matrix
 #'
-#' @return A vector of values of the Getis-Ord statistic for each point in the
-#' grid
+#' @return A sorted vector of values of the Getis-Ord statistic re-scaled
+#' between 0 and 1
 #'
 #' @seealso \code{morani}, \code{morani}
 #'
@@ -32,5 +32,6 @@ getis_ord <- function (z0)
     wx <- (z [indx-1,indx] + z [indx+1,indx] + z [indx,indx-1] +
            z [indx,indx+1] + z [indx,indx]) / 5
     denom <- sqrt ((size * 5 * 0.2 ^ 2 - 1) / (size - 1))
-    (wx - xmn) / (S * denom)
+    wx <- (wx - xmn) / (S * denom)
+    sort ((wx - min (wx)) / diff (range (wx)), decreasing=TRUE)
 }

@@ -5,7 +5,8 @@
 #'
 #' @param z0 Square data matrix
 #'
-#' @return A vector of values of Moran's I statistic for each point in the grid
+#' @return A sorted vector of values of Moran's I statistic re-scaled between 0
+#' and 1
 #'
 #' @seealso \code{gearyc}, \code{getisord}
 #'

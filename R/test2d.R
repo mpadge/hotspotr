@@ -8,6 +8,8 @@
 #' strength of autocorrelation in time and space
 #' @param ntests Number of repeats of neutral model used to calculate mean
 #' rank--scale distribution
+#' @param actype type of autocorrelation statistic to use in tests
+#' (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})
 #' @param plot If TRUE, produces a plot of rank--scale distributions
 #'
 #' @return A vector of four values as estimated by the neutral model:
@@ -30,7 +32,7 @@
 #' }
 #'
 #' @export
-test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, 
+test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, actype='moran',
                     plot=FALSE)
 {
     if (!is.matrix (ymat)) 
@@ -38,13 +40,24 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100,
     else if (dim (ymat) [1] != dim (ymat) [2])
         stop ('ymat must be a square matrix')
 
+    actype <- tolower (actype)
+    fn_ac <- NULL
+    if (substring (actype, 1, 1) == 'g')
+    {
+        if (substring (actype, 3, 3) == 'a')
+            fn_ac <- 'gearyc'
+        else
+            fn_ac <- 'getis_ord'
+    } else
+        fn_ac <- 'morani'
+
     # Optimise until convergence based on raw values, with rank--scale
     # distributions for spatial AC statistics compared using the resultant
     # models. (Convergence for both raw data and AC statistics would be too
     # time-consuming.)
     size <- dim (ymat) [1]
 
-    mdat <- morani (ymat)
+    mdat <- do.call (fn_ac, list (ymat))
     ydat <- sort ((ymat - min (ymat)) / diff (range (ymat)), decreasing=TRUE)
     ytest <- NULL # remove no visible binding warning
     fn_n <- function (x)
@@ -103,7 +116,7 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100,
     {
         yi <- neutral2d (size, alpha=a0, nt=nt0)
         yt <- yt + sort ((yi - min (yi)) / diff (range (yi)), decreasing=TRUE)
-        mi <- morani (yi)
+        mi <- do.call (fn_ac, list (yi))
         ym <- ym + sort ((mi - min (mi)) / diff (range (mi)), decreasing=TRUE)
     }
     yt <- yt / ntests

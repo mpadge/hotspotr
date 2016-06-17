@@ -5,7 +5,8 @@
 #'
 #' @param z0 Square data matrix
 #'
-#' @return A vector of values of Geary's C statistic for each point in the grid
+#' @return A sorted vector of values of Geary's C statistic re-scaled between 0
+#' and 1
 #'
 #' @seealso \code{morani}, \code{getisord}
 #'
@@ -24,5 +25,6 @@ gearyc <- function (z0)
             (z [indx,indx] - z [indx,indx+1]) ^ 2
     wx <- wx / 5
     s2 <- sum ((z0 - mean (z0)) ^ 2) / size ^ 2
-    wx / (2 * s2) # global statistic is simply mean value
+    wx <- wx / (2 * s2) # global statistic is simply mean value
+    sort ((wx - min (wx)) / diff (range (wx)), decreasing=TRUE)
 }

@@ -4,7 +4,8 @@
 \alias{test1d}
 \title{test1d}
 \usage{
-test1d(ymat, alpha = c(0.1, 0.1), ntests = 100, plot = FALSE)
+test1d(ymat, alpha = c(0.1, 0.1), ntests = 100, actype = "moran",
+  plot = FALSE)
 }
 \arguments{
 \item{ymat}{Square matrix of observed values to be tested}
@@ -14,6 +15,9 @@ strength of autocorrelation in time and space}
 
 \item{ntests}{Number of repeats of neutral model used to calculate mean
 rank--scale distribution}
+
+\item{actype}{type of autocorrelation statistic to use in tests
+(\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}
 
 \item{plot}{If TRUE, produces a plot of rank--scale distributions}
 }

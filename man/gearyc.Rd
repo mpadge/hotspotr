@@ -10,7 +10,8 @@ gearyc(z0)
 \item{z0}{Square data matrix}
 }
 \value{
-A vector of values of Geary's C statistic for each point in the grid
+A sorted vector of values of Geary's C statistic re-scaled between 0
+and 1
 }
 \description{
 Calculates Geary's C statistic for spatial association between 5 rectangular

@@ -30,8 +30,18 @@ ymat <- ives2D (size=10, seed=seed)
 test <- test2d (ymat, plot=TRUE)
 ```
 
-Even though the raw data are similarly distributed, the spatial autocorrelation
-statistics are not.
+The default spatial autocorrelation statistic is Moran's I, with results for
+other statistics in this case notably different. Geary's C:
+```{r demo-geary, fig.width=12, fig.height=6}
+plot.new ()
+test <- test2d (ymat, plot=TRUE, actype='geary')
+```
+
+And Getis-Ord:
+```{r demo-getis, fig.width=12, fig.height=6}
+plot.new ()
+test <- test2d (ymat, plot=TRUE, actype='getis')
+```
 
 Then the text output of `run_tests` for a random seed giving more typically low
 p-values

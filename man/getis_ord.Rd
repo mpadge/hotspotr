@@ -10,8 +10,8 @@ getis_ord(z0)
 \item{z0}{Square data matrix}
 }
 \value{
-A vector of values of the Getis-Ord statistic for each point in the
-grid
+A sorted vector of values of the Getis-Ord statistic re-scaled
+between 0 and 1
 }
 \description{
 Calculates the Getis-Ord statistic for spatial association between 5

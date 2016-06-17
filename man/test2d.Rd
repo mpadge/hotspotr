@@ -16,9 +16,6 @@ strength of autocorrelation in time and space}
 rank--scale distribution}
 
 \item{plot}{If TRUE, produces a plot of rank--scale distributions}
-
-\item{upper}{Upper limit for portions of rank-scale distributions to be
-compared, presuming the lower tail beyond this to be noise}
 }
 \value{
 A vector of four values as estimated by the neutral model:

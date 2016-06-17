@@ -8,8 +8,6 @@
 #' strength of autocorrelation in time and space
 #' @param ntests Number of repeats of neutral model used to calculate mean
 #' rank--scale distribution
-#' @param upper Upper limit for portions of rank-scale distributions to be
-#' compared, presuming the lower tail beyond this to be noise
 #' @param plot If TRUE, produces a plot of rank--scale distributions
 #'
 #' @return A vector of four values as estimated by the neutral model:

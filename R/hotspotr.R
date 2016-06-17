@@ -23,7 +23,7 @@
 #' @name hotspotr
 #' @docType package
 #' @importFrom stats rnorm t.test wilcox.test optim optimise
-#' @importFrom graphics lines legend
+#' @importFrom graphics lines legend title
 #' @importFrom msm rtnorm
 #' @importFrom Rcpp evalCpp
 #' @useDynLib hotspotr

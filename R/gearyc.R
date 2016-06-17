@@ -14,9 +14,9 @@
 gearyc <- function (z0)
 {
     size <- dim (z0) [1]
-    z <- rbind (z0, z0, z0)
-    z <- cbind (z, z, z)
-    indx <- size + seq (size)
+    z <- rbind (z0 [size,], z0, z0 [1,])
+    z <- cbind (z [,size], z, z [,1])
+    indx <- seq (size) + 1
     
     xmn <- mean (z0)
     wx <- (z [indx,indx] - z [indx-1,indx]) ^ 2 +

@@ -11,7 +11,7 @@ for gridded data.
 devtools::install_github ('mpadge/hotspotr')
 ```
 ```{r load, echo=FALSE, message=FALSE}
-setwd ("..")
+while (length (grep ('hotspotr', getwd ())) > 0) setwd ("..")
 #devtools::document ("hotspotr")
 #devtools::check ("hotspotr")
 devtools::load_all ("hotspotr")
@@ -20,8 +20,21 @@ setwd ("./hotspotr")
 
 ## Test
 
-Just a demonstration ....
+First a demonstration with a seed that produces a 2D field very similar to
+neutral fields.
 
-```{r run_tests}
-run_tests (ntests=10)
+```{r demo, fig.width=12, fig.height=6}
+seed <- 18
+ydat <- ives2D (size=10, seed=seed)
+x11 ()
+par (mfrow=c(1,2))
+test <- test1d (ydat, plot=TRUE)
+test <- test2d (ydat, plot=TRUE)
 ```
+
+Then the text output of `run_tests` for a random seed giving more typically low
+p-values
+```{r run_tests}
+run_tests (ntests=1000)
+```
+

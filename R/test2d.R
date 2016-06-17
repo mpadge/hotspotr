@@ -97,11 +97,12 @@ test2d <- function (ydat, alpha=c(0.1, 0.1), ntests=100,
 
     if (plot)
     {
-        plot (seq (ytest), ydat, "l", xlab="rank", ylab="scale")
-        lines (seq (ytest), ytest, col="gray")
-        legend ("topright", lwd=1, col=c("black", "gray"), bty="n",
-                legend=c("observed", "neutral2d"))
-        title (main=paste0 ("p = ", formatC (pval, format="f", digits=4)))
+        cols <- c ('blue', 'red')
+        plot (seq (ytest), ydat, 'l', xlab='rank', ylab='scale', col=cols [1])
+        lines (seq (ytest), ytest, col=cols [2])
+        legend ('topright', lwd=1, col=cols, bty='n',
+                legend=c('observed', 'neutral2d'))
+        title (main=paste0 ('p = ', formatC (pval, format='f', digits=4)))
     }
 
     pars <- list (alpha=a0, n=n)

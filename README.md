@@ -12,16 +12,29 @@ devtools::install_github ('mpadge/hotspotr')
 Test
 ----
 
-Just a demonstration ....
+First a demonstration with a seed that produces a 2D field very similar to neutral fields.
 
 ``` r
-run_tests (ntests=10)
+seed <- 18
+ydat <- ives2D (size=10, seed=seed)
+x11 ()
+par (mfrow=c(1,2))
+test <- test1d (ydat, plot=TRUE)
+test <- test2d (ydat, plot=TRUE)
 ```
 
-    ##   dim    |   alpha   diff    p(w)    p(T)    |   alpha       n   |
-    ## --------|---------------------------------------|-------------------------------|
-    ##   1  |   (0.1, 0.1)  0.11    0.0000  0.4681  |   (0.13, 0.12)    91  |
-    ##   1  |   (0.1, 0)    0.05    0.0000  0.6993  |   (0.11, -0.00)   122 |
-    ##   2  |   (0.1, 0.1)  0.68    0.5611  0.9908  |   (0.11, 0.11)    124 |
-    ##   2  |   (0.1, 0)    0.08    0.0154  0.7657  |   (0.09, 0.01)    75  |
-    ## ---------------------------------------------------------------------------------
+![](README_files/figure-markdown_github/demo-1.png)
+
+Then the text output of `run_tests` for a random seed giving more typically low p-values
+
+``` r
+run_tests (ntests=1000)
+```
+
+    ##   dim    |   alpha   diff    p(T)    |   alpha       n   |
+    ## --------|-------------------------------|-------------------------------|
+    ##   1  |   (0.1, 0.1)  2.13    0.0000  |   (0.11, 0.16)    13  |
+    ##   1  |   (0.1, 0)    2.25    0.0000  |   (0.16, 0.00)    10  |
+    ##   2  |   (0.1, 0.1)  2.31    0.0000  |   (0.10, 0.11)    8   |
+    ##   2  |   (0.1, 0)    2.21    0.0000  |   (0.16, 0.02)    5   |
+    ## -------------------------------------------------------------------------

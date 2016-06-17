@@ -39,7 +39,7 @@ neutral model
 \examples{
 \dontrun{
 alpha <- c (0.1, 0.1)
-ymat <- ives2D (size=10, nt=1000, sd0=0.1, alpha=alpha)
+ymat <- ives2d (size=10, nt=1000, sd0=0.1, alpha=alpha)
 result <- test1d (ymat, alpha, ntests=10)
 }
 

@@ -1,4 +1,4 @@
-#' ives2D
+#' ives2d
 #'
 #' Generates a 2D surface using the temporal autocorrelation model of Ives &
 #' Klopfer (Ecology 1997).
@@ -16,7 +16,7 @@
 #' @return A matrix of (size, size)
 #'
 #' @export
-ives2D <- function (size=10, nt=1000, sd0=0.1, alpha=c(0.1, 0.1), seed)
+ives2d <- function (size=10, nt=1000, sd0=0.1, alpha=c(0.1, 0.1), seed)
 {
     if (!missing (seed)) set.seed (seed)
     s0 <- 0.5
@@ -25,5 +25,5 @@ ives2D <- function (size=10, nt=1000, sd0=0.1, alpha=c(0.1, 0.1), seed)
     svec <- msm::rtnorm (nt * size * size, mean=s0, sd=sd0, lower=0, upper=2*s0)
     rvec <- msm::rtnorm (nt * size * size, mean=r0, sd=sd0, lower=0, upper=2*r0)
 
-    rcpp_ives2D (size, nt, alpha[1], alpha[2], svec, rvec)
+    rcpp_ives2d (size, nt, alpha[1], alpha[2], svec, rvec)
 }

@@ -14,7 +14,7 @@ may be reproduced with a simple neutral model.
 \tabular{ll}{
 \code{gearyc}\tab Geary's C statistic on square grid\cr
 \code{getisord}\tab Getis-Ord spatial association statistic on square grid\cr
-\code{ives2D}\tab Simulate 2D square grid using model of Ives & Klopfer
+\code{ives2d}\tab Simulate 2D square grid using model of Ives & Klopfer
 (Ecology 1997)\cr
 \code{morani}\tab Moran's I statistic on square grid\cr
 \code{neutral1d}\tab Neutral model in one dimension\cr

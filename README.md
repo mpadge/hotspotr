@@ -17,7 +17,7 @@ First a demonstration with a seed that produces a 2D field very similar to neutr
 ``` r
 plot.new ()
 seed <- 18
-ymat <- ives2D (size=10, seed=seed)
+ymat <- ives2d (size=10, seed=seed)
 test <- test2d (ymat, plot=TRUE)
 ```
 

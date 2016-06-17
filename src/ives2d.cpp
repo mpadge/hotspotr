@@ -2,7 +2,7 @@
 #include <fstream>
 
 // [[Rcpp::export]]
-Rcpp::NumericMatrix rcpp_ives2D (int size, int nt, 
+Rcpp::NumericMatrix rcpp_ives2d (int size, int nt, 
         double alpha_t, double alpha_s,
         Rcpp::NumericVector svec, Rcpp::NumericVector rvec)
 {

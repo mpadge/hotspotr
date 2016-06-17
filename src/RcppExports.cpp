@@ -5,9 +5,9 @@
 
 using namespace Rcpp;
 
-// rcpp_ives2D
-Rcpp::NumericMatrix rcpp_ives2D(int size, int nt, double alpha_t, double alpha_s, Rcpp::NumericVector svec, Rcpp::NumericVector rvec);
-RcppExport SEXP hotspotr_rcpp_ives2D(SEXP sizeSEXP, SEXP ntSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP svecSEXP, SEXP rvecSEXP) {
+// rcpp_ives2d
+Rcpp::NumericMatrix rcpp_ives2d(int size, int nt, double alpha_t, double alpha_s, Rcpp::NumericVector svec, Rcpp::NumericVector rvec);
+RcppExport SEXP hotspotr_rcpp_ives2d(SEXP sizeSEXP, SEXP ntSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP svecSEXP, SEXP rvecSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -17,7 +17,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type alpha_s(alpha_sSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type svec(svecSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type rvec(rvecSEXP);
-    __result = Rcpp::wrap(rcpp_ives2D(size, nt, alpha_t, alpha_s, svec, rvec));
+    __result = Rcpp::wrap(rcpp_ives2d(size, nt, alpha_t, alpha_s, svec, rvec));
     return __result;
 END_RCPP
 }

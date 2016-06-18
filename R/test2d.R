@@ -51,10 +51,7 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, actype='moran',
     } else
         fn_ac <- 'morani'
 
-    # Optimise until convergence based on raw values, with rank--scale
-    # distributions for spatial AC statistics compared using the resultant
-    # models. (Convergence for both raw data and AC statistics would be too
-    # time-consuming.)
+    # Optimise until convergence based on raw values only
     size <- dim (ymat) [1]
 
     mdat <- do.call (fn_ac, list (ymat))
@@ -62,17 +59,16 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, actype='moran',
     ytest <- NULL # remove no visible binding warning
     fn_n <- function (x)
     {
-        ytest <- neutral2d (size=size, alpha=alpha, nt=x)
-        ytest <- (ytest - min (ytest)) / diff (range (ytest))
-        ytest <- sort (ytest, decreasing=TRUE)
+        ytest <- rcpp_neutral2d_ntests (size=size, alpha_t=alpha[1],
+                                        alpha_s=alpha[2], sd0=0.1,
+                                        nt=x, ntests=ntests)
         sum ((ytest - ydat) ^ 2)
     }
     nt <- round (optimise (fn_n, c (0, 200))$minimum)
     fn_a <- function (x)
     {
-        ytest <- neutral2d (size=size, alpha=x, nt=nt)
-        ytest <- (ytest - min (ytest)) / diff (range (ytest))
-        ytest <- sort (ytest, decreasing=TRUE)
+        ytest <- rcpp_neutral2d_ntests (size=size, alpha_t=x [1], alpha_s=x [2],
+                                        sd0=0.1, nt=nt, ntests=ntests)
         sum ((ytest - ydat) ^ 2)
     }
 
@@ -114,18 +110,9 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, actype='moran',
 
     # Parameters for ydat have been estimated; now generate equivalent neutral
     # values
-    yt <- ym <- rep (0, size ^ 2)
-    for (i in 1:ntests)
-    {
-        yi <- neutral2d (size, alpha=a0, nt=nt0)
-        yt <- yt + sort ((yi - min (yi)) / diff (range (yi)), decreasing=TRUE)
-        #mi <- do.call (fn_ac, list (yi))
-        #ym <- ym + sort ((mi - min (mi)) / diff (range (mi)), decreasing=TRUE)
-        ym <- ym + rcpp_morani (yi)
-    }
-    yt <- yt / ntests
-    yt <- rcpp_neutral2d_ntests (size, alpha [1], alpha [2], 0.1, nt, ntests)
-    ym <- ym / ntests
+    ym <- as.numeric (yt [,2])
+    yt <- as.numeric (yt [,1])
+
     # Note paired=TRUE is not appropriate because the positions in the sorted
     # lists are arbitrary and not directly related
     pval_t <- t.test (yt, ydat, paired=FALSE)$p.value

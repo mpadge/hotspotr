@@ -63,19 +63,8 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// rcpp_morani
-Rcpp::NumericVector rcpp_morani(Rcpp::NumericMatrix x);
-RcppExport SEXP hotspotr_rcpp_morani(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type x(xSEXP);
-    __result = Rcpp::wrap(rcpp_morani(x));
-    return __result;
-END_RCPP
-}
 // rcpp_neutral2d_ntests
-Rcpp::NumericMatrix rcpp_neutral2d_ntests(int size, double alpha_t, double alpha_s, double sd0, int nt, int ntests, int ac_type);
+Rcpp::NumericMatrix rcpp_neutral2d_ntests(int size, double alpha_t, double alpha_s, double sd0, int nt, int ntests, std::string ac_type);
 RcppExport SEXP hotspotr_rcpp_neutral2d_ntests(SEXP sizeSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP sd0SEXP, SEXP ntSEXP, SEXP ntestsSEXP, SEXP ac_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
@@ -86,7 +75,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type sd0(sd0SEXP);
     Rcpp::traits::input_parameter< int >::type nt(ntSEXP);
     Rcpp::traits::input_parameter< int >::type ntests(ntestsSEXP);
-    Rcpp::traits::input_parameter< int >::type ac_type(ac_typeSEXP);
+    Rcpp::traits::input_parameter< std::string >::type ac_type(ac_typeSEXP);
     __result = Rcpp::wrap(rcpp_neutral2d_ntests(size, alpha_t, alpha_s, sd0, nt, ntests, ac_type));
     return __result;
 END_RCPP

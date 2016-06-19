@@ -8,7 +8,7 @@
 #' strength of autocorrelation in time and space
 #' @param ntests Number of repeats of neutral model used to calculate mean
 #' rank--scale distribution
-#' @param actype type of autocorrelation statistic to use in tests
+#' @param ac_type type of autocorrelation statistic to use in tests
 #' (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})
 #' @param plot If TRUE, produces a plot of rank--scale distributions
 #'
@@ -32,7 +32,7 @@
 #' }
 #'
 #' @export
-test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, actype='moran',
+test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, ac_type='moran',
                     plot=FALSE)
 {
     if (!is.matrix (ymat)) 
@@ -40,26 +40,19 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, actype='moran',
     else if (dim (ymat) [1] != dim (ymat) [2])
         stop ('ymat must be a square matrix')
 
-    actype <- tolower (actype)
-    fn_ac <- 'morani'
-    ac_num <- 1
-    if (substring (actype, 1, 1) == 'g')
+    ac_type <- tolower (ac_type)
+    if (substring (ac_type, 1, 1) == 'g')
     {
-        if (substring (actype, 3, 3) == 'a')
-        {
-            fn_ac <- 'gearyc'
-            ac_num <- 2
-        } else
-        {
-            fn_ac <- 'getis_ord'
-            ac_num <- 3
-        }
-    } 
+        if (substring (ac_type, 3, 3) == 'a')
+            ac_type <- 'geary'
+        else
+            ac_type <- 'getis_ord'
+    } else
+        ac_type <- 'moran'
 
-    # Optimise using raw values only
     size <- dim (ymat) [1]
 
-    mdat <- do.call (fn_ac, list (ymat))
+    mdat <- rcpp_ac_stats (ymat, ac_type)
     ydat <- sort ((ymat - min (ymat)) / diff (range (ymat)), decreasing=TRUE)
     yt <- NULL # remove no visible binding warning
     # Initial 3D optimisation to get nt
@@ -67,8 +60,8 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, actype='moran',
     {
         yt <- rcpp_neutral2d_ntests (size=size, alpha_t=x[1],
                                         alpha_s=x[2], sd0=0.1,
-                                        nt=x[3], ntests=ntests, ac_type=ac_num)
-        sum ((yt [,1] - ydat) ^ 2) # [,1] = raw values; [,2] = AC stats
+                                        nt=x[3], ntests=ntests, ac_type=ac_type)
+        sum ((yt [,1] - ydat) ^ 2) + sum ((yt [,2] - mdat) ^ 2)
     }
     op <- optim (c (alpha, 10), fn_n)
     # then reduce to 2d optimisation
@@ -78,14 +71,14 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, actype='moran',
     {
         yt <- rcpp_neutral2d_ntests (size=size, alpha_t=x [1], alpha_s=x [2],
                                         sd0=0.1, nt=nt, ntests=ntests,
-                                        ac_type=ac_num)
-        sum ((yt [,1] - ydat) ^ 2)
+                                        ac_type=ac_type)
+        sum ((yt [,1] - ydat) ^ 2) + sum ((yt [,2] - mdat) ^ 2)
     }
     op <- optim (alpha, fn_a)
     alpha <- op$par
     yt <- rcpp_neutral2d_ntests (size=size, alpha_t=alpha [1], alpha_s=alpha [2],
                                     sd0=0.1, nt=nt, ntests=ntests,
-                                    ac_type=ac_num)
+                                    ac_type=ac_type)
 
     # Parameters for ydat have been estimated; now generate equivalent neutral
     # values

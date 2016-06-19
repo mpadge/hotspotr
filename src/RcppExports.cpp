@@ -21,24 +21,9 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// rcpp_neutral1d
-Rcpp::NumericVector rcpp_neutral1d(int size, double alpha_t, double alpha_s, int nt, Rcpp::NumericVector eps);
-RcppExport SEXP hotspotr_rcpp_neutral1d(SEXP sizeSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP ntSEXP, SEXP epsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha_t(alpha_tSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha_s(alpha_sSEXP);
-    Rcpp::traits::input_parameter< int >::type nt(ntSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type eps(epsSEXP);
-    __result = Rcpp::wrap(rcpp_neutral1d(size, alpha_t, alpha_s, nt, eps));
-    return __result;
-END_RCPP
-}
-// rcpp_neutral2d_1test
-Rcpp::NumericMatrix rcpp_neutral2d_1test(int size, double alpha_t, double alpha_s, double sd0, int nt);
-RcppExport SEXP hotspotr_rcpp_neutral2d_1test(SEXP sizeSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP sd0SEXP, SEXP ntSEXP) {
+// rcpp_neutral2d
+Rcpp::NumericMatrix rcpp_neutral2d(int size, double alpha_t, double alpha_s, double sd0, int nt);
+RcppExport SEXP hotspotr_rcpp_neutral2d(SEXP sizeSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP sd0SEXP, SEXP ntSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -47,7 +32,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type alpha_s(alpha_sSEXP);
     Rcpp::traits::input_parameter< double >::type sd0(sd0SEXP);
     Rcpp::traits::input_parameter< int >::type nt(ntSEXP);
-    __result = Rcpp::wrap(rcpp_neutral2d_1test(size, alpha_t, alpha_s, sd0, nt));
+    __result = Rcpp::wrap(rcpp_neutral2d(size, alpha_t, alpha_s, sd0, nt));
     return __result;
 END_RCPP
 }

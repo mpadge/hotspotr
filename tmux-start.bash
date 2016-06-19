@@ -5,10 +5,8 @@ tmux -2 new-session -d -s $SESSION
 
 tmux new-window -t $SESSION:1 -k -n main
 tmux send-keys -t $SESSION:1 'vim README.Rmd' C-m
-tmux send-keys -t $SESSION:1 ':' 'tabe R/neutral1d.R' C-m
-tmux send-keys -t $SESSION:1 ':' 'tabe R/neutral2d.R' C-m
-tmux send-keys -t $SESSION:1 ':' 'tabe R/test1d.R' C-m
 tmux send-keys -t $SESSION:1 ':' 'tabe R/test2d.R' C-m
+tmux send-keys -t $SESSION:1 ':' 'tabe src/neutral2d.cpp' C-m
 tmux send-keys -t $SESSION:1 ':' 'tabe R/run_tests.R' C-m
 #tmux send-keys -t $SESSION:1 '2gt'
 tmux select-pane -t 0

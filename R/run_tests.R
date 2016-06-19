@@ -42,13 +42,15 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), nt=100, ntests=100,
     if (missing (ymat))
     {
         if (neutral)
-            fn <- 'neutral2d'
+            ymat <- rcpp_neutral2d (size=size, alpha_t=alpha [1], 
+                                    alpha_s=alpha[2], sd0=0.1, nt=nt)
         else
-            fn <- 'ives2d'
-        if (missing (seed))
-            ymat <- do.call (fn, list (nt=nt, sd=0.1, alpha=alpha))
-        else
-            ymat <- do.call (fn, list (nt=nt, sd=0.1, alpha=alpha, seed=seed))
+        {
+            if (missing (seed))
+                ymat <- ives2d (nt=nt, sd0=0.1, alpha=alpha)
+            else
+                ymat <- ives2d (nt=nt, sd0=0.1, alpha=alpha, seed=seed)
+        }
     }
     size <- dim (ymat) [1]
     ydat <- sort ((ymat - min (ymat)) / diff (range (ymat)), decreasing=TRUE)
@@ -68,24 +70,9 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), nt=100, ntests=100,
     # seed
     set.seed (Sys.time ())
     
-    cat ("\t|\t\tdifferences\tp-values\t|\t\t\t\t|\n", sep="")
-    cat ("  dim\t|  alpha\traw\tAC\traw\tAC\t|\talpha\t\tn\t|\n", sep="")
-    cat (rep ("-", 8), "|", rep ("-", 47), "|", rep ("-", 31), "|\n", sep="")
-    alpha_s <- c (0.1, 0)
-    #for (i in 1:2)
-    #{
-    #    t1 <- test1d (ymat, alpha=c(0.1, alpha_s [i]), ntests=ntests)
-    #    ss_raw <- sum ((t1$data$raw - ydat) ^ 2)
-    #    ss_ac <- sum ((t1$data$ac - mdat) ^ 2)
-    #    cat ("  1\t|   (0.1, ", alpha_s [i], ")\t",
-    #         formatC (ss_raw, format="f", digits=2), "\t",
-    #         formatC (ss_ac, format="f", digits=2), "\t",
-    #         formatC (t1$pvals$raw, format="f", digits=4), "\t",
-    #         formatC (t1$pvals$ac, format="f", digits=4), "\t|   (",
-    #         formatC (t1$pars$alpha [1], format="f", digits=2), ", ",
-    #         formatC (t1$pars$alpha [2], format="f", digits=2), ")\t",
-    #         round (t1$pars$n), "\t|\n", sep="")
-    #}
+    cat ("\t\tdifferences\tp-values\t|\t\t\t\t|\n", sep="")
+    cat ("  alpha\t\traw\tAC\traw\tAC\t|\talpha\t\tn\t|\n", sep="")
+    cat (rep ("-", 48), "|", rep ("-", 31), "|\n", sep="")
 
     alpha_t <- 0.1
     alpha_s <- c (0.1, 0)
@@ -94,7 +81,7 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), nt=100, ntests=100,
         t2 <- test2d (ymat, alpha=c(alpha_t, alpha_s [i]), ntests=ntests)
         ss_raw <- sum ((t2$data$raw - ydat) ^ 2)
         ss_ac <- sum ((t2$data$ac - mdat) ^ 2)
-        cat ("  2\t|   (0.1, ", alpha_s [i], ")\t",
+        cat (" (0.1, ", alpha_s [i], ")\t",
              formatC (ss_raw, format="f", digits=2), "\t",
              formatC (ss_ac, format="f", digits=2), "\t",
              formatC (t2$pvals$raw, format="f", digits=4), "\t",
@@ -103,5 +90,5 @@ run_tests <- function (size=10, alpha=c(0.1, 0.1), nt=100, ntests=100,
              formatC (t2$pars$alpha [2], format="f", digits=2), ")\t",
              round (t2$pars$n), "\t|\n", sep="")
     }
-    cat (rep ("-", 93), "\n", sep="")
+    cat (rep ("-", 80), "\n", sep="")
 }

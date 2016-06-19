@@ -27,7 +27,7 @@ neutral2d <- function (size=10, alpha=c(0.1, 0.1), nt=100, sd0=0.1, seed)
 
     if (!missing (seed)) set.seed (seed)
 
-    y <- rcpp_neutral2d_1test (size=size, alpha_t=alpha [1], alpha_s=alpha [2],
+    y <- rcpp_neutral2d (size=size, alpha_t=alpha [1], alpha_s=alpha [2],
                          sd0=sd0, nt=nt)
     matrix (y, nrow=size, ncol=size)
 }

@@ -3,8 +3,23 @@
 const double DOUBLE_MAX = std::numeric_limits<double>::max (),
     DOUBLE_MIN = -DOUBLE_MAX;
 
+//' rcpp_neutral2d
+//'
+//' Implements neutral model in two dimensions
+//'
+//' @param size Size of the square grid on which to generate model. Total number
+//' of points is size ^ 2
+//' @param alpha_t Strength of temporal autocorrelation
+//' @param alpha_s Strength of spatial autocorrelation
+//' @param sd0 Standard deviation of truncated normal distribution used to model
+//' environmental variation (with mean of 1)
+//' @param nt Number of successive layers of temporal and spatial autocorrelation
+//' used to generate final modelled values
+//'
+//' @return A matrix of dimension (size, size) of simulated values
+//'
 // [[Rcpp::export]]
-Rcpp::NumericMatrix rcpp_neutral2d_1test (int size, 
+Rcpp::NumericMatrix rcpp_neutral2d (int size, 
         double alpha_t, double alpha_s, double sd0, int nt)
 {
     int indx;
@@ -142,7 +157,7 @@ Rcpp::NumericMatrix rcpp_neutral2d_ntests (int size,
     std::fill (xv_tot.begin (), xv_tot.end (), 0.0);
     for (int n=0; n<ntests; n++)
     {
-        x = rcpp_neutral2d_1test (size, alpha_t, alpha_s, sd0, nt);
+        x = rcpp_neutral2d (size, alpha_t, alpha_s, sd0, nt);
         ac_vec1 = rcpp_ac_stats (x, ac_type); // already sorted and normalised
         for (int i=0; i<size; i++)
             for (int j=0; j<size; j++)

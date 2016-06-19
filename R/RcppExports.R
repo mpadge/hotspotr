@@ -5,12 +5,23 @@ rcpp_ives2d <- function(size, nt, alpha_t, alpha_s, svec, rvec) {
     .Call('hotspotr_rcpp_ives2d', PACKAGE = 'hotspotr', size, nt, alpha_t, alpha_s, svec, rvec)
 }
 
-rcpp_neutral1d <- function(size, alpha_t, alpha_s, nt, eps) {
-    .Call('hotspotr_rcpp_neutral1d', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, nt, eps)
-}
-
-rcpp_neutral2d_1test <- function(size, alpha_t, alpha_s, sd0, nt) {
-    .Call('hotspotr_rcpp_neutral2d_1test', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, sd0, nt)
+#' rcpp_neutral2d
+#'
+#' Implements neutral model in two dimensions
+#'
+#' @param size Size of the square grid on which to generate model. Total number
+#' of points is size ^ 2
+#' @param alpha_t Strength of temporal autocorrelation
+#' @param alpha_s Strength of spatial autocorrelation
+#' @param sd0 Standard deviation of truncated normal distribution used to model
+#' environmental variation (with mean of 1)
+#' @param nt Number of successive layers of temporal and spatial autocorrelation
+#' used to generate final modelled values
+#'
+#' @return A matrix of dimension (size, size) of simulated values
+#'
+rcpp_neutral2d <- function(size, alpha_t, alpha_s, sd0, nt) {
+    .Call('hotspotr_rcpp_neutral2d', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, sd0, nt)
 }
 
 rcpp_ac_stats <- function(x, ac_type) {

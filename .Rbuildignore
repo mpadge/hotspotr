@@ -3,6 +3,7 @@
 ^tmux-start.bash$
 \.md$
 ^README\.Rmd$
+^README\.md$
 ^README\.html$
 ^src/*.o$
 ^src/*.so$

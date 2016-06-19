@@ -23,7 +23,7 @@ setwd ("./hotspotr")
 First a demonstration with a seed that produces a 2D field very similar to
 neutral fields.
 
-```{r demo, fig.width=12, fig.height=6}
+```{r demo-moran, fig.width=12, fig.height=6}
 plot.new ()
 seed <- 18
 ymat <- ives2d (size=10, seed=seed)
@@ -34,52 +34,22 @@ The default spatial autocorrelation statistic is Moran's I, with results for
 other statistics in this case notably different. Geary's C:
 ```{r demo-geary, fig.width=12, fig.height=6}
 plot.new ()
-test <- test2d (ymat, plot=TRUE, actype='geary')
+test <- test2d (ymat, plot=TRUE, ac_type='geary')
 ```
 
 And Getis-Ord:
 ```{r demo-getis, fig.width=12, fig.height=6}
 plot.new ()
-test <- test2d (ymat, plot=TRUE, actype='getis')
+test <- test2d (ymat, plot=TRUE, ac_type='getis')
 ```
 
 Then the text output of `run_tests` for a random seed giving more typically low
 p-values
 ```{r run_tests}
-run_tests (size=10, ntests=1000)
+run_tests (size=10, ntests=100)
 ```
 `run_tests` can also be used to test a neutral field against a statistial
 ensemble of neutral fields:
 ```{r run_tests_neutral}
-run_tests (size=10, ntests=1000, neutral=TRUE)
+run_tests (size=10, ntests=100, neutral=TRUE)
 ```
-
-This is a problem (from `test1d`):
-```{r}
-fn_n <- function (x)
-{
-    ytest <- neutral1d (size, alpha=alpha, nt=x)
-    ytest <- (ytest - min (ytest)) / diff (range (ytest))
-    ytest <- sort (ytest, decreasing=TRUE)
-    sum ((ytest - ydat) ^ 2)
-}
-n <- 1:200
-y <- sapply (n, function (i) fn_n (i))
-plot (n, y, "l")
-```
-The function has no systematic behaviour at all! Try for `alpha`:
-```{r}
-fn_a <- function (x)
-{
-    ytest <- neutral1d (size, alpha=x, nt=nt)
-    ytest <- (ytest - min (ytest)) / diff (range (ytest))
-    ytest <- sort (ytest, decreasing=TRUE)
-    sum ((ytest - ydat) ^ 2)
-}
-a <- 1:100 / 100
-y <- sapply (a, function (i) fn_a (c (0.1, i)))
-plot (a, y, "l")
-y <- sapply (a, function (i) fn_a (c (i, 0.1)))
-plot (a, y, "l")
-```
-These functions are total ill-behaved!

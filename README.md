@@ -21,13 +21,13 @@ ymat <- ives2d (size=10, seed=seed)
 test <- test2d (ymat, plot=TRUE)
 ```
 
-![](fig/demo.png)
+![](fig/demo-moran.png)
 
 The default spatial autocorrelation statistic is Moran's I, with results for other statistics in this case notably different. Geary's C:
 
 ``` r
 plot.new ()
-test <- test2d (ymat, plot=TRUE, actype='geary')
+test <- test2d (ymat, plot=TRUE, ac_type='geary')
 ```
 
 ![](fig/demo-geary.png)
@@ -36,7 +36,7 @@ And Getis-Ord:
 
 ``` r
 plot.new ()
-test <- test2d (ymat, plot=TRUE, actype='getis')
+test <- test2d (ymat, plot=TRUE, ac_type='getis')
 ```
 
 ![](fig/demo-getis.png)
@@ -44,29 +44,25 @@ test <- test2d (ymat, plot=TRUE, actype='getis')
 Then the text output of `run_tests` for a random seed giving more typically low p-values
 
 ``` r
-run_tests (size=10, ntests=1000)
+run_tests (size=10, ntests=100)
 ```
 
-    ##      |               differences     p-values        |                       |
-    ##  dim |  alpha        raw     AC      raw     AC      |   alpha       n       |
-    ## -----|-----------------------------------------------|-----------------------|
-    ##   1  |   (0.1, 0.1)  0.00    9.84    0.0000  0.0000  |   (0.12, 0.13)    8   |
-    ##   1  |   (0.1, 0)    0.00    9.72    0.0000  0.0000  |   (0.12, 0.00)    10  |
-    ##   2  |   (0.1, 0.1)  0.00    10.69   0.0000  0.0000  |   (0.08, 0.11)    13  |
-    ##   2  |   (0.1, 0)    0.00    10.39   0.0000  0.0000  |   (0.13, 0.03)    5   |
-    ## ------------------------------------------------------------------------------
+    ##              differences     p-values        |                       |
+    ##   alpha      raw     AC      raw     AC      |   alpha           n   |
+    ## -------------------------------------|-------------------------------|
+    ##  (0.1, 0.1)  0.00    0.29    0.0005  0.7492  |   (-0.01, 0.13)   10  |
+    ##  (0.1, 0)    0.00    0.20    0.0001  0.6755  |   (0.06, 0.14)    10  |
+    ## ----------------------------------------------------------------------
 
 `run_tests` can also be used to test a neutral field against a statistial ensemble of neutral fields:
 
 ``` r
-run_tests (size=10, ntests=1000, neutral=TRUE)
+run_tests (size=10, ntests=100, neutral=TRUE)
 ```
 
-    ##      |               differences     p-values        |                       |
-    ##  dim |  alpha        raw     AC      raw     AC      |   alpha           n   |
-    ## -----|-----------------------------------------------|-----------------------|
-    ##   1  |   (0.1, 0.1)  0.00    1.46    0.0186  0.0004  |   (0.11, 0.11)    8   |
-    ##   1  |   (0.1, 0)    0.00    1.20    0.0283  0.0014  |   (0.10, 0.00)    8   |
-    ##   2  |   (0.1, 0.1)  0.00    1.03    0.0190  0.0034  |   (0.11, 0.11)    5   |
-    ##   2  |   (0.1, 0)    0.00    0.89    0.0268  0.0095  |   (0.11, -0.01)   5   |
-    ## ------------------------------------------------------------------------------
+    ##              differences     p-values        |                       |
+    ##   alpha      raw     AC      raw     AC      |   alpha           n   |
+    ## ---------------------------------------------|-----------------------|
+    ##  (0.1, 0.1)  0.00    0.19    0.0329  0.2031  |   (0.55, 0.08)    10  |
+    ##  (0.1, 0)    0.00    0.09    0.0263  0.9318  |   (0.50, 0.09)    10  |
+    ## ----------------------------------------------------------------------

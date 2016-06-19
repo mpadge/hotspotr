@@ -44,10 +44,14 @@ test <- test2d (ymat, plot=TRUE, ac_type='getis')
 ```
 
 Then the text output of `run_tests` for a random seed giving more typically low
-p-values
+p-values.
 ```{r run_tests}
 run_tests (size=10, ntests=100)
 ```
+Note that the model field tested here has a complex *temporal* structure yet a
+generic---that is, neutral---*spatial structure, and that the `p-values` reflect
+these differences.
+
 `run_tests` can also be used to test a neutral field against a statistial
 ensemble of neutral fields:
 ```{r run_tests_neutral}

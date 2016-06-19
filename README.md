@@ -41,7 +41,7 @@ test <- test2d (ymat, plot=TRUE, ac_type='getis')
 
 ![](fig/demo-getis.png)
 
-Then the text output of `run_tests` for a random seed giving more typically low p-values
+Then the text output of `run_tests` for a random seed giving more typically low p-values.
 
 ``` r
 run_tests (size=10, ntests=100)
@@ -50,9 +50,11 @@ run_tests (size=10, ntests=100)
     ##              differences     p-values        |                       |
     ##   alpha      raw     AC      raw     AC      |   alpha           n   |
     ## ---------------------------------------------|-----------------------|
-    ##  (0.1, 0.1)  1.16    0.21    0.0003  0.6261  |   (0.10, 0.13)    10  |
-    ##  (0.1, 0)    0.99    0.11    0.0006  0.9519  |   (0.38, 0.14)    10  |
+    ##  (0.1, 0.1)  1.17    0.21    0.0002  0.5559  |   (0.31, 0.17)    10  |
+    ##  (0.1, 0)    1.13    0.25    0.0003  0.1035  |   (0.23, 0.11)    10  |
     ## ----------------------------------------------------------------------
+
+Note that the model field tested here has a complex *temporal* structure yet a generic---that is, neutral---\*spatial structure, and that the `p-values` reflect these differences.
 
 `run_tests` can also be used to test a neutral field against a statistial ensemble of neutral fields:
 
@@ -63,6 +65,6 @@ run_tests (size=10, ntests=100, neutral=TRUE)
     ##              differences     p-values        |                       |
     ##   alpha      raw     AC      raw     AC      |   alpha           n   |
     ## ---------------------------------------------|-----------------------|
-    ##  (0.1, 0.1)  0.34    0.55    0.0530  0.6961  |   (0.34, 0.11)    11  |
-    ##  (0.1, 0)    0.48    0.43    0.0222  0.8479  |   (0.94, 0.20)    10  |
+    ##  (0.1, 0.1)  0.16    0.13    0.1797  0.4289  |   (0.11, 0.12)    10  |
+    ##  (0.1, 0)    0.10    0.12    0.3178  0.5556  |   (0.08, 0.11)    10  |
     ## ----------------------------------------------------------------------

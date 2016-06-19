@@ -41,72 +41,51 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, actype='moran',
         stop ('ymat must be a square matrix')
 
     actype <- tolower (actype)
-    fn_ac <- NULL
+    fn_ac <- 'morani'
+    ac_num <- 1
     if (substring (actype, 1, 1) == 'g')
     {
         if (substring (actype, 3, 3) == 'a')
+        {
             fn_ac <- 'gearyc'
-        else
+            ac_num <- 2
+        } else
+        {
             fn_ac <- 'getis_ord'
-    } else
-        fn_ac <- 'morani'
+            ac_num <- 3
+        }
+    } 
 
-    # Optimise until convergence based on raw values only
+    # Optimise using raw values only
     size <- dim (ymat) [1]
 
     mdat <- do.call (fn_ac, list (ymat))
     ydat <- sort ((ymat - min (ymat)) / diff (range (ymat)), decreasing=TRUE)
-    ytest <- NULL # remove no visible binding warning
+    yt <- NULL # remove no visible binding warning
+    # Initial 3D optimisation to get nt
     fn_n <- function (x)
     {
-        ytest <- rcpp_neutral2d_ntests (size=size, alpha_t=alpha[1],
-                                        alpha_s=alpha[2], sd0=0.1,
-                                        nt=x, ntests=ntests)
-        sum ((ytest - ydat) ^ 2)
+        yt <- rcpp_neutral2d_ntests (size=size, alpha_t=x[1],
+                                        alpha_s=x[2], sd0=0.1,
+                                        nt=x[3], ntests=ntests, ac_type=ac_num)
+        sum ((yt [,1] - ydat) ^ 2) # [,1] = raw values; [,2] = AC stats
     }
-    nt <- round (optimise (fn_n, c (0, 200))$minimum)
+    op <- optim (c (alpha, 10), fn_n)
+    # then reduce to 2d optimisation
+    nt <- round (op$par [3])
+    alpha <- op$par [1:2]
     fn_a <- function (x)
     {
-        ytest <- rcpp_neutral2d_ntests (size=size, alpha_t=x [1], alpha_s=x [2],
-                                        sd0=0.1, nt=nt, ntests=ntests)
-        sum ((ytest - ydat) ^ 2)
+        yt <- rcpp_neutral2d_ntests (size=size, alpha_t=x [1], alpha_s=x [2],
+                                        sd0=0.1, nt=nt, ntests=ntests,
+                                        ac_type=ac_num)
+        sum ((yt [,1] - ydat) ^ 2)
     }
-
-    conv <- 1e99
-    tol <- 1e-3
-    nt0 <- c0 <- 100
-    a0 <- a <- alpha
-    count <- 0
-    max_count <- 10
-    while (conv > tol & count < max_count)
-    {
-        flags <- rep (FALSE, 2)
-        op1 <- optimise (fn_n, c (1, 20))
-        if (op1$objective < conv) 
-        {
-            conv <- op1$objective
-            nt <- op1$minimum
-            flags [1] <- TRUE
-        }
-        op <- optim (alpha, fn_a)
-        if (op$value < conv) 
-        {
-            conv <- op$value
-            alpha <- op$par
-            flags [2] <- TRUE
-        }
-
-        if (!all (flags) & c0 == conv) 
-        {
-            count <- count + 1
-        } else
-        {
-            count <- 0
-        }
-        a0 <- alpha
-        nt0 <- nt
-        c0 <- conv
-    }
+    op <- optim (alpha, fn_a)
+    alpha <- op$par
+    yt <- rcpp_neutral2d_ntests (size=size, alpha_t=alpha [1], alpha_s=alpha [2],
+                                    sd0=0.1, nt=nt, ntests=ntests,
+                                    ac_type=ac_num)
 
     # Parameters for ydat have been estimated; now generate equivalent neutral
     # values

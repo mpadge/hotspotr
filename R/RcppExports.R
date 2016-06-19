@@ -13,11 +13,15 @@ rcpp_neutral2d_1test <- function(size, alpha_t, alpha_s, sd0, nt) {
     .Call('hotspotr_rcpp_neutral2d_1test', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, sd0, nt)
 }
 
+rcpp_ac_stats <- function(x, ac_type) {
+    .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', x, ac_type)
+}
+
 rcpp_morani <- function(x) {
     .Call('hotspotr_rcpp_morani', PACKAGE = 'hotspotr', x)
 }
 
-rcpp_neutral2d_ntests <- function(size, alpha_t, alpha_s, sd0, nt, ntests) {
-    .Call('hotspotr_rcpp_neutral2d_ntests', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, sd0, nt, ntests)
+rcpp_neutral2d_ntests <- function(size, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
+    .Call('hotspotr_rcpp_neutral2d_ntests', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
 }
 

@@ -148,6 +148,7 @@ Rcpp::NumericMatrix rcpp_neutral2d_ntests (int size,
         result (i, 0) = xv_tot (i) / (double) ntests;
         result (i, 1) = ac_vec (i) / (double) ntests;
     }
+    Rcpp::colnames (result) = Rcpp::CharacterVector::create ("y", "ac");
 
     return result;
 }

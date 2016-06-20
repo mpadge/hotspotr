@@ -19,7 +19,6 @@ Rcpp::NumericVector rcpp_ac_stats (Rcpp::NumericMatrix x, std::string ac_type)
     Rcpp::NumericMatrix xexp (size + 2, size + 2);
     // Can't figure out how to use Rcpp::Range to set, rather than extract, a
     // sub-matrix, so nmat is filled explicitly here
-    // 
     for (int i=0; i<size; i++)
         for (int j=0; j<size; j++)
             xexp (i + 1, j + 1) = x (i, j);

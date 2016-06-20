@@ -1,6 +1,17 @@
 #include <Rcpp.h>
 #include "ac_stats.h"
 
+//' rcpp_ac_stats
+//'
+//' Computes spatial autocorrelation statistics for a given input matrix
+//'
+//' @param x Input matrix (must be square)
+//' @param ac_type Character string specifying type of aucorrelation
+//' (\code{moran}, \code{geary}, or code{getis-ord}).
+//'
+//' @return A vector of sorted spatial autocorrelation statistics scaled between
+//' zero and one.
+//'
 // [[Rcpp::export]]
 Rcpp::NumericVector rcpp_ac_stats (Rcpp::NumericMatrix x, std::string ac_type)
 {

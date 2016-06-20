@@ -91,6 +91,27 @@ Rcpp::NumericMatrix rcpp_neutral2d (int size,
 }
 
 
+//' rcpp_neutral2d_ntests
+//'
+//' Performs repeated neutral tests to yield average distributions of both
+//' hotspot values and spatial autocorrelation statistics.
+//'
+//' @param size Size of the square grid on which to generate model. Total number
+//' of points is size ^ 2
+//' @param alpha_t Strength of temporal autocorrelation
+//' @param alpha_s Strength of spatial autocorrelation
+//' @param sd0 Standard deviation of truncated normal distribution used to model
+//' environmental variation (with mean of 1)
+//' @param nt Number of successive layers of temporal and spatial autocorrelation
+//' used to generate final modelled values
+//' @param ntests Number of tests used to obtain average values
+//' @param ac_type Character string specifying type of aucorrelation
+//' (\code{moran}, \code{geary}, or code{getis-ord}).
+//'
+//' @return A matrix of dimension (size * size, 2), with first column containing
+//' sorted and re-scaled hotspot values, and second column containing sorted and
+//' re-scaled spatial autocorrelation statistics.
+//'
 // [[Rcpp::export]]
 Rcpp::NumericMatrix rcpp_neutral2d_ntests (int size, 
         double alpha_t, double alpha_s, double sd0, int nt, int ntests,

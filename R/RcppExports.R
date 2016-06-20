@@ -16,8 +16,48 @@ rcpp_ac_stats <- function(x, ac_type) {
     .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', x, ac_type)
 }
 
+#' rcpp_ives2d
+#'
+#' Implements neutral model in two dimensions
+#'
+#' @param size Size of the square grid on which to generate model. Total number
+#' of points is size ^ 2
+#' @param nt Number of successive layers of temporal and spatial autocorrelation
+#' used to generate final modelled values
+#' @param alpha_t Strength of temporal autocorrelation
+#' @param alpha_s Strength of spatial autocorrelation
+#' @param svec Vector of random numbers for values of \code{s} drawn from a
+#' truncated normal ' distribution.
+#' @param rvec Vector of random numbers for values of \code{r} drawn from a
+#' truncated normal ' distribution.
+#'
+#' @return A matrix of dimension (size, size) of simulated values
+#'
 rcpp_ives2d <- function(size, nt, alpha_t, alpha_s, svec, rvec) {
     .Call('hotspotr_rcpp_ives2d', PACKAGE = 'hotspotr', size, nt, alpha_t, alpha_s, svec, rvec)
+}
+
+#' rcpp_ives2d_space
+#'
+#' Implements neutral model in two dimensions with additional spatial
+#' structure, implented here through replacing generic local autocorrelation
+#' with movement along maximal local gradients.
+#'
+#' @param size Size of the square grid on which to generate model. Total number
+#' of points is size ^ 2
+#' @param nt Number of successive layers of temporal and spatial autocorrelation
+#' used to generate final modelled values
+#' @param alpha_t Strength of temporal autocorrelation
+#' @param alpha_s Strength of spatial autocorrelation
+#' @param svec Vector of random numbers for values of \code{s} drawn from a
+#' truncated normal ' distribution.
+#' @param rvec Vector of random numbers for values of \code{r} drawn from a
+#' truncated normal ' distribution.
+#'
+#' @return A matrix of dimension (size, size) of simulated values
+#'
+rcpp_ives2d_space <- function(size, nt, alpha_t, alpha_s, svec, rvec) {
+    .Call('hotspotr_rcpp_ives2d_space', PACKAGE = 'hotspotr', size, nt, alpha_t, alpha_s, svec, rvec)
 }
 
 #' rcpp_neutral2d

@@ -11,6 +11,8 @@
 ^src/*.gcno$
 ^src/Makevars$
 ^man/rcpp_ac_stats.Rd$
+^man/rcpp_ives2d.Rd$
+^man/rcpp_ives2d_space.Rd$
 ^man/rcpp_neutral2d_ntests.Rd$
 ^man/rcpp_neutral2d.Rd$
 ^fig/

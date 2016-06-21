@@ -18,9 +18,6 @@ devtools::load_all ("hotspotr")
 setwd ("./hotspotr")
 ```
 
-```{r}
-get_neighbours (runif (50), runif (50))
-```
 
 ## Test
 

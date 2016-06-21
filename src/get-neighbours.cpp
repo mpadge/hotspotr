@@ -65,6 +65,15 @@ Rcpp::List rcpp_get_neighbours (Rcpp::NumericVector x, Rcpp::NumericVector y)
      * ----------------- microbenchmark results:
      *  R = 62.8ms, Rcpp = 0.34ms
      * The Rcpp speed-up is over 99.5%!!!
+     *
+     * NOTE that the following code is a bit messy, but that it would be even
+     * messier doing this with CGAL edge traversals, because that could only be
+     * done by iterating over neighbouring faces with the following steps:
+     * 1. if face shares current edge then
+     * 2. Find neighbouring edge that shares same vertex
+     * 3. Add other vertex of that edge to neighbour list
+     * 4. Update current face and current edge
+     * --- and that's not going to be any neater
      */
 
     int tempi;

@@ -1,9 +1,6 @@
 #include <Rcpp.h>
 #include "ac_stats.h"
 
-const double DOUBLE_MAX = std::numeric_limits<double>::max (),
-    DOUBLE_MIN = -DOUBLE_MAX;
-
 //' rcpp_neutral2d
 //'
 //' Implements neutral model in two dimensions

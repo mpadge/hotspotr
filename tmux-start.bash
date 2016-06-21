@@ -7,6 +7,7 @@ tmux new-window -t $SESSION:1 -k -n R
 tmux send-keys -t $SESSION:1 'vim README.Rmd' C-m
 tmux send-keys -t $SESSION:1 ':' 'tabe R/test2d.R' C-m
 tmux send-keys -t $SESSION:1 ':' 'tabe R/run_tests.R' C-m
+tmux send-keys -t $SESSION:1 ':' 'tabe R/get-neighbours.R' C-m
 #tmux send-keys -t $SESSION:1 '2gt'
 
 tmux new-window -t $SESSION:2 -k -n cpp

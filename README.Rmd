@@ -19,11 +19,7 @@ setwd ("./hotspotr")
 ```
 
 ```{r}
-require (microbenchmark)
-n <- 100
-x <- runif (n)
-y <- runif (n)
-microbenchmark (nbs <- get_neighbours (x, y), times=1000L)
+get_neighbours (runif (50), runif (50))
 ```
 
 ## Test

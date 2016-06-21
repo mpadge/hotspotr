@@ -12,7 +12,7 @@
 #' nbs <- get_neighbours (runif (10), runif (10))
 #'
 #' @export
-get_neighbours <- function (x, y, plot=TRUE)
+get_neighbours <- function (x, y)
 {
     if (!is.numeric (x) | !is.numeric (y))
         stop ('both x and y must be numeric')
@@ -25,24 +25,6 @@ get_neighbours <- function (x, y, plot=TRUE)
     }
 
     nbs <- do.call (rbind, rcpp_get_neighbours (x=x, y=y))
-    if (plot)
-    {
-        plot.new ()
-        par (mar=rep (0, 4))
-        plot (x, y, pch=1, xlab="", ylab="", xaxt="n", yaxt="n", frame=FALSE)
-        ps0 <- par ('ps')
-        par (ps=20, font=2)
-        for (i in seq (nrow (nbs)))
-        {
-            indx <- c (nbs [i,], nbs [i,1])
-            lines (x [indx], y [indx])
-            text (mean (x [indx [1:3]]), mean (y [indx [1:3]]), labels=i,
-                  col="gray")
-        }
-        par (ps=16, font=1)
-        text (x, y, labels=seq (length (x)), pos=3)
-        par (ps=ps0)
-    }
     # nbs is a list of triangular neighbours for each point. This is converted
     # to list of *all* neighbours for each point
     nbs2 <- list ()

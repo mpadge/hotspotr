@@ -35,7 +35,10 @@ Rcpp::List rcpp_get_neighbours (Rcpp::NumericVector x, Rcpp::NumericVector y)
      * vertex->info for each face. A Delaunay triangulation has both finite and
      * infinite faces (see CGAL documentation). The infinite faces join to an
      * external, infinite vertex, so the finite_faces_iterator just includes the
-     * internal faces. */
+     * internal faces. 
+     *
+     * mircobenchmark (times=1000L for 100 points): 61.339ms
+     */
     Rcpp::List nbs;
     std::vector <int> nbsi;
     nbsi.resize (0);
@@ -52,7 +55,11 @@ Rcpp::List rcpp_get_neighbours (Rcpp::NumericVector x, Rcpp::NumericVector y)
 
     /* And this is a long-hand way, using an iteration over all faces, checking
      * whether they are finite or not, and accessing the face.vertex info by
-     * dereferencing pointers to each vertex of the face. */
+     * dereferencing pointers to each vertex of the face. 
+     *
+     * mircobenchmark (times=1000L for the same 100 points): 61.623ms
+     */
+    /*
     Vertex v;
     Face_iterator itf = triangulation.faces_begin (),
                   beyondf = triangulation.faces_end ();
@@ -64,19 +71,23 @@ Rcpp::List rcpp_get_neighbours (Rcpp::NumericVector x, Rcpp::NumericVector y)
     bool is_finite;
     while (itf != beyondf) 
     {
+        nbsi.resize (0);
         face = *(itf++);
         is_finite = true;
-        for (int i=0; i<3; i++) {
-            fvertex = face.vertex (i);
-            if (triangulation.is_infinite (fvertex)) 
+        for (int i=0; i<3; i++) 
+            if (triangulation.is_infinite (face.vertex (i))) 
                 is_finite = false;
-        }
         if (is_finite)
         {
             for (int i=0; i<3; i++) 
-                v = *(face.vertex (i));
+                nbsi.push_back ((*(face.vertex (i))).info ());
+                //v = *(face.vertex (i));
+                //nbsi.push_back (v.info ());
+            nbs.push_back (nbsi);
         }
     }
+    nbsi.resize (0);
+    */
 
     points.resize (0);
 

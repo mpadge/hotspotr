@@ -18,6 +18,14 @@ devtools::load_all ("hotspotr")
 setwd ("./hotspotr")
 ```
 
+```{r}
+require (microbenchmark)
+n <- 100
+x <- runif (n)
+y <- runif (n)
+microbenchmark (nbs <- get_neighbours (x, y), times=1000L)
+```
+
 ## Test
 
 First a demonstration with a seed that produces a 2D field very similar to

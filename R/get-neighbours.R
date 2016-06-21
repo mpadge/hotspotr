@@ -6,7 +6,7 @@
 #' @param y Vector of y-coordinates
 #' @param plot Produce a plot of the Delaunay triangulation
 #'
-#' @return A vector of hotspot values sorted from high to low
+#' @return A list of Delaunay neighbours of each point in (x, y)
 #'
 #' @examples
 #' nbs <- get_neighbours (runif (10), runif (10))

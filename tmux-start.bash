@@ -13,6 +13,7 @@ tmux new-window -t $SESSION:2 -k -n cpp
 tmux send-keys -t $SESSION:2 'cd ./src' C-m
 tmux send-keys -t $SESSION:2 'vim ives2d.cpp' C-m
 tmux send-keys -t $SESSION:2 ':' 'tabe neutral2d.cpp' C-m
+tmux send-keys -t $SESSION:2 ':' 'tabe get-neighbours.cpp' C-m
 tmux split-window -h
 tmux send-keys -t $SESSION:2 'cd ./src' C-m
 tmux send-keys -t $SESSION:2 'vim ac_stats.h' C-m

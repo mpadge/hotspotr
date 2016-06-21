@@ -16,6 +16,15 @@ rcpp_ac_stats <- function(x, ac_type) {
     .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', x, ac_type)
 }
 
+#' rcpp_get_neighbours
+#'
+#' Determines neighbours of points (x, y) using Delaunay triangulation
+#'
+#' @param x Vector of x-coordinates
+#' @param y Vector of y-coordinates
+#'
+#' @return List of Delaunay triangle membership
+#'
 rcpp_get_neighbours <- function(x, y) {
     .Call('hotspotr_rcpp_get_neighbours', PACKAGE = 'hotspotr', x, y)
 }

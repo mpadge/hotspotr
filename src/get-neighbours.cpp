@@ -10,6 +10,15 @@ typedef CGAL::Triangulation_data_structure_2<Vb>                       Tds;
 typedef CGAL::Delaunay_triangulation_2<Kernel, Tds>                    Delaunay;
 typedef Kernel::Point_2                                                Point;
 
+//' rcpp_get_neighbours
+//'
+//' Determines neighbours of points (x, y) using Delaunay triangulation
+//'
+//' @param x Vector of x-coordinates
+//' @param y Vector of y-coordinates
+//'
+//' @return List of Delaunay triangle membership
+//'
 // [[Rcpp::export]]
 Rcpp::List rcpp_get_neighbours (Rcpp::NumericVector x, Rcpp::NumericVector y)
 {

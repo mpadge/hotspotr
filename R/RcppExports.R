@@ -104,3 +104,7 @@ rcpp_neutral2d_ntests <- function(size, alpha_t, alpha_s, sd0, nt, ntests, ac_ty
     .Call('hotspotr_rcpp_neutral2d_ntests', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
 }
 
+test <- function() {
+    .Call('hotspotr_test', PACKAGE = 'hotspotr')
+}
+

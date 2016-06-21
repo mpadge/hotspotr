@@ -65,9 +65,9 @@ int test ()
             fit != triangulation.finite_faces_end(); ++fit) {
 
         Delaunay::Face_handle face = fit;
-        std::cout << "Triangle:\t" << triangulation.triangle(face) << std::endl;
-        std::cout << "Vertex 0:\t" << triangulation.triangle(face)[0] << std::endl;
-        std::cout << "[";
+        Rcpp::Rcout << "Triangle:\t" << triangulation.triangle(face) << std::endl;
+        Rcpp::Rcout << "Vertex 0:\t" << triangulation.triangle(face)[0] << std::endl;
+        Rcpp::Rcout << "[";
         for (int i=0; i<3; i++) 
         {
             Rcpp::Rcout << face->vertex(i)->info();
@@ -86,9 +86,9 @@ int test ()
     while (it != beyond) {
         v = *it;
         ++it;
-        //std::cout << v.point () << std::endl;
+        //Rcpp::Rcout << v.point () << std::endl;
     }
-    //std::cout << "----------------------" << std::endl;
+    //Rcpp::Rcout << "----------------------" << std::endl;
 
     /* And this is a long-hand way, using an iteration over all faces, checking
      * whether they are finite or not, and accessing the face.vertex info by

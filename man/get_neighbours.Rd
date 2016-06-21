@@ -10,8 +10,6 @@ get_neighbours(x, y)
 \item{x}{Vector of x-coordinates}
 
 \item{y}{Vector of y-coordinates}
-
-\item{plot}{Produce a plot of the Delaunay triangulation}
 }
 \value{
 A list of Delaunay neighbours of each point in (x, y)

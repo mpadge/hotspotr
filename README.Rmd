@@ -16,6 +16,7 @@ while (length (grep ('hotspotr', getwd ())) > 0) setwd ("..")
 #devtools::check ("hotspotr")
 devtools::load_all ("hotspotr")
 setwd ("./hotspotr")
+nbs <- get_neighbours (runif (10), runif (10))
 ```
 
 ## Test

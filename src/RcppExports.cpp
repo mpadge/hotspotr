@@ -17,6 +17,18 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// rcpp_get_neighbours
+Rcpp::List rcpp_get_neighbours(Rcpp::NumericVector x, Rcpp::NumericVector y);
+RcppExport SEXP hotspotr_rcpp_get_neighbours(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type y(ySEXP);
+    __result = Rcpp::wrap(rcpp_get_neighbours(x, y));
+    return __result;
+END_RCPP
+}
 // rcpp_ives2d
 Rcpp::NumericMatrix rcpp_ives2d(int size, int nt, double alpha_t, double alpha_s, Rcpp::NumericVector svec, Rcpp::NumericVector rvec);
 RcppExport SEXP hotspotr_rcpp_ives2d(SEXP sizeSEXP, SEXP ntSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP svecSEXP, SEXP rvecSEXP) {
@@ -78,16 +90,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type ntests(ntestsSEXP);
     Rcpp::traits::input_parameter< std::string >::type ac_type(ac_typeSEXP);
     __result = Rcpp::wrap(rcpp_neutral2d_ntests(size, alpha_t, alpha_s, sd0, nt, ntests, ac_type));
-    return __result;
-END_RCPP
-}
-// test
-int test();
-RcppExport SEXP hotspotr_test() {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    __result = Rcpp::wrap(test());
     return __result;
 END_RCPP
 }

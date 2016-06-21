@@ -16,6 +16,10 @@ rcpp_ac_stats <- function(x, ac_type) {
     .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', x, ac_type)
 }
 
+rcpp_get_neighbours <- function(x, y) {
+    .Call('hotspotr_rcpp_get_neighbours', PACKAGE = 'hotspotr', x, y)
+}
+
 #' rcpp_ives2d
 #'
 #' Implements neutral model in two dimensions
@@ -102,9 +106,5 @@ rcpp_neutral2d <- function(size, alpha_t, alpha_s, sd0, nt) {
 #'
 rcpp_neutral2d_ntests <- function(size, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
     .Call('hotspotr_rcpp_neutral2d_ntests', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
-}
-
-test <- function() {
-    .Call('hotspotr_test', PACKAGE = 'hotspotr')
 }
 

@@ -23,8 +23,10 @@
 #' @name hotspotr
 #' @docType package
 #' @importFrom stats rnorm t.test wilcox.test optim optimise
+#' @importFrom methods is
 #' @importFrom graphics lines legend title par plot.new text
 #' @importFrom msm rtnorm
+#' @importFrom spdep dnearneigh
 #' @importFrom Rcpp evalCpp
 #' @useDynLib hotspotr
 NULL

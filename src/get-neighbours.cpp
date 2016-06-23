@@ -17,7 +17,7 @@ typedef Kernel::Point_2                                                Point;
 //' @param x Vector of x-coordinates
 //' @param y Vector of y-coordinates
 //'
-//' @return List of Delaunay triangle membership
+//' @return List of neighbours
 //'
 // [[Rcpp::export]]
 Rcpp::List rcpp_get_neighbours (Rcpp::NumericVector x, Rcpp::NumericVector y)

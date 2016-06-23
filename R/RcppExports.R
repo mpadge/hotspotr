@@ -5,15 +5,17 @@
 #'
 #' Computes spatial autocorrelation statistics for a given input matrix
 #'
-#' @param x Input matrix (must be square)
+#' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
+#' point
+#' @param x Corresponding vector of values
 #' @param ac_type Character string specifying type of aucorrelation
 #' (\code{moran}, \code{geary}, or code{getis-ord}).
 #'
 #' @return A vector of sorted spatial autocorrelation statistics scaled between
 #' zero and one.
 #'
-rcpp_ac_stats <- function(x, ac_type) {
-    .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', x, ac_type)
+rcpp_ac_stats <- function(nbs, x, ac_type) {
+    .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', nbs, x, ac_type)
 }
 
 #' rcpp_get_neighbours
@@ -23,7 +25,7 @@ rcpp_ac_stats <- function(x, ac_type) {
 #' @param x Vector of x-coordinates
 #' @param y Vector of y-coordinates
 #'
-#' @return List of Delaunay triangle membership
+#' @return List of neighbours
 #'
 rcpp_get_neighbours <- function(x, y) {
     .Call('hotspotr_rcpp_get_neighbours', PACKAGE = 'hotspotr', x, y)
@@ -31,54 +33,54 @@ rcpp_get_neighbours <- function(x, y) {
 
 #' rcpp_ives2d
 #'
-#' Implements neutral model in two dimensions
+#' Implements neutral model of Ives & Klopfer (Ecology 1997).
 #'
-#' @param size Size of the square grid on which to generate model. Total number
-#' of points is size ^ 2
-#' @param nt Number of successive layers of temporal and spatial autocorrelation
-#' used to generate final modelled values
+#' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
+#' point. 
 #' @param alpha_t Strength of temporal autocorrelation
 #' @param alpha_s Strength of spatial autocorrelation
+#' @param nt Number of successive layers of temporal and spatial autocorrelation
+#' used to generate final modelled values
 #' @param svec Vector of random numbers for values of \code{s} drawn from a
 #' truncated normal ' distribution.
 #' @param rvec Vector of random numbers for values of \code{r} drawn from a
 #' truncated normal ' distribution.
 #'
-#' @return A matrix of dimension (size, size) of simulated values
+#' @return A vector of simulated values of same size as \code{nbs}.
 #'
-rcpp_ives2d <- function(size, nt, alpha_t, alpha_s, svec, rvec) {
-    .Call('hotspotr_rcpp_ives2d', PACKAGE = 'hotspotr', size, nt, alpha_t, alpha_s, svec, rvec)
+rcpp_ives2d <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
+    .Call('hotspotr_rcpp_ives2d', PACKAGE = 'hotspotr', nbs, nt, alpha_t, alpha_s, svec, rvec)
 }
 
 #' rcpp_ives2d_space
 #'
-#' Implements neutral model in two dimensions with additional spatial
-#' structure, implented here through replacing generic local autocorrelation
-#' with movement along maximal local gradients.
+#' Implements neutral model of Ives & Klopfer (Ecology 1997) with additional
+#' spatial ' structure, implented here through replacing generic local
+#' autocorrelation ' with movement along maximal local gradients.
 #'
-#' @param size Size of the square grid on which to generate model. Total number
-#' of points is size ^ 2
-#' @param nt Number of successive layers of temporal and spatial autocorrelation
-#' used to generate final modelled values
+#' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
+#' point. 
 #' @param alpha_t Strength of temporal autocorrelation
 #' @param alpha_s Strength of spatial autocorrelation
+#' @param nt Number of successive layers of temporal and spatial autocorrelation
+#' used to generate final modelled values
 #' @param svec Vector of random numbers for values of \code{s} drawn from a
 #' truncated normal ' distribution.
 #' @param rvec Vector of random numbers for values of \code{r} drawn from a
 #' truncated normal ' distribution.
 #'
-#' @return A matrix of dimension (size, size) of simulated values
+#' @return A vector of simulated values of same size as \code{nbs}.
 #'
-rcpp_ives2d_space <- function(size, nt, alpha_t, alpha_s, svec, rvec) {
-    .Call('hotspotr_rcpp_ives2d_space', PACKAGE = 'hotspotr', size, nt, alpha_t, alpha_s, svec, rvec)
+rcpp_ives2d_space <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
+    .Call('hotspotr_rcpp_ives2d_space', PACKAGE = 'hotspotr', nbs, nt, alpha_t, alpha_s, svec, rvec)
 }
 
 #' rcpp_neutral2d
 #'
 #' Implements neutral model in two dimensions
 #'
-#' @param size Size of the square grid on which to generate model. Total number
-#' of points is size ^ 2
+#' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
+#' point. 
 #' @param alpha_t Strength of temporal autocorrelation
 #' @param alpha_s Strength of spatial autocorrelation
 #' @param sd0 Standard deviation of truncated normal distribution used to model
@@ -86,10 +88,10 @@ rcpp_ives2d_space <- function(size, nt, alpha_t, alpha_s, svec, rvec) {
 #' @param nt Number of successive layers of temporal and spatial autocorrelation
 #' used to generate final modelled values
 #'
-#' @return A matrix of dimension (size, size) of simulated values
+#' @return A vector of simulated values of same size as \code{nbs}.
 #'
-rcpp_neutral2d <- function(size, alpha_t, alpha_s, sd0, nt) {
-    .Call('hotspotr_rcpp_neutral2d', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, sd0, nt)
+rcpp_neutral2d <- function(nbs, alpha_t, alpha_s, sd0, nt) {
+    .Call('hotspotr_rcpp_neutral2d', PACKAGE = 'hotspotr', nbs, alpha_t, alpha_s, sd0, nt)
 }
 
 #' rcpp_neutral2d_ntests
@@ -97,8 +99,8 @@ rcpp_neutral2d <- function(size, alpha_t, alpha_s, sd0, nt) {
 #' Performs repeated neutral tests to yield average distributions of both
 #' hotspot values and spatial autocorrelation statistics.
 #'
-#' @param size Size of the square grid on which to generate model. Total number
-#' of points is size ^ 2
+#' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
+#' point. 
 #' @param alpha_t Strength of temporal autocorrelation
 #' @param alpha_s Strength of spatial autocorrelation
 #' @param sd0 Standard deviation of truncated normal distribution used to model
@@ -109,11 +111,11 @@ rcpp_neutral2d <- function(size, alpha_t, alpha_s, sd0, nt) {
 #' @param ac_type Character string specifying type of aucorrelation
 #' (\code{moran}, \code{geary}, or code{getis-ord}).
 #'
-#' @return A matrix of dimension (size * size, 2), with first column containing
+#' @return A matrix of dimension (size, 2), with first column containing
 #' sorted and re-scaled hotspot values, and second column containing sorted and
 #' re-scaled spatial autocorrelation statistics.
 #'
-rcpp_neutral2d_ntests <- function(size, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
-    .Call('hotspotr_rcpp_neutral2d_ntests', PACKAGE = 'hotspotr', size, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
+rcpp_neutral2d_ntests <- function(nbs, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
+    .Call('hotspotr_rcpp_neutral2d_ntests', PACKAGE = 'hotspotr', nbs, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
 }
 

@@ -5,8 +5,8 @@
 //'
 //' Implements neutral model in two dimensions
 //'
-//' @param size Size of the square grid on which to generate model. Total number
-//' of points is size ^ 2
+//' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
+//' point. 
 //' @param alpha_t Strength of temporal autocorrelation
 //' @param alpha_s Strength of spatial autocorrelation
 //' @param sd0 Standard deviation of truncated normal distribution used to model
@@ -14,18 +14,21 @@
 //' @param nt Number of successive layers of temporal and spatial autocorrelation
 //' used to generate final modelled values
 //'
-//' @return A matrix of dimension (size, size) of simulated values
+//' @return A vector of simulated values of same size as \code{nbs}.
 //'
 // [[Rcpp::export]]
-Rcpp::NumericMatrix rcpp_neutral2d (int size, 
+Rcpp::NumericVector rcpp_neutral2d (Rcpp::List nbs, 
         double alpha_t, double alpha_s, double sd0, int nt)
 {
+    const int size = nbs.size ();
+
     int indx;
     double tempd;
 
     // Set up truncated normal distribution
-    Rcpp::NumericVector eps (nt * size * size);
-    eps = Rcpp::rnorm (nt * size * size, 1.0, sd0);
+    Rcpp::NumericVector eps (nt * size);
+    eps = Rcpp::rnorm (nt * size, 1.0, sd0);
+    // TODO: Check timing with simple explicit loop instead of any
     while (is_true (any (eps <= 0.0)))
     {
         tempd = Rcpp::rnorm (1, 1.0, sd0) (0);
@@ -40,34 +43,28 @@ Rcpp::NumericMatrix rcpp_neutral2d (int size,
     }
         
 
-    Rcpp::NumericMatrix x (size, size), 
-        xexp (size+2, size+2), xexp2 (size+2, size+2);
+    Rcpp::NumericVector x (size), x2 (size);
     std::fill (x.begin (), x.end (), 1.0);
 
+    Rcpp::NumericVector one_list;
     for (int t=0; t<nt; t++)
     {
-        // temporal autocorrelation
+        // time step first
         for (int i=0; i<size; i++)
-            for (int j=0; j<size; j++)
-            {
-                indx = t * size * size + i * size + j;
-                x (i, j) = (1.0 - alpha_t) * x (i, j) + alpha_t * eps (indx);
-            }
-        // spatial autocorrelation, calculated on expanded matrix
+            x (i) = (1.0 - alpha_t) * x (i) + alpha_t * eps (t * size + i);
+        // spatial autocorrelation
+        x2 = Rcpp::clone (x);
         for (int i=0; i<size; i++)
-            for (int j=0; j<size; j++)
-                xexp (i+1, j+1) = x (i, j);
-        xexp (Rcpp::_, 0) = xexp (Rcpp::_, size);
-        xexp (0, Rcpp::_) = xexp (size, Rcpp::_);
-        xexp (Rcpp::_, size+1) = xexp (Rcpp::_, 1);
-        xexp (size+1, Rcpp::_) = xexp (1, Rcpp::_);
-        for (int i=0; i<size; i++)
-            for (int j=0; j<size; j++)
-                xexp2 (i+1, j+1) = (1.0 - 4.0 * alpha_s) * xexp (i+1, j+1) +
-                    alpha_s * (xexp (i, j+1) + xexp (i+2, j+1) +
-                            xexp (i+1, j) + xexp (i+1, j+2));
-        x = xexp2 (Rcpp::Range (1, size), Rcpp::Range (1, size));
-    } // end for t
+        {
+            tempd = 0.0;
+            one_list = Rcpp::as <Rcpp::NumericVector> (nbs (i));
+            for (int j=0; j<one_list.size (); j++)
+                tempd += x (j);
+            x2 (i) = (1.0 - (double) one_list.size () * alpha_s) * x (i) +
+                alpha_s * tempd;
+        }
+        x = Rcpp::clone (x2);
+    }
 
     return x;
 }
@@ -78,8 +75,8 @@ Rcpp::NumericMatrix rcpp_neutral2d (int size,
 //' Performs repeated neutral tests to yield average distributions of both
 //' hotspot values and spatial autocorrelation statistics.
 //'
-//' @param size Size of the square grid on which to generate model. Total number
-//' of points is size ^ 2
+//' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
+//' point. 
 //' @param alpha_t Strength of temporal autocorrelation
 //' @param alpha_s Strength of spatial autocorrelation
 //' @param sd0 Standard deviation of truncated normal distribution used to model
@@ -90,45 +87,38 @@ Rcpp::NumericMatrix rcpp_neutral2d (int size,
 //' @param ac_type Character string specifying type of aucorrelation
 //' (\code{moran}, \code{geary}, or code{getis-ord}).
 //'
-//' @return A matrix of dimension (size * size, 2), with first column containing
+//' @return A matrix of dimension (size, 2), with first column containing
 //' sorted and re-scaled hotspot values, and second column containing sorted and
 //' re-scaled spatial autocorrelation statistics.
 //'
 // [[Rcpp::export]]
-Rcpp::NumericMatrix rcpp_neutral2d_ntests (int size, 
+Rcpp::NumericMatrix rcpp_neutral2d_ntests (Rcpp::List nbs, 
         double alpha_t, double alpha_s, double sd0, int nt, int ntests,
         std::string ac_type)
 {
-    // TODO Change int ac_type to std::string
-    int len = size * size;
-    double xmin, xmax;
+    const int size = nbs.size ();
 
-    Rcpp::NumericMatrix x (size, size);
+    Rcpp::NumericVector x (size), xtot (size), ac (size), ac1 (size);
+    std::fill (ac.begin (), ac.end (), 0.0);
+    std::fill (xtot.begin (), xtot.end (), 0.0);
 
-    Rcpp::NumericVector xv (len), xv_tot (len), ac_vec (len), ac_vec1 (len);
-    std::fill (ac_vec.begin (), ac_vec.end (), 0.0);
-    std::fill (xv_tot.begin (), xv_tot.end (), 0.0);
     for (int n=0; n<ntests; n++)
     {
-        x = rcpp_neutral2d (size, alpha_t, alpha_s, sd0, nt);
-        ac_vec1 = rcpp_ac_stats (x, ac_type); // already sorted and normalised
+        x = rcpp_neutral2d (nbs, alpha_t, alpha_s, sd0, nt);
+        ac1 = rcpp_ac_stats (nbs, x, ac_type); // sorted and normalised
         for (int i=0; i<size; i++)
-            for (int j=0; j<size; j++)
-                xv (i * size + j) = x (i, j);
-        for (int i=0; i<len; i++)
-            ac_vec (i) = ac_vec (i) + ac_vec1 (i);
-        std::sort (xv.begin (), xv.end (), std::greater<double> ());
-        xmin = Rcpp::min (xv);
-        xmax = Rcpp::max (xv);
-        for (int i=0; i<len; i++)
-            xv_tot (i) = xv_tot (i) + (xv (i) - xmin) / (xmax - xmin);
+            ac (i) += ac1 (i);
+        std::sort (x.begin (), x.end (), std::greater<double> ());
+        for (int i=0; i<size; i++)
+            xtot (i) += (x (i) - (double) Rcpp::min (x)) /
+                ((double) Rcpp::max (x) - (double) Rcpp::min (x));
     }
 
-    Rcpp::NumericMatrix result (len, 2);
-    for (int i=0; i<len; i++)
+    Rcpp::NumericMatrix result (size, 2);
+    for (int i=0; i<size; i++)
     {
-        result (i, 0) = xv_tot (i) / (double) ntests;
-        result (i, 1) = ac_vec (i) / (double) ntests;
+        result (i, 0) = xtot (i) / (double) ntests;
+        result (i, 1) = ac (i) / (double) ntests;
     }
     Rcpp::colnames (result) = Rcpp::CharacterVector::create ("y", "ac");
 

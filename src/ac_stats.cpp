@@ -5,7 +5,9 @@
 //'
 //' Computes spatial autocorrelation statistics for a given input matrix
 //'
-//' @param x Input matrix (must be square)
+//' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
+//' point
+//' @param x Corresponding vector of values
 //' @param ac_type Character string specifying type of aucorrelation
 //' (\code{moran}, \code{geary}, or code{getis-ord}).
 //'
@@ -13,52 +15,60 @@
 //' zero and one.
 //'
 // [[Rcpp::export]]
-Rcpp::NumericVector rcpp_ac_stats (Rcpp::NumericMatrix x, std::string ac_type)
+Rcpp::NumericVector rcpp_ac_stats (Rcpp::List nbs, Rcpp::NumericVector x, 
+        std::string ac_type)
 {
-    int size = x.nrow ();
-    Rcpp::NumericMatrix xexp (size + 2, size + 2);
-    // Can't figure out how to use Rcpp::Range to set, rather than extract, a
-    // sub-matrix, so nmat is filled explicitly here
-    for (int i=0; i<size; i++)
-        for (int j=0; j<size; j++)
-            xexp (i + 1, j + 1) = x (i, j);
-    xexp (Rcpp::_, 0) = xexp (Rcpp::_, size);
-    xexp (0, Rcpp::_) = xexp (size, Rcpp::_);
-    xexp (Rcpp::_, size+1) = xexp (Rcpp::_, 1);
-    xexp (size+1, Rcpp::_) = xexp (1, Rcpp::_);
+    if (x.size () != nbs.size ())
+        Rcpp::stop ("nbs must be same size as x");
 
-    Rcpp::NumericMatrix mmat (size, size);
-    double tempd, xmn = mean (x);
-    for (int i=1; i<(size+1); i++)
-        for (int j=1; j<(size+1); j++)
+    const int size = x.size ();
+    const double xmn = Rcpp::mean (x), sd=Rcpp::sd (x);
+
+    double tempd [2], sizei;
+
+    Rcpp::NumericVector ac (size), one_list;
+
+    for (int i=0; i<size; i++)
+    {
+        one_list = Rcpp::as <Rcpp::NumericVector> (nbs (i));
+        // nbs are 1-indexed from R, so converted here to 0-indexed
+        for (auto j = one_list.begin (); j != one_list.end (); ++j)
+            (*j) = (*j) - 1;
+
+        tempd [0] = tempd [1] = 0.0;
+        if (ac_type == "moran")
         {
-            if (ac_type == "moran")
-            {
-                tempd = xexp (i-1, j) + xexp (i+1, j) +
-                    xexp (i, j-1) + xexp (i, j+1);
-                mmat (i-1, j-1) = (xexp (i, j) - xmn) * (tempd - 4.0 * xmn) / 5.0;
-            } else if (ac_type == "geary")
-            {
-                mmat (i-1, j-1) = 
-                    (xexp (i, j) - xexp (i-1, j)) * (xexp (i, j) - xexp (i-1, j)) +
-                    (xexp (i, j) - xexp (i+1, j)) * (xexp (i, j) - xexp (i+1, j)) +
-                    (xexp (i, j) - xexp (i, j-1)) * (xexp (i, j) - xexp (i, j-1)) +
-                    (xexp (i, j) - xexp (i, j+1)) * (xexp (i, j) - xexp (i, j+1));
-            } else
-            {
-                mmat (i-1, j-1) = xexp (i-1, j) + xexp (i+1, j) + xexp (i, j-1) + 
-                                    xexp (i, j+1) - 4.0 * xmn;
-            }
+            for (auto j = one_list.begin (); j != one_list.end (); ++j)
+                tempd [0] += (x (*j) - xmn) * (x (*j) - xmn);
+            for (auto j = one_list.begin (); j != one_list.end (); ++j)
+                for (auto k = j; ++k != one_list.end (); /**/)
+                    tempd [1] += (x (*j) - xmn) * (x (*k) - xmn);
+            ac (i) = tempd [1] / tempd [0];
+        } else if (ac_type == "geary")
+        {
+            for (auto j = one_list.begin (); j != one_list.end (); ++j)
+                tempd [0] += (x (*j) - xmn) * (x (*j) - xmn);
+            for (auto j = one_list.begin (); j != one_list.end (); ++j)
+                for (auto k = j; ++k != one_list.end (); /**/)
+                    tempd [1] += (x (*j) - x (*k)) * (x (*j) - x (*k));
+            ac (i) = tempd [1] / tempd [0];
+        } else // getis-ord
+        {
+            for (auto j = one_list.begin (); j != one_list.end (); ++j)
+                tempd [0] += x (*j);
+            sizei = (double) one_list.size ();
+            tempd [0] = tempd [0] - sizei * xmn;
+            tempd [1] = sizei * ((double) size - sizei);
+            tempd [1] = sqrt (tempd [1] / ((double) size - 1.0));
+            //ac (i) = tempd [0] / (sd * tempd [1]);
+            ac (i) = tempd [0] / tempd [1];
         }
-    Rcpp::NumericVector mvec (size * size);
-    for (int i=0; i<size; i++)
-        for (int j=0; j<size; j++)
-            mvec (i * size + j) = mmat (i, j);
-    std::sort (mvec.begin (), mvec.end (), std::greater<double> ());
-    double mmin = Rcpp::min (mvec);
-    double mmax = Rcpp::max (mvec);
-    for (Rcpp::NumericVector::iterator it = mvec.begin (); it != mvec.end (); ++it)
-        *it = (*it - mmin) / (mmax - mmin);
+    }
 
-    return mvec;
+    std::sort (ac.begin (), ac.end (), std::greater<double> ());
+    double amax = Rcpp::max (ac), amin = Rcpp::min (ac);
+    for (Rcpp::NumericVector::iterator it = ac.begin (); it != ac.end (); ++it)
+        *it = (*it - amin) / (amax - amin);
+
+    return ac;
 }

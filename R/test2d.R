@@ -3,13 +3,16 @@
 #' Tests an observed matrix of data (\code{ymat}) against a two-dimensional
 #' neutral model
 #'
-#' @param ymat Square matrix of observed values to be tested
+#' @param z Vector of observed values to be tested
+#' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
+#' point
 #' @param alpha Vector of two components providing starting values for the
 #' strength of autocorrelation in time and space
 #' @param ntests Number of repeats of neutral model used to calculate mean
 #' rank--scale distribution
 #' @param ac_type type of autocorrelation statistic to use in tests
 #' (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})
+#' @param verbose If TRUE, dump progress details to screen
 #' @param plot If TRUE, produces a plot of rank--scale distributions
 #'
 #' @return A vector of four values as estimated by the neutral model:
@@ -32,13 +35,15 @@
 #' }
 #'
 #' @export
-test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, ac_type='moran',
-                    plot=FALSE)
+test2d <- function (z, nbs, alpha=c(0.1, 0.1), ntests=100, ac_type='moran',
+                    verbose=FALSE, plot=FALSE)
 {
-    if (!is.matrix (ymat)) 
-        stop ('ymat must be a matrix')
-    else if (dim (ymat) [1] != dim (ymat) [2])
-        stop ('ymat must be a square matrix')
+    if (!is.numeric (z)) 
+        stop ('z must be numeric')
+    if (!is (nbs, 'nb'))
+        stop ('nbs must of class spdep::nb')
+    if (length (z) != length (nbs))
+        stop ('nbs must have same length as z')
 
     ac_type <- tolower (ac_type)
     if (substring (ac_type, 1, 1) == 'g')
@@ -50,33 +55,36 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, ac_type='moran',
     } else
         ac_type <- 'moran'
 
-    size <- dim (ymat) [1]
+    size <- length (z)
 
-    mdat <- rcpp_ac_stats (ymat, ac_type)
-    ydat <- sort ((ymat - min (ymat)) / diff (range (ymat)), decreasing=TRUE)
+    ac <- rcpp_ac_stats (nbs, z, ac_type)
+    zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
     yt <- NULL # remove no visible binding warning
     # Initial 3D optimisation to get nt
     fn_n <- function (x)
     {
-        yt <- rcpp_neutral2d_ntests (size=size, alpha_t=x[1],
+        yt <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=x[1],
                                         alpha_s=x[2], sd0=0.1,
                                         nt=x[3], ntests=ntests, ac_type=ac_type)
-        sum ((yt [,1] - ydat) ^ 2) + sum ((yt [,2] - mdat) ^ 2)
+        sum ((yt [,1] - zs) ^ 2) + sum ((yt [,2] - ac) ^ 2)
     }
+    if (verbose) message ('Optimising for nt ... ', appendLF=FALSE)
     op <- optim (c (alpha, 10), fn_n)
     # then reduce to 2d optimisation
     nt <- round (op$par [3])
     alpha <- op$par [1:2]
     fn_a <- function (x)
     {
-        yt <- rcpp_neutral2d_ntests (size=size, alpha_t=x [1], alpha_s=x [2],
+        yt <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=x [1], alpha_s=x [2],
                                         sd0=0.1, nt=nt, ntests=ntests,
                                         ac_type=ac_type)
-        sum ((yt [,1] - ydat) ^ 2) + sum ((yt [,2] - mdat) ^ 2)
+        sum ((yt [,1] - zs) ^ 2) + sum ((yt [,2] - ac) ^ 2)
     }
+    if (verbose) message ('done.\nOptimising for alpha ... ', appendLF=FALSE)
     op <- optim (alpha, fn_a)
+    if (verbose) message ('done.')
     alpha <- op$par
-    yt <- rcpp_neutral2d_ntests (size=size, alpha_t=alpha [1], alpha_s=alpha [2],
+    yt <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=alpha [1], alpha_s=alpha [2],
                                     sd0=0.1, nt=nt, ntests=ntests,
                                     ac_type=ac_type)
 
@@ -87,17 +95,17 @@ test2d <- function (ymat, alpha=c(0.1, 0.1), ntests=100, ac_type='moran',
 
     # Note paired=TRUE is not appropriate because the positions in the sorted
     # lists are arbitrary and not directly related
-    pval_t <- t.test (yt, ydat, paired=FALSE)$p.value
-    pval_m <- t.test (ym, mdat, paired=FALSE)$p.value
-    val_t <- sum ((yt - ydat) ^ 2)
-    val_m <- sum ((ym - ydat) ^ 2)
+    pval_t <- t.test (yt, z, paired=FALSE)$p.value
+    pval_m <- t.test (ym, ac, paired=FALSE)$p.value
+    val_t <- sum ((yt - z) ^ 2)
+    val_m <- sum ((ym - ac) ^ 2)
 
     if (plot)
     {
         plot.new ()
         par (mfrow=c(1,2))
         cols <- c ('blue', 'red')
-        y1 <- list (ydat, mdat)
+        y1 <- list (z, ac)
         y2 <- list (yt, ym)
         pvals <- c (pval_t, pval_m)
         mt <- c ('raw', 'AC')

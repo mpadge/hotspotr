@@ -4,11 +4,14 @@
 \alias{test2d}
 \title{test2d}
 \usage{
-test2d(ymat, alpha = c(0.1, 0.1), ntests = 100, ac_type = "moran",
-  plot = FALSE)
+test2d(z, nbs, alpha = c(0.1, 0.1), ntests = 100, ac_type = "moran",
+  verbose = FALSE, plot = FALSE)
 }
 \arguments{
-\item{ymat}{Square matrix of observed values to be tested}
+\item{z}{Vector of observed values to be tested}
+
+\item{nbs}{An \code{spdep} \code{nb} object listing all neighbours of each
+point}
 
 \item{alpha}{Vector of two components providing starting values for the
 strength of autocorrelation in time and space}
@@ -18,6 +21,8 @@ rank--scale distribution}
 
 \item{ac_type}{type of autocorrelation statistic to use in tests
 (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}
+
+\item{verbose}{If TRUE, dump progress details to screen}
 
 \item{plot}{If TRUE, produces a plot of rank--scale distributions}
 }

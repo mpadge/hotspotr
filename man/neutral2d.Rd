@@ -4,11 +4,11 @@
 \alias{neutral2d}
 \title{neutral2d}
 \usage{
-neutral2d(size = 10, alpha = c(0.1, 0.1), nt = 100, sd0 = 0.1, seed)
+neutral2d(nbs, alpha = c(0.1, 0.1), nt = 100, sd0 = 0.1, seed)
 }
 \arguments{
-\item{size}{Size of the square grid on which to generate model. Total number
-of points is size ^ 2}
+\item{nbs}{An \code{spdep} \code{nb} object listing all neighbours of each
+point}
 
 \item{alpha}{Vector of two components respectively specifying the strength of
 autocorrelation in time and space.}

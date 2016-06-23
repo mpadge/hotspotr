@@ -27,15 +27,19 @@ neutral fields.
 ```{r demo-moran, fig.width=12, fig.height=6}
 plot.new ()
 seed <- 18
-ymat <- ives2d (size=10, seed=seed)
-test <- test2d (ymat, plot=TRUE)
+dat <- ives2d (size=10, seed=seed)
+dat <- ives2d (size=10)
+rcpp_ac_stats (dat$nbs, dat$z, "moran")
+rcpp_ac_stats (dat$nbs, dat$z, "geary")
+rcpp_ac_stats (dat$nbs, dat$z, "getis")
+test <- test2d (dat$z, dat$nbs, verbose=TRUE, plot=TRUE)
 ```
 
 The default spatial autocorrelation statistic is Moran's I, with results for
 other statistics in this case notably different. Geary's C:
 ```{r demo-geary, fig.width=12, fig.height=6}
 plot.new ()
-test <- test2d (ymat, plot=TRUE, ac_type='geary')
+test <- test2d (dat$z, dat$nbs, plot=TRUE, ac_type='geary')
 ```
 
 And Getis-Ord:

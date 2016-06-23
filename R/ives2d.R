@@ -14,13 +14,14 @@
 #' @param spatial If TRUE, spatial autocorrelation is calculated by assuming
 #' movement along locally maximal gradients, otherwise it is equivalent to
 #' neutral model
+#' @param rook If FALSE, use queen contiguities
 #' @param seed Random seed
 #'
 #' @return A matrix of (size, size)
 #'
 #' @export
 ives2d <- function (size=10, nt=1000, sd0=0.1, alpha=c(0.1, 0.1), spatial=FALSE,
-                    seed) 
+                    rook=TRUE, seed) 
 {
     if (!missing (seed)) set.seed (seed)
     s0 <- 0.5
@@ -29,10 +30,15 @@ ives2d <- function (size=10, nt=1000, sd0=0.1, alpha=c(0.1, 0.1), spatial=FALSE,
     svec <- msm::rtnorm (nt * size * size, mean=s0, sd=sd0, lower=0, upper=2*s0)
     rvec <- msm::rtnorm (nt * size * size, mean=r0, sd=sd0, lower=0, upper=2*r0)
 
-    result <- NULL
+    xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
+    if (rook) dhi <- 1
+    else dhi <- 1.5
+    nbs <- spdep::dnearneigh (xy, 0, dhi)
+
+    z <- NULL
     if (!spatial)
-        result <- rcpp_ives2d (size, nt, alpha[1], alpha[2], svec, rvec)
+        z <- rcpp_ives2d (nbs, nt, alpha[1], alpha[2], svec, rvec)
     else
-        result <- rcpp_ives2d_space (size, nt, alpha[1], alpha[2], svec, rvec)
-    return (result)
+        z <- rcpp_ives2d_space (size, nt, alpha[1], alpha[2], svec, rvec)
+    return (list (z=z, nbs=nbs))
 }

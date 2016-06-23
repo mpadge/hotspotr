@@ -5,7 +5,7 @@
 \title{ives2d}
 \usage{
 ives2d(size = 10, nt = 1000, sd0 = 0.1, alpha = c(0.1, 0.1),
-  spatial = FALSE, seed)
+  spatial = FALSE, rook = TRUE, seed)
 }
 \arguments{
 \item{size}{Size of the square grid on which to generate model. Total number
@@ -23,6 +23,8 @@ autocorrelation in time and space.}
 \item{spatial}{If TRUE, spatial autocorrelation is calculated by assuming
 movement along locally maximal gradients, otherwise it is equivalent to
 neutral model}
+
+\item{rook}{If FALSE, use queen contiguities}
 
 \item{seed}{Random seed}
 }

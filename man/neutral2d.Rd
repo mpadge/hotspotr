@@ -28,7 +28,8 @@ A vector of hotspot values sorted from high to low
 Implements neutral model in two dimensions
 }
 \examples{
-y <- neutral2d ()
+nbs <- ives2d (size=10)$nbs
+y <- neutral2d (nbs=nbs)
 
 }
 \seealso{

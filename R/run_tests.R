@@ -1,6 +1,6 @@
 #' run_tests
 #'
-#' Tests observed data (\code{ymat}) against a series of neutral models
+#' Tests observed data (\code{z}) against a series of neutral models
 #'
 #' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
 #' point
@@ -53,6 +53,7 @@ run_tests <- function (nbs=nbs, alpha=c(0.1, 0.1), nt=100, ntests=100,
         }
     }
     z <- length (z)
+    ac <- rcpp_ac_stats (nbs, z, ac_type)
     zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
 
     ac_type <- tolower (ac_type)
@@ -78,9 +79,9 @@ run_tests <- function (nbs=nbs, alpha=c(0.1, 0.1), nt=100, ntests=100,
     alpha_s <- c (0.1, 0)
     for (i in 1:2)
     {
-        t2 <- test2d (ymat, alpha=c(alpha_t, alpha_s [i]), ntests=ntests)
-        ss_raw <- 100 * sum ((t2$data$y - ydat) ^ 2) / size ^ 2
-        ss_ac <- 100 * sum ((t2$data$ac - mdat) ^ 2) / size ^ 2
+        t2 <- test2d (z, nbs=nbs, alpha=c(alpha_t, alpha_s [i]), ntests=ntests)
+        ss_raw <- 100 * sum ((t2$data$y - z) ^ 2) / length (nbs) ^ 2
+        ss_ac <- 100 * sum ((t2$data$ac - ac) ^ 2) / length (nbs) ^ 2
         cat (" (0.1, ", alpha_s [i], ")\t",
              formatC (ss_raw, format="f", digits=2), "\t",
              formatC (ss_ac, format="f", digits=2), "\t",

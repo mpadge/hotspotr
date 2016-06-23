@@ -35,7 +35,7 @@ be generated with specified values of \code{size} and \code{alpha}}
 Nothing (dumps statistics to screen)
 }
 \description{
-Tests observed data (\code{ymat}) against a series of neutral models
+Tests observed data (\code{z}) against a series of neutral models
 }
 \examples{
 \dontrun{

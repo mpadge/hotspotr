@@ -17,7 +17,8 @@
 #' @seealso \code{neutral1d}
 #'
 #' @examples
-#' y <- neutral2d ()
+#' nbs <- ives2d (size=10)$nbs
+#' y <- neutral2d (nbs=nbs)
 #'
 #' @export
 neutral2d <- function (nbs, alpha=c(0.1, 0.1), nt=100, sd0=0.1, seed)

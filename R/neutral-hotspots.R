@@ -1,4 +1,4 @@
-#' neutral2d
+#' neutral_hotspots
 #'
 #' Implements neutral model in two dimensions
 #'
@@ -14,20 +14,20 @@
 #'
 #' @return A vector of hotspot values sorted from high to low
 #'
-#' @seealso \code{neutral1d}
+#' @seealso \code{ives}
 #'
 #' @examples
-#' nbs <- ives2d (size=10)$nbs
-#' y <- neutral2d (nbs=nbs)
+#' nbs <- ives (size=10)$nbs
+#' z <- neutral_hotspots (nbs=nbs)
 #'
 #' @export
-neutral2d <- function (nbs, alpha=c(0.1, 0.1), nt=100, sd0=0.1, seed)
+neutral_hotspots <- function (nbs, alpha=c(0.1, 0.1), nt=100, sd0=0.1, seed)
 {
     if (alpha [1] <= 0)
         stop ('neutral model only makes sense with finite temporal autocorrelation')
 
     if (!missing (seed)) set.seed (seed)
 
-    rcpp_neutral2d (nbs=nbs, alpha_t=alpha [1], alpha_s=alpha [2],
-                    sd0=sd0, nt=nt)
+    rcpp_neutral_hotspots (nbs=nbs, alpha_t=alpha [1], alpha_s=alpha [2],
+                           sd0=sd0, nt=nt)
 }

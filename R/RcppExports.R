@@ -31,7 +31,7 @@ rcpp_get_neighbours <- function(x, y) {
     .Call('hotspotr_rcpp_get_neighbours', PACKAGE = 'hotspotr', x, y)
 }
 
-#' rcpp_ives2d
+#' rcpp_ives
 #'
 #' Implements neutral model of Ives & Klopfer (Ecology 1997).
 #'
@@ -48,11 +48,11 @@ rcpp_get_neighbours <- function(x, y) {
 #'
 #' @return A vector of simulated values of same size as \code{nbs}.
 #'
-rcpp_ives2d <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
-    .Call('hotspotr_rcpp_ives2d', PACKAGE = 'hotspotr', nbs, nt, alpha_t, alpha_s, svec, rvec)
+rcpp_ives <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
+    .Call('hotspotr_rcpp_ives', PACKAGE = 'hotspotr', nbs, nt, alpha_t, alpha_s, svec, rvec)
 }
 
-#' rcpp_ives2d_space
+#' rcpp_ives_spatial
 #'
 #' Implements neutral model of Ives & Klopfer (Ecology 1997) with additional
 #' spatial ' structure, implented here through replacing generic local
@@ -71,11 +71,11 @@ rcpp_ives2d <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
 #'
 #' @return A vector of simulated values of same size as \code{nbs}.
 #'
-rcpp_ives2d_space <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
-    .Call('hotspotr_rcpp_ives2d_space', PACKAGE = 'hotspotr', nbs, nt, alpha_t, alpha_s, svec, rvec)
+rcpp_ives_spatial <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
+    .Call('hotspotr_rcpp_ives_spatial', PACKAGE = 'hotspotr', nbs, nt, alpha_t, alpha_s, svec, rvec)
 }
 
-#' rcpp_neutral2d
+#' rcpp_neutral_hotspots
 #'
 #' Implements neutral model in two dimensions
 #'
@@ -90,11 +90,11 @@ rcpp_ives2d_space <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
 #'
 #' @return A vector of simulated values of same size as \code{nbs}.
 #'
-rcpp_neutral2d <- function(nbs, alpha_t, alpha_s, sd0, nt) {
-    .Call('hotspotr_rcpp_neutral2d', PACKAGE = 'hotspotr', nbs, alpha_t, alpha_s, sd0, nt)
+rcpp_neutral_hotspots <- function(nbs, alpha_t, alpha_s, sd0, nt) {
+    .Call('hotspotr_rcpp_neutral_hotspots', PACKAGE = 'hotspotr', nbs, alpha_t, alpha_s, sd0, nt)
 }
 
-#' rcpp_neutral2d_ntests
+#' rcpp_neutral_hotspots_ntests
 #'
 #' Performs repeated neutral tests to yield average distributions of both
 #' hotspot values and spatial autocorrelation statistics.
@@ -115,7 +115,7 @@ rcpp_neutral2d <- function(nbs, alpha_t, alpha_s, sd0, nt) {
 #' sorted and re-scaled hotspot values, and second column containing sorted and
 #' re-scaled spatial autocorrelation statistics.
 #'
-rcpp_neutral2d_ntests <- function(nbs, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
-    .Call('hotspotr_rcpp_neutral2d_ntests', PACKAGE = 'hotspotr', nbs, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
+rcpp_neutral_hotspots_ntests <- function(nbs, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
+    .Call('hotspotr_rcpp_neutral_hotspots_ntests', PACKAGE = 'hotspotr', nbs, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
 }
 

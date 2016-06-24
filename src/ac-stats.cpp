@@ -1,5 +1,5 @@
 #include <Rcpp.h>
-#include "ac_stats.h"
+#include "ac-stats.h"
 
 //' rcpp_ac_stats
 //'

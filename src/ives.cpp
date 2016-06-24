@@ -2,7 +2,7 @@
 #include <fstream>
 #include <algorithm> // std::max
 
-//' rcpp_ives2d
+//' rcpp_ives
 //'
 //' Implements neutral model of Ives & Klopfer (Ecology 1997).
 //'
@@ -20,7 +20,7 @@
 //' @return A vector of simulated values of same size as \code{nbs}.
 //'
 // [[Rcpp::export]]
-Rcpp::NumericVector rcpp_ives2d (Rcpp::List nbs, int nt, 
+Rcpp::NumericVector rcpp_ives (Rcpp::List nbs, int nt, 
         double alpha_t, double alpha_s,
         Rcpp::NumericVector svec, Rcpp::NumericVector rvec)
 {
@@ -61,7 +61,7 @@ Rcpp::NumericVector rcpp_ives2d (Rcpp::List nbs, int nt,
     return x;
 }
 
-//' rcpp_ives2d_space
+//' rcpp_ives_spatial
 //'
 //' Implements neutral model of Ives & Klopfer (Ecology 1997) with additional
 //' spatial ' structure, implented here through replacing generic local
@@ -81,7 +81,7 @@ Rcpp::NumericVector rcpp_ives2d (Rcpp::List nbs, int nt,
 //' @return A vector of simulated values of same size as \code{nbs}.
 //'
 // [[Rcpp::export]]
-Rcpp::NumericVector rcpp_ives2d_space (Rcpp::List nbs, int nt, 
+Rcpp::NumericVector rcpp_ives_spatial (Rcpp::List nbs, int nt, 
         double alpha_t, double alpha_s,
         Rcpp::NumericVector svec, Rcpp::NumericVector rvec)
 {

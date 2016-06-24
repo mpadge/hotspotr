@@ -27,27 +27,27 @@ neutral fields.
 ```{r demo-moran, fig.width=12, fig.height=6}
 plot.new ()
 seed <- 18
-dat <- ives2d (size=10, seed=seed)
-test <- test2d (z=dat$z, nbs=dat$nbs, verbose=TRUE, plot=TRUE)
+dat <- ives (size=10, seed=seed)
+test <- test_hotspots (z=dat$z, nbs=dat$nbs, verbose=TRUE, plot=TRUE)
 ```
 
 The default spatial autocorrelation statistic is Moran's I, with results for
 other statistics in this case notably different. Geary's C:
 ```{r demo-geary, fig.width=12, fig.height=6}
 plot.new ()
-test <- test2d (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='geary')
+test <- test_hotspots (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='geary')
 ```
 
 And Getis-Ord:
 ```{r demo-getis, fig.width=12, fig.height=6}
 plot.new ()
-test <- test2d (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='getis')
+test <- test_hotspots (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='getis')
 ```
 
 Then the text output of `run_tests` for a random seed giving more typically low
 p-values.
 ```{r run_tests}
-dat <- ives2d (size=10)
+dat <- ives (size=10)
 run_tests (nbs=dat$nbs, z=dat$z, ntests=100)
 ```
 Note that the model field tested here has a complex *temporal* structure yet a
@@ -57,5 +57,5 @@ these differences.
 `run_tests` can also be used to test a neutral field against a statistial
 ensemble of neutral fields:
 ```{r run_tests_neutral}
-run_tests (nbs=dat$nbs, ntests=100, neutral=TRUE)
+run_tests (neutral=TRUE)
 ```

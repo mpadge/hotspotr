@@ -1,7 +1,7 @@
 #include <Rcpp.h>
-#include "ac_stats.h"
+#include "ac-stats.h"
 
-//' rcpp_neutral2d
+//' rcpp_neutral_hotspots
 //'
 //' Implements neutral model in two dimensions
 //'
@@ -17,7 +17,7 @@
 //' @return A vector of simulated values of same size as \code{nbs}.
 //'
 // [[Rcpp::export]]
-Rcpp::NumericVector rcpp_neutral2d (Rcpp::List nbs, 
+Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs, 
         double alpha_t, double alpha_s, double sd0, int nt)
 {
     const int size = nbs.size ();
@@ -70,7 +70,7 @@ Rcpp::NumericVector rcpp_neutral2d (Rcpp::List nbs,
 }
 
 
-//' rcpp_neutral2d_ntests
+//' rcpp_neutral_hotspots_ntests
 //'
 //' Performs repeated neutral tests to yield average distributions of both
 //' hotspot values and spatial autocorrelation statistics.
@@ -92,7 +92,7 @@ Rcpp::NumericVector rcpp_neutral2d (Rcpp::List nbs,
 //' re-scaled spatial autocorrelation statistics.
 //'
 // [[Rcpp::export]]
-Rcpp::NumericMatrix rcpp_neutral2d_ntests (Rcpp::List nbs, 
+Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests (Rcpp::List nbs, 
         double alpha_t, double alpha_s, double sd0, int nt, int ntests,
         std::string ac_type)
 {
@@ -104,7 +104,7 @@ Rcpp::NumericMatrix rcpp_neutral2d_ntests (Rcpp::List nbs,
 
     for (int n=0; n<ntests; n++)
     {
-        x = rcpp_neutral2d (nbs, alpha_t, alpha_s, sd0, nt);
+        x = rcpp_neutral_hotspots (nbs, alpha_t, alpha_s, sd0, nt);
         ac1 = rcpp_ac_stats (nbs, x, ac_type); // sorted and normalised
         for (int i=0; i<size; i++)
             ac (i) += ac1 (i);

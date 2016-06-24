@@ -1,4 +1,4 @@
-#' test2d
+#' test_hotspots
 #'
 #' Tests an observed matrix of data (\code{ymat}) against a two-dimensional
 #' neutral model
@@ -25,18 +25,16 @@
 #'   distributions
 #' }
 #'
-#' @seealso \code{test1d}
-#'
 #' @examples
 #' \dontrun{
 #' alpha <- c (0.1, 0.1)
-#' ymat <- ives2d (size=10, nt=1000, sd0=0.1, alpha=alpha)
-#' result <- test2d (ymat, alpha=alpha, ntests=10)
+#' dat <- ives (size=10, nt=1000, sd0=0.1, alpha=alpha)
+#' test <- test_hotspots (nbs=dat$nbs, z=dat$z, alpha=alpha, ntests=10)
 #' }
 #'
 #' @export
-test2d <- function (z, nbs, alpha=c(0.1, 0.1), ntests=100, ac_type='moran',
-                    verbose=FALSE, plot=FALSE)
+test_hotspots <- function (z, nbs, alpha=c(0.1, 0.1), ntests=100,
+                           ac_type='moran', verbose=FALSE, plot=FALSE)
 {
     if (!is.numeric (z)) 
         stop ('z must be numeric')
@@ -63,7 +61,7 @@ test2d <- function (z, nbs, alpha=c(0.1, 0.1), ntests=100, ac_type='moran',
     # Initial 3D optimisation to get nt
     fn_n <- function (x)
     {
-        test <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=x[1],
+        test <- rcpp_neutral_hotspots_ntests (nbs=nbs, alpha_t=x[1],
                                         alpha_s=x[2], sd0=0.1,
                                         nt=x[3], ntests=ntests, ac_type=ac_type)
         sum ((test [,1] - zs) ^ 2) + sum ((test [,2] - ac) ^ 2)
@@ -75,18 +73,18 @@ test2d <- function (z, nbs, alpha=c(0.1, 0.1), ntests=100, ac_type='moran',
     alpha <- op$par [1:2]
     fn_a <- function (x)
     {
-        test <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=x [1], alpha_s=x [2],
-                                        sd0=0.1, nt=nt, ntests=ntests,
-                                        ac_type=ac_type)
+        test <- rcpp_neutral_hotspots_ntests (nbs=nbs, alpha_t=x [1], alpha_s=x
+                                              [2], sd0=0.1, nt=nt,
+                                              ntests=ntests, ac_type=ac_type)
         sum ((test [,1] - zs) ^ 2) + sum ((test [,2] - ac) ^ 2)
     }
     if (verbose) message ('done.\nOptimising for alpha ... ', appendLF=FALSE)
     op <- optim (alpha, fn_a)
     if (verbose) message ('done.')
     alpha <- op$par
-    test <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=alpha [1], alpha_s=alpha [2],
-                                    sd0=0.1, nt=nt, ntests=ntests,
-                                    ac_type=ac_type)
+    test <- rcpp_neutral_hotspots_ntests (nbs=nbs, alpha_t=alpha [1],
+                                          alpha_s=alpha [2], sd0=0.1, nt=nt,
+                                          ntests=ntests, ac_type=ac_type)
 
     # Parameters for ydat have been estimated; now generate equivalent neutral
     # values

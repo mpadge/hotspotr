@@ -17,8 +17,8 @@ First a demonstration with a seed that produces a 2D field very similar to neutr
 ``` r
 plot.new ()
 seed <- 18
-dat <- ives2d (size=10, seed=seed)
-test <- test2d (z=dat$z, nbs=dat$nbs, plot=TRUE)
+dat <- ives (size=10, seed=seed)
+test <- test_hotspots (z=dat$z, nbs=dat$nbs, plot=TRUE)
 ```
 
 ![](README_files/figure-markdown_github/demo-moran-1.png)
@@ -27,7 +27,7 @@ The default spatial autocorrelation statistic is Moran's I, with results for oth
 
 ``` r
 plot.new ()
-test <- test2d (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='geary')
+test <- test_hotspots (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='geary')
 ```
 
 ![](README_files/figure-markdown_github/demo-geary-1.png)
@@ -36,7 +36,7 @@ And Getis-Ord:
 
 ``` r
 plot.new ()
-test <- test2d (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='getis')
+test <- test_hotspots (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='getis')
 ```
 
 ![](README_files/figure-markdown_github/demo-getis-1.png)
@@ -44,7 +44,7 @@ test <- test2d (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='getis')
 Then the text output of `run_tests` for a random seed giving more typically low p-values.
 
 ``` r
-dat <- ives2d (size=10)
+dat <- ives (size=10)
 run_tests (nbs=dat$nbs, z=dat$z, ntests=100)
 ```
 
@@ -60,7 +60,7 @@ Note that the model field tested here has a complex *temporal* structure yet a g
 `run_tests` can also be used to test a neutral field against a statistial ensemble of neutral fields:
 
 ``` r
-run_tests (nbs=dat$nbs, ntests=100, neutral=TRUE)
+run_tests (neutral=TRUE)
 ```
 
     ##              differences     p-values        |                       |

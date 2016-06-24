@@ -1,7 +1,7 @@
-#' ives2d
+#' ives
 #'
-#' Generates a 2D surface using the temporal autocorrelation model of Ives &
-#' Klopfer (Ecology 1997).
+#' Applies the model of Ives & Klopfer (Ecology 1997) on a square grid of (size,
+#' size)
 #'
 #' @param size Size of the square grid on which to generate model. Total number
 #' of points is size ^ 2
@@ -17,10 +17,19 @@
 #' @param rook If FALSE, use queen contiguities
 #' @param seed Random seed
 #'
-#' @return A matrix of (size, size)
+#' @return A list of:
+#' \itemize{
+#' \item \code{z} = Vector of simulated data values
+#' \item \code{nbs} = An \code{spdep::nb} list of neighbours of all points
+#' }
+#'
+#' @seealso \code{neutral_hotspots}
+#'
+#' @examples
+#' dat <- ives (size=10)
 #'
 #' @export
-ives2d <- function (size=10, nt=1000, sd0=0.1, alpha=c(0.1, 0.1), spatial=FALSE,
+ives <- function (size=10, nt=1000, sd0=0.1, alpha=c(0.1, 0.1), spatial=FALSE,
                     rook=TRUE, seed) 
 {
     if (!missing (seed)) set.seed (seed)
@@ -37,8 +46,8 @@ ives2d <- function (size=10, nt=1000, sd0=0.1, alpha=c(0.1, 0.1), spatial=FALSE,
 
     z <- NULL
     if (!spatial)
-        z <- rcpp_ives2d (nbs, nt, alpha[1], alpha[2], svec, rvec)
+        z <- rcpp_ives (nbs, nt, alpha[1], alpha[2], svec, rvec)
     else
-        z <- rcpp_ives2d_space (size, nt, alpha[1], alpha[2], svec, rvec)
+        z <- rcpp_ives_spatial (size, nt, alpha[1], alpha[2], svec, rvec)
     return (list (z=z, nbs=nbs))
 }

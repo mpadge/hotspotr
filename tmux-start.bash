@@ -5,20 +5,20 @@ tmux -2 new-session -d -s $SESSION
 
 tmux new-window -t $SESSION:1 -k -n R
 tmux send-keys -t $SESSION:1 'vim README.Rmd' C-m
-tmux send-keys -t $SESSION:1 ':' 'tabe R/test2d.R' C-m
-tmux send-keys -t $SESSION:1 ':' 'tabe R/run_tests.R' C-m
-tmux send-keys -t $SESSION:1 ':' 'tabe R/get-neighbours.R' C-m
+tmux send-keys -t $SESSION:1 ':' 'tabe R/ives.R' C-m
+tmux send-keys -t $SESSION:1 ':' 'tabe R/neutral-hotspots.R' C-m
+tmux send-keys -t $SESSION:1 ':' 'tabe R/test-hotspots.R' C-m
+tmux send-keys -t $SESSION:1 ':' 'tabe R/run-tests.R' C-m
 #tmux send-keys -t $SESSION:1 '2gt'
 
 tmux new-window -t $SESSION:2 -k -n cpp
 tmux send-keys -t $SESSION:2 'cd ./src' C-m
-tmux send-keys -t $SESSION:2 'vim ives2d.cpp' C-m
-tmux send-keys -t $SESSION:2 ':' 'tabe neutral2d.cpp' C-m
-tmux send-keys -t $SESSION:2 ':' 'tabe get-neighbours.cpp' C-m
+tmux send-keys -t $SESSION:2 'vim ives.cpp' C-m
+tmux send-keys -t $SESSION:2 ':' 'tabe neutral-hotspots.cpp' C-m
 tmux split-window -h
 tmux send-keys -t $SESSION:2 'cd ./src' C-m
-tmux send-keys -t $SESSION:2 'vim ac_stats.h' C-m
-tmux send-keys -t $SESSION:2 ':' 'tabe ac_stats.cpp' C-m
+tmux send-keys -t $SESSION:2 'vim ac-stats.h' C-m
+tmux send-keys -t $SESSION:2 ':' 'tabe ac-stats.cpp' C-m
 tmux select-pane -t 0
 
 tmux new-window -t $SESSION:3 -n makefile

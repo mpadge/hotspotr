@@ -52,9 +52,6 @@ run_tests <- function (nbs=nbs, alpha=c(0.1, 0.1), nt=100, ntests=100,
                 z <- ives2d (nt=nt, sd0=0.1, alpha=alpha, seed=seed)$z
         }
     }
-    z <- length (z)
-    ac <- rcpp_ac_stats (nbs, z, ac_type)
-    zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
 
     ac_type <- tolower (ac_type)
     if (substring (ac_type, 1, 1) == 'g')
@@ -65,7 +62,9 @@ run_tests <- function (nbs=nbs, alpha=c(0.1, 0.1), nt=100, ntests=100,
             ac_type <- 'getis_ord'
     } else
         ac_type <- 'moran'
-    mdat <- rcpp_ac_stats (nbs, z, ac_type)
+
+    ac <- rcpp_ac_stats (nbs, z, ac_type)
+    zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
 
     # To see how repeatable the tests are, they are performed with a different
     # seed
@@ -80,7 +79,7 @@ run_tests <- function (nbs=nbs, alpha=c(0.1, 0.1), nt=100, ntests=100,
     for (i in 1:2)
     {
         t2 <- test2d (z, nbs=nbs, alpha=c(alpha_t, alpha_s [i]), ntests=ntests)
-        ss_raw <- 100 * sum ((t2$data$y - z) ^ 2) / length (nbs) ^ 2
+        ss_raw <- 100 * sum ((t2$data$z - z) ^ 2) / length (nbs) ^ 2
         ss_ac <- 100 * sum ((t2$data$ac - ac) ^ 2) / length (nbs) ^ 2
         cat (" (0.1, ", alpha_s [i], ")\t",
              formatC (ss_raw, format="f", digits=2), "\t",
@@ -89,7 +88,7 @@ run_tests <- function (nbs=nbs, alpha=c(0.1, 0.1), nt=100, ntests=100,
              formatC (t2$pvals$ac, format="f", digits=4), "\t|   (",
              formatC (t2$pars$alpha [1], format="f", digits=2), ", ",
              formatC (t2$pars$alpha [2], format="f", digits=2), ")\t",
-             round (t2$pars$n), "\t|\n", sep="")
+             round (t2$pars$nt), "\t|\n", sep="")
     }
     cat (rep ("-", 80), "\n", sep="")
 }

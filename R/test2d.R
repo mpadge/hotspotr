@@ -59,14 +59,14 @@ test2d <- function (z, nbs, alpha=c(0.1, 0.1), ntests=100, ac_type='moran',
 
     ac <- rcpp_ac_stats (nbs, z, ac_type)
     zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
-    yt <- NULL # remove no visible binding warning
+    test <- NULL # remove no visible binding warning
     # Initial 3D optimisation to get nt
     fn_n <- function (x)
     {
-        yt <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=x[1],
+        test <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=x[1],
                                         alpha_s=x[2], sd0=0.1,
                                         nt=x[3], ntests=ntests, ac_type=ac_type)
-        sum ((yt [,1] - zs) ^ 2) + sum ((yt [,2] - ac) ^ 2)
+        sum ((test [,1] - zs) ^ 2) + sum ((test [,2] - ac) ^ 2)
     }
     if (verbose) message ('Optimising for nt ... ', appendLF=FALSE)
     op <- optim (c (alpha, 10), fn_n)
@@ -75,39 +75,39 @@ test2d <- function (z, nbs, alpha=c(0.1, 0.1), ntests=100, ac_type='moran',
     alpha <- op$par [1:2]
     fn_a <- function (x)
     {
-        yt <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=x [1], alpha_s=x [2],
+        test <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=x [1], alpha_s=x [2],
                                         sd0=0.1, nt=nt, ntests=ntests,
                                         ac_type=ac_type)
-        sum ((yt [,1] - zs) ^ 2) + sum ((yt [,2] - ac) ^ 2)
+        sum ((test [,1] - zs) ^ 2) + sum ((test [,2] - ac) ^ 2)
     }
     if (verbose) message ('done.\nOptimising for alpha ... ', appendLF=FALSE)
     op <- optim (alpha, fn_a)
     if (verbose) message ('done.')
     alpha <- op$par
-    yt <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=alpha [1], alpha_s=alpha [2],
+    test <- rcpp_neutral2d_ntests (nbs=nbs, alpha_t=alpha [1], alpha_s=alpha [2],
                                     sd0=0.1, nt=nt, ntests=ntests,
                                     ac_type=ac_type)
 
     # Parameters for ydat have been estimated; now generate equivalent neutral
     # values
-    ym <- as.numeric (yt [,2])
-    yt <- as.numeric (yt [,1])
+    test_z <- as.numeric (test [,1])
+    test_ac <- as.numeric (test [,2])
 
     # Note paired=TRUE is not appropriate because the positions in the sorted
     # lists are arbitrary and not directly related
-    pval_t <- t.test (yt, z, paired=FALSE)$p.value
-    pval_m <- t.test (ym, ac, paired=FALSE)$p.value
-    val_t <- sum ((yt - z) ^ 2)
-    val_m <- sum ((ym - ac) ^ 2)
+    pval_z <- t.test (test_z, zs, paired=FALSE)$p.value
+    pval_ac <- t.test (test_ac, ac, paired=FALSE)$p.value
+    val_z <- sum ((test_z - zs) ^ 2)
+    val_ac <- sum ((test_ac - ac) ^ 2)
 
     if (plot)
     {
         plot.new ()
         par (mfrow=c(1,2))
         cols <- c ('blue', 'red')
-        y1 <- list (z, ac)
-        y2 <- list (yt, ym)
-        pvals <- c (pval_t, pval_m)
+        y1 <- list (zs, ac)
+        y2 <- list (test_z, test_ac)
+        pvals <- c (pval_z, pval_ac)
         mt <- c ('raw', 'AC')
         for (i in 1:2)
         {
@@ -122,7 +122,7 @@ test2d <- function (z, nbs, alpha=c(0.1, 0.1), ntests=100, ac_type='moran',
     }
 
     pars <- list (alpha=alpha, nt=nt)
-    pvals <- list (raw=pval_t, ac=pval_m)
-    data <- list (y=yt, ac=ym)
+    pvals <- list (raw=pval_z, ac=pval_ac)
+    data <- list (z=test_z, ac=test_ac)
     list (pars=pars, pvals=pvals, data=data)
 }

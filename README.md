@@ -17,41 +17,42 @@ First a demonstration with a seed that produces a 2D field very similar to neutr
 ``` r
 plot.new ()
 seed <- 18
-ymat <- ives2d (size=10, seed=seed)
-test <- test2d (ymat, plot=TRUE)
+dat <- ives2d (size=10, seed=seed)
+test <- test2d (z=dat$z, nbs=dat$nbs, plot=TRUE)
 ```
 
-![](fig/demo-moran.png)
+![](README_files/figure-markdown_github/demo-moran-1.png)
 
 The default spatial autocorrelation statistic is Moran's I, with results for other statistics in this case notably different. Geary's C:
 
 ``` r
 plot.new ()
-test <- test2d (ymat, plot=TRUE, ac_type='geary')
+test <- test2d (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='geary')
 ```
 
-![](fig/demo-geary.png)
+![](README_files/figure-markdown_github/demo-geary-1.png)
 
 And Getis-Ord:
 
 ``` r
 plot.new ()
-test <- test2d (ymat, plot=TRUE, ac_type='getis')
+test <- test2d (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='getis')
 ```
 
-![](fig/demo-getis.png)
+![](README_files/figure-markdown_github/demo-getis-1.png)
 
 Then the text output of `run_tests` for a random seed giving more typically low p-values.
 
 ``` r
-run_tests (size=10, ntests=100)
+dat <- ives2d (size=10)
+run_tests (nbs=dat$nbs, z=dat$z, ntests=100)
 ```
 
     ##              differences     p-values        |                       |
     ##   alpha      raw     AC      raw     AC      |   alpha           n   |
     ## ---------------------------------------------|-----------------------|
-    ##  (0.1, 0.1)  0.21    0.06    0.1267  0.9009  |   (0.81, 0.09)    10  |
-    ##  (0.1, 0)    0.18    0.08    0.1623  0.9859  |   (0.86, 0.09)    9   |
+    ##  (0.1, 0.1)  0.20    0.00    0.8104  0.4635  |   (0.87, -0.05)   10  |
+    ##  (0.1, 0)    0.19    0.00    0.8073  0.5280  |   (0.28, 0.02)    10  |
     ## ----------------------------------------------------------------------
 
 Note that the model field tested here has a complex *temporal* structure yet a generic---that is, neutral---\*spatial structure, and that the `p-values` reflect these differences.
@@ -59,12 +60,12 @@ Note that the model field tested here has a complex *temporal* structure yet a g
 `run_tests` can also be used to test a neutral field against a statistial ensemble of neutral fields:
 
 ``` r
-run_tests (size=10, ntests=100, neutral=TRUE)
+run_tests (nbs=dat$nbs, ntests=100, neutral=TRUE)
 ```
 
     ##              differences     p-values        |                       |
     ##   alpha      raw     AC      raw     AC      |   alpha           n   |
     ## ---------------------------------------------|-----------------------|
-    ##  (0.1, 0.1)  0.07    0.18    0.9041  0.9848  |   (0.59, 0.10)    11  |
-    ##  (0.1, 0)    0.08    0.21    0.7236  0.6503  |   (0.14, 0.07)    10  |
+    ##  (0.1, 0.1)  0.29    0.00    0.4908  0.2884  |   (1.13, -0.04)   10  |
+    ##  (0.1, 0)    0.28    0.00    0.6964  0.3564  |   (0.38, 0.01)    11  |
     ## ----------------------------------------------------------------------

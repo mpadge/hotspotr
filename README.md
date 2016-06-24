@@ -21,7 +21,7 @@ dat <- ives (size=10, seed=seed)
 test <- test_hotspots (z=dat$z, nbs=dat$nbs, plot=TRUE)
 ```
 
-![](README_files/figure-markdown_github/demo-moran-1.png)
+![](fig/demo-moran.png)
 
 The default spatial autocorrelation statistic is Moran's I, with results for other statistics in this case notably different. Geary's C:
 
@@ -30,7 +30,7 @@ plot.new ()
 test <- test_hotspots (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='geary')
 ```
 
-![](README_files/figure-markdown_github/demo-geary-1.png)
+![](fig/demo-geary.png)
 
 And Getis-Ord:
 
@@ -39,7 +39,7 @@ plot.new ()
 test <- test_hotspots (z=dat$z, nbs=dat$nbs, plot=TRUE, ac_type='getis')
 ```
 
-![](README_files/figure-markdown_github/demo-getis-1.png)
+![](fig/demo-getis.png)
 
 Then the text output of `run_tests` for a random seed giving more typically low p-values.
 

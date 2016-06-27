@@ -35,9 +35,9 @@ p_values <- function (z, nbs, wts, alpha=c(0.1, 0.1), nt=100, ntests=1000,
     } else
         ac_type <- 'moran'
 
-    test_dist <- rcpp_p_values (nbs=nbs, wts=wts, alpha_t=alpha [1], 
-                                alpha_s=alpha [2], sd0=0.1, nt=100, ntests=ntests,
-                                ac_type=ac_type)
+    distributions <- rcpp_p_values (nbs=nbs, wts=wts, alpha_t=alpha [1],
+                                    alpha_s=alpha [2], sd0=0.1, nt=100,
+                                    ntests=ntests, ac_type=ac_type)
     # The distribution is **close to** but not the same as a chi-squared:
     # plot.new ()
     # par (mfrow=c(1,2))
@@ -57,15 +57,17 @@ p_values <- function (z, nbs, wts, alpha=c(0.1, 0.1), nt=100, ntests=1000,
     #     y <- (y - ry [1]) / diff (ry) * max (hh$counts)
     #     lines (x, y, col="red")
     #}
-    test <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=alpha [1],
+    # mean rank-scale distributions:
+    rs_means <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=alpha [1],
                                           alpha_s=alpha [2], sd0=0.1,
-                                          nt=100, ntests=1000, 
+                                          nt=100, ntests=100, 
                                           ac_type=ac_type)
-    stat_z <- var (z - test [,1])
-    p_z <- length (which (test_dist [,2] > stat_z)) / ntests
-    ac <- rcpp_ac_stats (nbs, wts, z, ac_type)
-    stat_ac <- var (ac - test [,2])
-    p_ac <- length (which (test_dist [,4] > stat_ac)) / ntests
+    z <- (sort (z, decreasing=TRUE) - min (z)) / diff (range (z))
+    stat_z <- sum ((z - rs_means [,1]) ^ 2)
+    p_z <- length (which (distributions [,1] > stat_z)) / ntests
+    ac <- rcpp_ac_stats (z, nbs, wts, ac_type)
+    stat_ac <- sum ((ac - rs_means [,2]) ^ 2)
+    p_ac <- length (which (distributions [,2] > stat_ac)) / ntests
 
     list (p_z=p_z, p_ac=p_ac)
 }

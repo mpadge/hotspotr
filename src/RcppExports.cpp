@@ -6,16 +6,16 @@
 using namespace Rcpp;
 
 // rcpp_ac_stats
-Rcpp::NumericVector rcpp_ac_stats(Rcpp::List nbs, Rcpp::List wts, Rcpp::NumericVector x, std::string ac_type);
-RcppExport SEXP hotspotr_rcpp_ac_stats(SEXP nbsSEXP, SEXP wtsSEXP, SEXP xSEXP, SEXP ac_typeSEXP) {
+Rcpp::NumericVector rcpp_ac_stats(Rcpp::NumericVector z, Rcpp::List nbs, Rcpp::List wts, std::string ac_type);
+RcppExport SEXP hotspotr_rcpp_ac_stats(SEXP zSEXP, SEXP nbsSEXP, SEXP wtsSEXP, SEXP ac_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type z(zSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type nbs(nbsSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type wts(wtsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
     Rcpp::traits::input_parameter< std::string >::type ac_type(ac_typeSEXP);
-    __result = Rcpp::wrap(rcpp_ac_stats(nbs, wts, x, ac_type));
+    __result = Rcpp::wrap(rcpp_ac_stats(z, nbs, wts, ac_type));
     return __result;
 END_RCPP
 }

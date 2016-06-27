@@ -15,14 +15,14 @@
 //' zero and one.
 //'
 // [[Rcpp::export]]
-Rcpp::NumericVector rcpp_ac_stats (Rcpp::List nbs, Rcpp::List wts,
-        Rcpp::NumericVector x, std::string ac_type)
+Rcpp::NumericVector rcpp_ac_stats (Rcpp::NumericVector z, Rcpp::List nbs, 
+        Rcpp::List wts, std::string ac_type)
 {
-    if (x.size () != nbs.size ())
-        Rcpp::stop ("nbs must be same size as x");
+    if (z.size () != nbs.size ())
+        Rcpp::stop ("nbs must be same size as z");
 
-    const int size = x.size ();
-    const double xmn = Rcpp::mean (x), sd=Rcpp::sd (x);
+    const int size = z.size ();
+    const double zmn = Rcpp::mean (z), sd=Rcpp::sd (z);
 
     double tempd [4], sizei;
 
@@ -41,14 +41,14 @@ Rcpp::NumericVector rcpp_ac_stats (Rcpp::List nbs, Rcpp::List wts,
         {
             for (int j=0; j<nbs1.size (); j++)
             {
-                tempd [0] += (x (nbs1 (j)) - xmn) * (x (nbs1 (j)) - xmn) *
+                tempd [0] += (z (nbs1 (j)) - zmn) * (z (nbs1 (j)) - zmn) *
                     wts1 (j);
                 tempd [2] += wts1 (j);
             }
             for (int j=0; j<(nbs1.size () - 1); j++)
                 for (int k=(j+1); k<nbs1.size (); k++)
                 {
-                    tempd [1] += (x (nbs1 (j)) - xmn) * (x (nbs1 (k)) - xmn) *
+                    tempd [1] += (z (nbs1 (j)) - zmn) * (z (nbs1 (k)) - zmn) *
                         wts1 (j) * wts1 (k);
                     tempd [3] += wts1 (j) * wts1 (k);
                 }
@@ -57,15 +57,15 @@ Rcpp::NumericVector rcpp_ac_stats (Rcpp::List nbs, Rcpp::List wts,
         {
             for (int j=0; j<nbs1.size (); j++)
             {
-                tempd [0] += (x (nbs1 (j)) - xmn) * (x (nbs1 (j)) - xmn) *
+                tempd [0] += (z (nbs1 (j)) - zmn) * (z (nbs1 (j)) - zmn) *
                     wts1 (j);
                 tempd [2] += wts1 (j);
             }
             for (int j=0; j<(nbs1.size () - 1); j++)
                 for (int k=(j+1); k<nbs1.size (); k++)
                 {
-                    tempd [1] += (x (nbs1 (j)) - nbs1 (k)) * 
-                        (x (nbs1 (j)) - nbs1 (k)) * wts1 (j) * wts1 (k);
+                    tempd [1] += (z (nbs1 (j)) - nbs1 (k)) * 
+                        (z (nbs1 (j)) - nbs1 (k)) * wts1 (j) * wts1 (k);
                     tempd [3] += wts1 (j) * wts1 (k);
                 }
             ac (i) = tempd [1] * tempd [2] / (tempd [0] * tempd [3]);
@@ -73,11 +73,11 @@ Rcpp::NumericVector rcpp_ac_stats (Rcpp::List nbs, Rcpp::List wts,
         {
             for (int j=0; j<nbs1.size (); j++)
             {
-                tempd [0] += x (nbs1 (j)) * wts1 (j);
+                tempd [0] += z (nbs1 (j)) * wts1 (j);
                 tempd [2] += wts1 (j);
             }
             sizei = (double) nbs1.size ();
-            tempd [0] = tempd [0] / tempd [2] - sizei * xmn;
+            tempd [0] = tempd [0] / tempd [2] - sizei * zmn;
             tempd [1] = sizei * ((double) size - sizei);
             tempd [1] = sqrt (tempd [1] / ((double) size - 1.0));
             //ac (i) = tempd [0] / (sd * tempd [1]);
@@ -86,9 +86,7 @@ Rcpp::NumericVector rcpp_ac_stats (Rcpp::List nbs, Rcpp::List wts,
     }
 
     std::sort (ac.begin (), ac.end (), std::greater<double> ());
-    double amax = Rcpp::max (ac), amin = Rcpp::min (ac);
-    for (Rcpp::NumericVector::iterator it = ac.begin (); it != ac.end (); ++it)
-        *it = (*it - amin) / (amax - amin);
+    ac = (ac - Rcpp::min (ac)) / (Rcpp::max (ac) - Rcpp::min (ac));
 
     return ac;
 }

@@ -64,7 +64,10 @@ run_tests <- function (nbs, alpha=c(0.1, 0.1), nt=100, ntests=100,
     } else
         ac_type <- 'moran'
 
-    ac <- rcpp_ac_stats (nbs, z, ac_type)
+    #if (missing (wts)) 
+        wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
+
+    ac <- rcpp_ac_stats (z, nbs, wts, ac_type)
     zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
 
     # To see how repeatable the tests are, they are performed with a different

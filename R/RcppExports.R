@@ -14,8 +14,8 @@
 #' @return A vector of sorted spatial autocorrelation statistics scaled between
 #' zero and one.
 #'
-rcpp_ac_stats <- function(nbs, wts, x, ac_type) {
-    .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', nbs, wts, x, ac_type)
+rcpp_ac_stats <- function(z, nbs, wts, ac_type) {
+    .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', z, nbs, wts, ac_type)
 }
 
 #' rcpp_get_neighbours
@@ -145,6 +145,12 @@ rcpp_neutral_hotspots_ntests <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, nt
 #' @return A matrix of dimension (size, 2), with first column containing
 #' sorted and re-scaled hotspot values, and second column containing sorted and
 #' re-scaled spatial autocorrelation statistics.
+#'
+#' @note \code{rcpp_neutral_hotspots_ntests} returns two vectors containing
+#' mean values of raw and autocorrelation statistics from a series of neutral 
+#' simulations. This function calculates the distribution of mean squared 
+#' differences between these mean profiles and an additional series of simulated
+#' instances.
 #'
 rcpp_p_values <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
     .Call('hotspotr_rcpp_p_values', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type)

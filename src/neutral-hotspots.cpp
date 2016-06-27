@@ -1,5 +1,6 @@
 #include <Rcpp.h>
 #include "ac-stats.h"
+#include <fstream>
 
 //' rcpp_neutral_hotspots
 //'
@@ -25,7 +26,7 @@ Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
     const int size = nbs.size ();
 
     int indx;
-    double tempd;
+    double wtsum, tempd;
 
     // Set up truncated normal distribution
     Rcpp::NumericVector eps (nt * size);
@@ -43,33 +44,36 @@ Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
         if (tempd >= 0.0 && tempd <= 2.0)
             eps (Rcpp::which_max (eps)) = tempd;
     }
-        
 
-    Rcpp::NumericVector x (size), x2 (size);
-    std::fill (x.begin (), x.end (), 1.0);
+    Rcpp::NumericVector z (size), z2 (size);
+    std::fill (z.begin (), z.end (), 1.0);
 
     Rcpp::NumericVector nbs1, wts1;
     for (int t=0; t<nt; t++)
     {
         // time step first
         for (int i=0; i<size; i++)
-            x (i) = (1.0 - alpha_t) * x (i) + alpha_t * eps (t * size + i);
+            z (i) = (1.0 - alpha_t) * z (i) + alpha_t * eps (t * size + i);
         // spatial autocorrelation
-        x2 = Rcpp::clone (x);
+        z2 = Rcpp::clone (z);
         for (int i=0; i<size; i++)
         {
-            tempd = 0.0;
+            tempd = wtsum = 0.0;
             nbs1 = Rcpp::as <Rcpp::NumericVector> (nbs (i));
             wts1 = Rcpp::as <Rcpp::NumericVector> (wts (i));
             for (int j=0; j<nbs1.size (); j++)
-                tempd += x (nbs1 (j) - 1) * wts1 (j);
-            x2 (i) = (1.0 - (double) nbs1.size () * alpha_s) * x (i) +
-                alpha_s * tempd;
+            {
+                tempd += z (nbs1 (j) - 1) * wts1 (j);
+                wtsum += wts1 (j);
+            }
+            //z2 (i) = (1.0 - (double) nbs1.size () * alpha_s) * z (i) +
+            //    alpha_s * (double) nbs1.size() * tempd / wtsum;
+            z2 (i) = (1.0 - alpha_s) * z (i) + alpha_s * tempd / wtsum;
         }
-        x = Rcpp::clone (x2);
+        z = Rcpp::clone (z2);
     }
 
-    return x;
+    return z;
 }
 
 
@@ -103,28 +107,23 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests (Rcpp::List nbs,
 {
     const int size = nbs.size ();
 
-    Rcpp::NumericVector x (size), xtot (size), ac (size), ac1 (size);
+    Rcpp::NumericVector z (size), z1 (size), ac (size), ac1 (size);
     std::fill (ac.begin (), ac.end (), 0.0);
-    std::fill (xtot.begin (), xtot.end (), 0.0);
+    std::fill (z.begin (), z.end (), 0.0);
 
     for (int n=0; n<ntests; n++)
     {
-        x = rcpp_neutral_hotspots (nbs, wts, alpha_t, alpha_s, sd0, nt);
-        ac1 = rcpp_ac_stats (nbs, wts, x, ac_type); // sorted and normalised
-        for (int i=0; i<size; i++)
-            ac (i) += ac1 (i);
-        std::sort (x.begin (), x.end (), std::greater<double> ());
-        for (int i=0; i<size; i++)
-            xtot (i) += (x (i) - (double) Rcpp::min (x)) /
-                ((double) Rcpp::max (x) - (double) Rcpp::min (x));
+        z1 = rcpp_neutral_hotspots (nbs, wts, alpha_t, alpha_s, sd0, nt);
+        ac1 = rcpp_ac_stats (z1, nbs, wts, ac_type); // sorted and normalised
+        ac += ac1;
+        std::sort (z1.begin (), z1.end (), std::greater<double> ());
+        z += (z1 - (double) Rcpp::min (z1)) /
+                ((double) Rcpp::max (z1) - (double) Rcpp::min (z1));
     }
 
     Rcpp::NumericMatrix result (size, 2);
-    for (int i=0; i<size; i++)
-    {
-        result (i, 0) = xtot (i) / (double) ntests;
-        result (i, 1) = ac (i) / (double) ntests;
-    }
+    result (Rcpp::_, 0) = z / (double) ntests;
+    result (Rcpp::_, 1) = ac / (double) ntests;
     Rcpp::colnames (result) = Rcpp::CharacterVector::create ("y", "ac");
 
     return result;

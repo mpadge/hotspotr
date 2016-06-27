@@ -58,9 +58,9 @@ test_hotspots <- function (z, nbs, wts, alpha=c(0.1, 0.1), ntests=100,
     size <- length (z)
 
     if (missing (wts)) 
-        wts <- lapply (nbs, function (x) rep (1, length (x)))
+        wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
 
-    ac <- rcpp_ac_stats (nbs, wts, z, ac_type)
+    ac <- rcpp_ac_stats (z, nbs, wts, ac_type)
     zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
     test <- NULL # remove no visible binding warning
     # Initial 3D optimisation to get nt

@@ -28,7 +28,7 @@ neutral_hotspots <- function (nbs, wts, alpha=c(0.1, 0.1), nt=100, sd0=0.1, seed
     if (missing (nbs)) stop ('nbs must be given')
 
     if (missing (wts)) 
-        wts <- lapply (nbs, function (x) rep (1, length (x)))
+        wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
 
     if (alpha [1] <= 0)
         stop ('neutral model only makes sense with finite temporal autocorrelation')

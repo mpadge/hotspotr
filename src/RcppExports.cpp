@@ -6,15 +6,16 @@
 using namespace Rcpp;
 
 // rcpp_ac_stats
-Rcpp::NumericVector rcpp_ac_stats(Rcpp::List nbs, Rcpp::NumericVector x, std::string ac_type);
-RcppExport SEXP hotspotr_rcpp_ac_stats(SEXP nbsSEXP, SEXP xSEXP, SEXP ac_typeSEXP) {
+Rcpp::NumericVector rcpp_ac_stats(Rcpp::List nbs, Rcpp::List wts, Rcpp::NumericVector x, std::string ac_type);
+RcppExport SEXP hotspotr_rcpp_ac_stats(SEXP nbsSEXP, SEXP wtsSEXP, SEXP xSEXP, SEXP ac_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< Rcpp::List >::type nbs(nbsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type wts(wtsSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
     Rcpp::traits::input_parameter< std::string >::type ac_type(ac_typeSEXP);
-    __result = Rcpp::wrap(rcpp_ac_stats(nbs, x, ac_type));
+    __result = Rcpp::wrap(rcpp_ac_stats(nbs, wts, x, ac_type));
     return __result;
 END_RCPP
 }
@@ -63,34 +64,36 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_neutral_hotspots
-Rcpp::NumericVector rcpp_neutral_hotspots(Rcpp::List nbs, double alpha_t, double alpha_s, double sd0, int nt);
-RcppExport SEXP hotspotr_rcpp_neutral_hotspots(SEXP nbsSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP sd0SEXP, SEXP ntSEXP) {
+Rcpp::NumericVector rcpp_neutral_hotspots(Rcpp::List nbs, Rcpp::List wts, double alpha_t, double alpha_s, double sd0, int nt);
+RcppExport SEXP hotspotr_rcpp_neutral_hotspots(SEXP nbsSEXP, SEXP wtsSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP sd0SEXP, SEXP ntSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< Rcpp::List >::type nbs(nbsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type wts(wtsSEXP);
     Rcpp::traits::input_parameter< double >::type alpha_t(alpha_tSEXP);
     Rcpp::traits::input_parameter< double >::type alpha_s(alpha_sSEXP);
     Rcpp::traits::input_parameter< double >::type sd0(sd0SEXP);
     Rcpp::traits::input_parameter< int >::type nt(ntSEXP);
-    __result = Rcpp::wrap(rcpp_neutral_hotspots(nbs, alpha_t, alpha_s, sd0, nt));
+    __result = Rcpp::wrap(rcpp_neutral_hotspots(nbs, wts, alpha_t, alpha_s, sd0, nt));
     return __result;
 END_RCPP
 }
 // rcpp_neutral_hotspots_ntests
-Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests(Rcpp::List nbs, double alpha_t, double alpha_s, double sd0, int nt, int ntests, std::string ac_type);
-RcppExport SEXP hotspotr_rcpp_neutral_hotspots_ntests(SEXP nbsSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP sd0SEXP, SEXP ntSEXP, SEXP ntestsSEXP, SEXP ac_typeSEXP) {
+Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests(Rcpp::List nbs, Rcpp::List wts, double alpha_t, double alpha_s, double sd0, int nt, int ntests, std::string ac_type);
+RcppExport SEXP hotspotr_rcpp_neutral_hotspots_ntests(SEXP nbsSEXP, SEXP wtsSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP sd0SEXP, SEXP ntSEXP, SEXP ntestsSEXP, SEXP ac_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< Rcpp::List >::type nbs(nbsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type wts(wtsSEXP);
     Rcpp::traits::input_parameter< double >::type alpha_t(alpha_tSEXP);
     Rcpp::traits::input_parameter< double >::type alpha_s(alpha_sSEXP);
     Rcpp::traits::input_parameter< double >::type sd0(sd0SEXP);
     Rcpp::traits::input_parameter< int >::type nt(ntSEXP);
     Rcpp::traits::input_parameter< int >::type ntests(ntestsSEXP);
     Rcpp::traits::input_parameter< std::string >::type ac_type(ac_typeSEXP);
-    __result = Rcpp::wrap(rcpp_neutral_hotspots_ntests(nbs, alpha_t, alpha_s, sd0, nt, ntests, ac_type));
+    __result = Rcpp::wrap(rcpp_neutral_hotspots_ntests(nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type));
     return __result;
 END_RCPP
 }

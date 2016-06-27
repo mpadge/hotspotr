@@ -14,8 +14,8 @@
 #' @return A vector of sorted spatial autocorrelation statistics scaled between
 #' zero and one.
 #'
-rcpp_ac_stats <- function(nbs, x, ac_type) {
-    .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', nbs, x, ac_type)
+rcpp_ac_stats <- function(nbs, wts, x, ac_type) {
+    .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', nbs, wts, x, ac_type)
 }
 
 #' rcpp_get_neighbours
@@ -81,6 +81,8 @@ rcpp_ives_spatial <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
 #'
 #' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
 #' point. 
+#' @param wts Weighting factors for each neighbour; must have same length as
+#' nbs. Uniform weights used if not given.
 #' @param alpha_t Strength of temporal autocorrelation
 #' @param alpha_s Strength of spatial autocorrelation
 #' @param sd0 Standard deviation of truncated normal distribution used to model
@@ -90,8 +92,8 @@ rcpp_ives_spatial <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
 #'
 #' @return A vector of simulated values of same size as \code{nbs}.
 #'
-rcpp_neutral_hotspots <- function(nbs, alpha_t, alpha_s, sd0, nt) {
-    .Call('hotspotr_rcpp_neutral_hotspots', PACKAGE = 'hotspotr', nbs, alpha_t, alpha_s, sd0, nt)
+rcpp_neutral_hotspots <- function(nbs, wts, alpha_t, alpha_s, sd0, nt) {
+    .Call('hotspotr_rcpp_neutral_hotspots', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt)
 }
 
 #' rcpp_neutral_hotspots_ntests
@@ -101,6 +103,8 @@ rcpp_neutral_hotspots <- function(nbs, alpha_t, alpha_s, sd0, nt) {
 #'
 #' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
 #' point. 
+#' @param wts Weighting factors for each neighbour; must have same length as
+#' nbs. Uniform weights used if not given.
 #' @param alpha_t Strength of temporal autocorrelation
 #' @param alpha_s Strength of spatial autocorrelation
 #' @param sd0 Standard deviation of truncated normal distribution used to model
@@ -115,7 +119,7 @@ rcpp_neutral_hotspots <- function(nbs, alpha_t, alpha_s, sd0, nt) {
 #' sorted and re-scaled hotspot values, and second column containing sorted and
 #' re-scaled spatial autocorrelation statistics.
 #'
-rcpp_neutral_hotspots_ntests <- function(nbs, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
-    .Call('hotspotr_rcpp_neutral_hotspots_ntests', PACKAGE = 'hotspotr', nbs, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
+rcpp_neutral_hotspots_ntests <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
+    .Call('hotspotr_rcpp_neutral_hotspots_ntests', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
 }
 

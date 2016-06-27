@@ -6,6 +6,8 @@
 #' @param z Vector of observed values to be tested
 #' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
 #' point
+#' @param wts Weighting factors for each neighbour; must have same length as
+#' nbs. Uniform weights used if not given.
 #' @param alpha Vector of two components providing starting values for the
 #' strength of autocorrelation in time and space
 #' @param ntests Number of repeats of neutral model used to calculate mean
@@ -33,7 +35,7 @@
 #' }
 #'
 #' @export
-test_hotspots <- function (z, nbs, alpha=c(0.1, 0.1), ntests=100,
+test_hotspots <- function (z, nbs, wts, alpha=c(0.1, 0.1), ntests=100,
                            ac_type='moran', verbose=FALSE, plot=FALSE)
 {
     if (!is.numeric (z)) 
@@ -55,34 +57,43 @@ test_hotspots <- function (z, nbs, alpha=c(0.1, 0.1), ntests=100,
 
     size <- length (z)
 
-    ac <- rcpp_ac_stats (nbs, z, ac_type)
+    if (missing (wts)) 
+        wts <- lapply (nbs, function (x) rep (1, length (x)))
+
+    ac <- rcpp_ac_stats (nbs, wts, z, ac_type)
     zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
     test <- NULL # remove no visible binding warning
     # Initial 3D optimisation to get nt
     fn_n <- function (x)
     {
-        test <- rcpp_neutral_hotspots_ntests (nbs=nbs, alpha_t=x[1],
-                                        alpha_s=x[2], sd0=0.1,
-                                        nt=x[3], ntests=ntests, ac_type=ac_type)
+        test <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=x[1],
+                                              alpha_s=x[2], sd0=0.1,
+                                              nt=x[3], ntests=ntests, 
+                                              ac_type=ac_type)
         sum ((test [,1] - zs) ^ 2) + sum ((test [,2] - ac) ^ 2)
     }
-    if (verbose) message ('Optimising for nt ... ', appendLF=FALSE)
-    op <- optim (c (alpha, 10), fn_n)
+    control <- list (reltol=1e-3)
+    if (verbose) 
+    {
+        message ('Optimising for nt ... ', appendLF=FALSE)
+        #control <- c (control, trace=1)
+    }
+    op <- optim (c (alpha, 10), fn_n, control=control)
     # then reduce to 2d optimisation
     nt <- round (op$par [3])
     alpha <- op$par [1:2]
     fn_a <- function (x)
     {
-        test <- rcpp_neutral_hotspots_ntests (nbs=nbs, alpha_t=x [1], alpha_s=x
-                                              [2], sd0=0.1, nt=nt,
+        test <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=x [1],
+                                              alpha_s=x [2], sd0=0.1, nt=nt,
                                               ntests=ntests, ac_type=ac_type)
         sum ((test [,1] - zs) ^ 2) + sum ((test [,2] - ac) ^ 2)
     }
     if (verbose) message ('done.\nOptimising for alpha ... ', appendLF=FALSE)
-    op <- optim (alpha, fn_a)
+    op <- optim (alpha, fn_a, control=control)
     if (verbose) message ('done.')
     alpha <- op$par
-    test <- rcpp_neutral_hotspots_ntests (nbs=nbs, alpha_t=alpha [1],
+    test <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=alpha [1],
                                           alpha_s=alpha [2], sd0=0.1, nt=nt,
                                           ntests=ntests, ac_type=ac_type)
 

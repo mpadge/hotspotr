@@ -49,5 +49,6 @@ ives <- function (size=10, nt=1000, sd0=0.1, alpha=c(0.1, 0.1), spatial=FALSE,
         z <- rcpp_ives (nbs, nt, alpha[1], alpha[2], svec, rvec)
     else
         z <- rcpp_ives_spatial (size, nt, alpha[1], alpha[2], svec, rvec)
-    return (list (z=z, nbs=nbs))
+    dat <- data.frame (x=xy [,1], y=xy [,2], z=z)
+    return (list (dat=dat, nbs=nbs))
 }

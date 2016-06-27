@@ -7,6 +7,8 @@
 //'
 //' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
 //' point. 
+//' @param wts Weighting factors for each neighbour; must have same length as
+//' nbs. Uniform weights used if not given.
 //' @param alpha_t Strength of temporal autocorrelation
 //' @param alpha_s Strength of spatial autocorrelation
 //' @param sd0 Standard deviation of truncated normal distribution used to model
@@ -17,7 +19,7 @@
 //' @return A vector of simulated values of same size as \code{nbs}.
 //'
 // [[Rcpp::export]]
-Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs, 
+Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
         double alpha_t, double alpha_s, double sd0, int nt)
 {
     const int size = nbs.size ();
@@ -46,7 +48,7 @@ Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs,
     Rcpp::NumericVector x (size), x2 (size);
     std::fill (x.begin (), x.end (), 1.0);
 
-    Rcpp::NumericVector one_list;
+    Rcpp::NumericVector nbs1, wts1;
     for (int t=0; t<nt; t++)
     {
         // time step first
@@ -57,10 +59,11 @@ Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs,
         for (int i=0; i<size; i++)
         {
             tempd = 0.0;
-            one_list = Rcpp::as <Rcpp::NumericVector> (nbs (i));
-            for (int j=0; j<one_list.size (); j++)
-                tempd += x (j);
-            x2 (i) = (1.0 - (double) one_list.size () * alpha_s) * x (i) +
+            nbs1 = Rcpp::as <Rcpp::NumericVector> (nbs (i));
+            wts1 = Rcpp::as <Rcpp::NumericVector> (wts (i));
+            for (int j=0; j<nbs1.size (); j++)
+                tempd += x (nbs1 (j) - 1) * wts1 (j);
+            x2 (i) = (1.0 - (double) nbs1.size () * alpha_s) * x (i) +
                 alpha_s * tempd;
         }
         x = Rcpp::clone (x2);
@@ -77,6 +80,8 @@ Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs,
 //'
 //' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
 //' point. 
+//' @param wts Weighting factors for each neighbour; must have same length as
+//' nbs. Uniform weights used if not given.
 //' @param alpha_t Strength of temporal autocorrelation
 //' @param alpha_s Strength of spatial autocorrelation
 //' @param sd0 Standard deviation of truncated normal distribution used to model
@@ -93,8 +98,8 @@ Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs,
 //'
 // [[Rcpp::export]]
 Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests (Rcpp::List nbs, 
-        double alpha_t, double alpha_s, double sd0, int nt, int ntests,
-        std::string ac_type)
+        Rcpp::List wts, double alpha_t, double alpha_s, double sd0, int nt, int
+        ntests, std::string ac_type)
 {
     const int size = nbs.size ();
 
@@ -104,8 +109,8 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests (Rcpp::List nbs,
 
     for (int n=0; n<ntests; n++)
     {
-        x = rcpp_neutral_hotspots (nbs, alpha_t, alpha_s, sd0, nt);
-        ac1 = rcpp_ac_stats (nbs, x, ac_type); // sorted and normalised
+        x = rcpp_neutral_hotspots (nbs, wts, alpha_t, alpha_s, sd0, nt);
+        ac1 = rcpp_ac_stats (nbs, wts, x, ac_type); // sorted and normalised
         for (int i=0; i<size; i++)
             ac (i) += ac1 (i);
         std::sort (x.begin (), x.end (), std::greater<double> ());

@@ -4,6 +4,8 @@
 #'
 #' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
 #' point
+#' @param wts Weighting factors for each neighbour; must have same length as
+#' nbs. Uniform weights used if not given.
 #' @param alpha Vector of two components respectively specifying the strength of
 #' autocorrelation in time and space.
 #' @param nt Number of successive layers of temporal and spatial autocorrelation
@@ -21,13 +23,18 @@
 #' z <- neutral_hotspots (nbs=nbs)
 #'
 #' @export
-neutral_hotspots <- function (nbs, alpha=c(0.1, 0.1), nt=100, sd0=0.1, seed)
+neutral_hotspots <- function (nbs, wts, alpha=c(0.1, 0.1), nt=100, sd0=0.1, seed)
 {
+    if (missing (nbs)) stop ('nbs must be given')
+
+    if (missing (wts)) 
+        wts <- lapply (nbs, function (x) rep (1, length (x)))
+
     if (alpha [1] <= 0)
         stop ('neutral model only makes sense with finite temporal autocorrelation')
 
     if (!missing (seed)) set.seed (seed)
 
-    rcpp_neutral_hotspots (nbs=nbs, alpha_t=alpha [1], alpha_s=alpha [2],
+    rcpp_neutral_hotspots (nbs=nbs, wts=wts, alpha_t=alpha [1], alpha_s=alpha [2],
                            sd0=sd0, nt=nt)
 }

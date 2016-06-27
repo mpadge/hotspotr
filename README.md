@@ -9,7 +9,7 @@ Install
 devtools::install_github ('mpadge/hotspotr')
 ```
 
-Test
+Demonstration
 ----
 
 First a demonstration with a seed that produces a 2D field very similar to neutral fields.

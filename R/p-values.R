@@ -62,10 +62,12 @@ p_values <- function (z, nbs, wts, alpha=c(0.1, 0.1), nt=100, ntests=1000,
                                           alpha_s=alpha [2], sd0=0.1,
                                           nt=100, ntests=100, 
                                           ac_type=ac_type)
+
+    ac <- rcpp_ac_stats (z, nbs, wts, ac_type)
     z <- (sort (z, decreasing=TRUE) - min (z)) / diff (range (z))
+
     stat_z <- sum ((z - rs_means [,1]) ^ 2)
     p_z <- length (which (distributions [,1] > stat_z)) / ntests
-    ac <- rcpp_ac_stats (z, nbs, wts, ac_type)
     stat_ac <- sum ((ac - rs_means [,2]) ^ 2)
     p_ac <- length (which (distributions [,2] > stat_ac)) / ntests
 

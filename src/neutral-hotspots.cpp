@@ -66,8 +66,6 @@ Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
                 tempd += z (nbs1 (j) - 1) * wts1 (j);
                 wtsum += wts1 (j);
             }
-            //z2 (i) = (1.0 - (double) nbs1.size () * alpha_s) * z (i) +
-            //    alpha_s * (double) nbs1.size() * tempd / wtsum;
             z2 (i) = (1.0 - alpha_s) * z (i) + alpha_s * tempd / wtsum;
         }
         z = Rcpp::clone (z2);

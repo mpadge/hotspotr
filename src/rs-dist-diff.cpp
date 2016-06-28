@@ -2,7 +2,7 @@
 #include "ac-stats.h"
 #include "neutral-hotspots.h"
 
-//' rcpp_p_values
+//' rcpp_rs_dist_diff
 //'
 //' Calculates expected values for deviation of observed rank--scale
 //' distributions.
@@ -32,7 +32,7 @@
 //' instances.
 //'
 // [[Rcpp::export]]
-Rcpp::NumericMatrix rcpp_p_values (Rcpp::List nbs, 
+Rcpp::NumericMatrix rcpp_rs_dist_diff (Rcpp::List nbs, 
         Rcpp::List wts, double alpha_t, double alpha_s, double sd0, int nt, int
         ntests, std::string ac_type)
 {

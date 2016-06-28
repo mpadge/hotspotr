@@ -97,9 +97,9 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// rcpp_p_values
-Rcpp::NumericMatrix rcpp_p_values(Rcpp::List nbs, Rcpp::List wts, double alpha_t, double alpha_s, double sd0, int nt, int ntests, std::string ac_type);
-RcppExport SEXP hotspotr_rcpp_p_values(SEXP nbsSEXP, SEXP wtsSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP sd0SEXP, SEXP ntSEXP, SEXP ntestsSEXP, SEXP ac_typeSEXP) {
+// rcpp_rs_dist_diff
+Rcpp::NumericMatrix rcpp_rs_dist_diff(Rcpp::List nbs, Rcpp::List wts, double alpha_t, double alpha_s, double sd0, int nt, int ntests, std::string ac_type);
+RcppExport SEXP hotspotr_rcpp_rs_dist_diff(SEXP nbsSEXP, SEXP wtsSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP sd0SEXP, SEXP ntSEXP, SEXP ntestsSEXP, SEXP ac_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -111,7 +111,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type nt(ntSEXP);
     Rcpp::traits::input_parameter< int >::type ntests(ntestsSEXP);
     Rcpp::traits::input_parameter< std::string >::type ac_type(ac_typeSEXP);
-    __result = Rcpp::wrap(rcpp_p_values(nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type));
+    __result = Rcpp::wrap(rcpp_rs_dist_diff(nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type));
     return __result;
 END_RCPP
 }

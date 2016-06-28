@@ -123,7 +123,7 @@ rcpp_neutral_hotspots_ntests <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, nt
     .Call('hotspotr_rcpp_neutral_hotspots_ntests', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
 }
 
-#' rcpp_p_values
+#' rcpp_rs_dist_diff
 #'
 #' Calculates expected values for deviation of observed rank--scale
 #' distributions.
@@ -152,7 +152,7 @@ rcpp_neutral_hotspots_ntests <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, nt
 #' differences between these mean profiles and an additional series of simulated
 #' instances.
 #'
-rcpp_p_values <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
-    .Call('hotspotr_rcpp_p_values', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
+rcpp_rs_dist_diff <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
+    .Call('hotspotr_rcpp_rs_dist_diff', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
 }
 

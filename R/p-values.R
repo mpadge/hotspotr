@@ -35,28 +35,11 @@ p_values <- function (z, nbs, wts, alpha=c(0.1, 0.1), nt=100, ntests=1000,
     } else
         ac_type <- 'moran'
 
-    distributions <- rcpp_p_values (nbs=nbs, wts=wts, alpha_t=alpha [1],
-                                    alpha_s=alpha [2], sd0=0.1, nt=100,
-                                    ntests=ntests, ac_type=ac_type)
-    # The distribution is **close to** but not the same as a chi-squared:
-    # plot.new ()
-    # par (mfrow=c(1,2))
-    # mts <- c (expression (paste (z^2)), expression (paste (ac^2)))
-    # mults <- c (100, 1000)
-    # for (i in 1:2)
-    # {
-    #     y <- sqrt (test [,i]) # SDs
-    #     x <- seq (0, ceiling (max (y) * mults [i]) / mults [i], by=1/mults [i])
-    #     hh <- hist (y, breaks=x, plot=FALSE)
-    #     plot (x [1:length (x) - 1] * mults [i], hh$counts, "l", 
-    #           xlab="x", ylab="freq", main=mts [i])
-    #
-    #     x <- x [1:length (x) - 1] * mults [i]
-    #     y <- dchisq (x, 21) # arbitrary value that fits observations well
-    #     ry <- range (y, finite=TRUE)
-    #     y <- (y - ry [1]) / diff (ry) * max (hh$counts)
-    #     lines (x, y, col="red")
-    #}
+    # Summed squared differences in rank-scale distributions:
+    distributions <- rcpp_rs_dist_diff (nbs=nbs, wts=wts, alpha_t=alpha [1],
+                                        alpha_s=alpha [2], sd0=0.1, nt=100,
+                                        ntests=ntests, ac_type=ac_type)
+
     # mean rank-scale distributions:
     rs_means <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=alpha [1],
                                           alpha_s=alpha [2], sd0=0.1,

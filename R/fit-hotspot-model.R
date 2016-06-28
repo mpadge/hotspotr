@@ -1,7 +1,8 @@
-#' test_hotspots
+#' fit_hotspot_model
 #'
-#' Tests an observed matrix of data (\code{ymat}) against a two-dimensional
-#' neutral model
+#' Fits a neutral model to an observed series of hotspot values in terms of
+#' temporal and spatial autocorrelation parameters, and number of iterations of
+#' these.
 #'
 #' @param z Vector of observed values to be tested
 #' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
@@ -19,24 +20,22 @@
 #'
 #' @return A vector of four values as estimated by the neutral model:
 #' \enumerate{
-#'   \item Temporal autocorrelation coefficient
-#'   \item Spatial autocorrelation coefficient
-#'   \item Number of successive layers of spatio-temporal autocorrelation
+#'   \item alpha respectively containing temporal and spatial autocorrelation
+#'   coefficients
+#'   \item nt = Number of successive layers of spatio-temporal autocorrelation
 #'   required to reproduce statistical properties of observed data
-#'   \item Absolute difference between observed and modelled rank--scale
-#'   distributions
 #' }
 #'
 #' @examples
 #' \dontrun{
 #' alpha <- c (0.1, 0.1)
 #' dat <- ives (size=10, nt=1000, sd0=0.1, alpha=alpha)
-#' test <- test_hotspots (nbs=dat$nbs, z=dat$z, alpha=alpha, ntests=10)
+#' test <- fit_hotspot_model (nbs=dat$nbs, z=dat$z, alpha=alpha, ntests=10)
 #' }
 #'
 #' @export
-test_hotspots <- function (z, nbs, wts, alpha=c(0.1, 0.1), ntests=100,
-                           ac_type='moran', verbose=FALSE, plot=FALSE)
+fit_hotspot_model <- function (z, nbs, wts, alpha=c(0.1, 0.1), ntests=100,
+                               ac_type='moran', verbose=FALSE, plot=FALSE)
 {
     if (!is.numeric (z)) 
         stop ('z must be numeric')
@@ -93,45 +92,6 @@ test_hotspots <- function (z, nbs, wts, alpha=c(0.1, 0.1), ntests=100,
     op <- optim (alpha, fn_a, control=control)
     if (verbose) message ('done.')
     alpha <- op$par
-    test <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=alpha [1],
-                                          alpha_s=alpha [2], sd0=0.1, nt=nt,
-                                          ntests=ntests, ac_type=ac_type)
 
-    # Parameters for ydat have been estimated; now generate equivalent neutral
-    # values
-    test_z <- as.numeric (test [,1])
-    test_ac <- as.numeric (test [,2])
-
-    # Note paired=TRUE is not appropriate because the positions in the sorted
-    # lists are arbitrary and not directly related
-    pval_z <- t.test (test_z, zs, paired=FALSE)$p.value
-    pval_ac <- t.test (test_ac, ac, paired=FALSE)$p.value
-    val_z <- sum ((test_z - zs) ^ 2)
-    val_ac <- sum ((test_ac - ac) ^ 2)
-
-    if (plot)
-    {
-        plot.new ()
-        par (mfrow=c(1,2))
-        cols <- c ('blue', 'red')
-        y1 <- list (zs, ac)
-        y2 <- list (test_z, test_ac)
-        pvals <- c (pval_z, pval_ac)
-        mt <- c ('raw', 'AC')
-        for (i in 1:2)
-        {
-            plot (seq (y1 [[i]]), y1 [[i]], 'l', col=cols [1],
-                  xlab='rank', ylab='scale')
-            lines (seq (y2 [[i]]), y2 [[i]], col=cols [2])
-            legend ('topright', lwd=1, col=cols, bty='n',
-                    legend=c('observed', 'neutral2d'))
-            title (main=paste0 (mt [i], ': p = ', 
-                                formatC (pvals [i], format='f', digits=4)))
-        }
-    }
-
-    pars <- list (alpha=alpha, nt=nt)
-    pvals <- list (raw=pval_z, ac=pval_ac)
-    data <- list (z=test_z, ac=test_ac)
-    list (pars=pars, pvals=pvals, data=data)
+    list (alpha=alpha, nt=nt)
 }

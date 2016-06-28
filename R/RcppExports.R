@@ -141,6 +141,9 @@ rcpp_neutral_hotspots_ntests <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, nt
 #' @param ntests Number of tests used to obtain average values
 #' @param ac_type Character string specifying type of aucorrelation
 #' (\code{moran}, \code{geary}, or code{getis-ord}).
+#' @param z_mn mean rank-scale distribution of z-variable
+#' @param ac_mean mean rank-scale distribution of autocorrelation statistic of
+#' z
 #'
 #' @return A matrix of dimension (size, 2), with first column containing
 #' sorted and re-scaled hotspot values, and second column containing sorted and
@@ -152,7 +155,7 @@ rcpp_neutral_hotspots_ntests <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, nt
 #' differences between these mean profiles and an additional series of simulated
 #' instances.
 #'
-rcpp_rs_dist_diff <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
-    .Call('hotspotr_rcpp_rs_dist_diff', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
+rcpp_rs_dist_diff <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type, z_mn, ac_mn) {
+    .Call('hotspotr_rcpp_rs_dist_diff', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type, z_mn, ac_mn)
 }
 

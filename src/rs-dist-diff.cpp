@@ -20,6 +20,9 @@
 //' @param ntests Number of tests used to obtain average values
 //' @param ac_type Character string specifying type of aucorrelation
 //' (\code{moran}, \code{geary}, or code{getis-ord}).
+//' @param z_mn mean rank-scale distribution of z-variable
+//' @param ac_mean mean rank-scale distribution of autocorrelation statistic of
+//' z
 //'
 //' @return A matrix of dimension (size, 2), with first column containing
 //' sorted and re-scaled hotspot values, and second column containing sorted and
@@ -34,17 +37,12 @@
 // [[Rcpp::export]]
 Rcpp::NumericMatrix rcpp_rs_dist_diff (Rcpp::List nbs, 
         Rcpp::List wts, double alpha_t, double alpha_s, double sd0, int nt, int
-        ntests, std::string ac_type)
+        ntests, std::string ac_type, Rcpp::NumericVector z_mn,
+        Rcpp::NumericVector ac_mn)
 {
     const int size = nbs.size ();
 
     double xmin, xmax, tempd;
-
-    // Generate mean rank-scale profiles from 100 tests
-    Rcpp::NumericMatrix rs_means = rcpp_neutral_hotspots_ntests (nbs, wts,
-            alpha_t, alpha_s, sd0, nt, 100, ac_type);
-    Rcpp::NumericVector z_mn = rs_means (Rcpp::_, 0);
-    Rcpp::NumericVector ac_mn = rs_means (Rcpp::_, 1);
 
     Rcpp::NumericVector z (size), ac (size);
     Rcpp::NumericMatrix result (ntests, 2);

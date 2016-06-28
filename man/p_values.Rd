@@ -5,7 +5,7 @@
 \title{p_values}
 \usage{
 p_values(z, nbs, wts, alpha = c(0.1, 0.1), nt = 100, ntests = 1000,
-  ac_type = "moran")
+  ac_type = "moran", plot = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{z}{Vector of observed values to be tested}
@@ -27,6 +27,11 @@ mean of \code{ntests}}
 
 \item{ac_type}{type of autocorrelation statistic to use in tests
 (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}
+
+\item{plot}{If TRUE, plot mean and observed distributions of z and associated
+autocorrelation statistics}
+
+\item{verbose}{If TRUE, dump progress details to screen}
 }
 \value{
 Nothing (dumps statistics to screen)

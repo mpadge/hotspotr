@@ -20,10 +20,13 @@
 #'
 #' @export
 p_values <- function (z, nbs, wts, alpha=c(0.1, 0.1), nt=100, ntests=1000,
-                      ac_type='moran')
+                      ac_type='moran', plot=FALSE)
 {
     if (length (z) != length (nbs))
         stop ('z must be same size as nbs')
+
+    if (missing (wts)) 
+        wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
 
     ac_type <- tolower (ac_type)
     if (substring (ac_type, 1, 1) == 'g')
@@ -53,6 +56,21 @@ p_values <- function (z, nbs, wts, alpha=c(0.1, 0.1), nt=100, ntests=1000,
     p_z <- length (which (distributions [,1] > stat_z)) / ntests
     stat_ac <- sum ((ac - rs_means [,2]) ^ 2)
     p_ac <- length (which (distributions [,2] > stat_ac)) / ntests
+
+    if (plot)
+    {
+        plot.new ()
+        par (mfrow=c(1,2))
+        plot (1:length (z), z, "l", xlab="rank", ylab="scale")
+        lines (1:length (z), rs_means [,1], col="gray")
+        legend ("topright", lwd=1, col=c("black", "gray"), bty="n",
+                legend=c("test data", "average distribution"))
+        title (main=paste0 ("z: p = ", p_z))
+
+        plot (1:length (ac), ac, "l", xlab="rank", ylab="scale")
+        lines (1:length (ac), rs_means [,2], col="gray")
+        title (main=paste0 ("ac: p = ", p_ac))
+    }
 
     list (p_z=p_z, p_ac=p_ac)
 }

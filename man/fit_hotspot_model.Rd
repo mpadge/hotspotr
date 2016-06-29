@@ -5,7 +5,7 @@
 \title{fit_hotspot_model}
 \usage{
 fit_hotspot_model(z, nbs, wts, alpha = c(0.1, 0.1), ntests = 100,
-  ac_type = "moran", verbose = FALSE, plot = FALSE)
+  ac_type = "moran", sd0 = 0.1, verbose = FALSE, plot = FALSE)
 }
 \arguments{
 \item{z}{Vector of observed values to be tested}
@@ -24,6 +24,9 @@ rank--scale distribution}
 
 \item{ac_type}{type of autocorrelation statistic to use in tests
 (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}
+
+\item{sd0}{Standard deviation of truncated normal distribution used to model
+environmental variation (with mean of 1)}
 
 \item{verbose}{If TRUE, dump progress details to screen}
 
@@ -46,8 +49,8 @@ these.
 \examples{
 \dontrun{
 alpha <- c (0.1, 0.1)
-dat <- ives (size=10, nt=1000, sd0=0.1, alpha=alpha)
-test <- fit_hotspot_model (nbs=dat$nbs, z=dat$z, alpha=alpha, ntests=10)
+dat <- ives (size=10, nt=10, sd0=0.1, alpha=alpha)
+test <- fit_hotspot_model (z=dat$dat$z, nbs=dat$nbs, alpha=alpha, ntests=100)
 }
 
 }

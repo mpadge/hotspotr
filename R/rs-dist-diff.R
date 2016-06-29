@@ -1,4 +1,4 @@
-#' neutral_hotspots_ntests
+#' rs_dist_diff
 #'
 #' Averages results of a number of neutral models
 #'
@@ -16,7 +16,8 @@
 #' environmental variation (with mean of 1)
 #' @param ac_type type of autocorrelation statistic to use in tests
 #' (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})
-#' @param seed Random seed
+#' @param mean_stats Mean rank--scale distributions returned from
+#' \code{neutral_hotspots_ntests}: a matrix of 2 columns
 #'
 #' @return A vector of hotspot values sorted from high to low
 #'
@@ -27,21 +28,26 @@
 #' z <- neutral_hotspots (nbs=nbs)
 #'
 #' @export
-neutral_hotspots_ntests <- function (nbs, wts, alpha=c(0.1, 0.1), ntests=1000,
-                                     nt=100, sd0=0.1, ac_type='moran', seed)
+rs_dist_diff <- function (nbs, wts, alpha=c(0.1, 0.1), sd0=0.1, ntests=1000,
+                                     nt=100, ac_type='moran', mean_stats)
 {
     if (missing (nbs)) stop ('nbs must be given')
 
     if (missing (wts)) 
         wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
 
-    if (!missing (seed)) set.seed (seed)
+    if (missing (mean_stats)) 
+        mean_stats <- neutral_hotspots_ntests (nbs, wts, alpha, ntests, nt,
+                                               sd0, ac_type)
+    z_mn <- mean_stats$z
+    ac_mn <- mean_stats$ac
 
     # Set up parallel cluster:
     clust <- parallel::makeCluster (parallel::detectCores () - 1)
     # "envir" necessary to get variables from this environment
     parallel::clusterExport (clust, list ("nbs", "wts", "alpha", "sd0", "nt",
-                                          "ac_type"), envir=environment ())
+                                          "z_mn", "ac_mn", "ac_type"),
+                             envir=environment ())
     invisible (parallel::clusterCall (clust, function () {
                             while (length (grep ('hotspotr', getwd ())) > 0) 
                                 setwd ("..")
@@ -58,10 +64,9 @@ neutral_hotspots_ntests <- function (nbs, wts, alpha=c(0.1, 0.1), ntests=1000,
                         ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
                         z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / 
                                 diff (range (z1)) 
-                        rbind (z1, ac1)
+                        c (sum ((z1 - z_mn) ^ 2), sum ((ac1 - ac_mn) ^ 2))
                     })
     parallel::stopCluster (clust)
-    ac <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
-    z <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
-    data.frame (z=z, ac=ac)
+    z <- do.call (rbind, z)
+    data.frame (z=z [,1], ac=z [,2])
 }

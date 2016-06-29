@@ -54,10 +54,9 @@ p_values <- function (z, nbs, wts, alpha=c(0.1, 0.1), nt=100, ntests=1000,
         message ('done\nGenerating difference statistics for ', appendLF=FALSE)
         message ('rank-scale distributions ... ', appendLF=FALSE)
     }
-    distributions <- rcpp_rs_dist_diff (nbs=nbs, wts=wts, alpha_t=alpha [1],
-                                        alpha_s=alpha [2], sd0=0.1, nt=100,
-                                        ntests=ntests, ac_type=ac_type,
-                                        z_mn=rs_means [,1], ac_mn=rs_means [,2])
+    distributions <- rs_dist_diff (nbs=nbs, wts=wts, alpha=alpha, sd0=0.1,
+                                   nt=nt, ntests=ntests, ac_type=ac_type,
+                                   mean_stats=rs_means)
     if (verbose) message ('done')
 
     ac <- rcpp_ac_stats (z, nbs, wts, ac_type)

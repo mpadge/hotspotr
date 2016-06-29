@@ -15,7 +15,7 @@
 #'
 #' @name hotspotr
 #' @docType package
-#' @importFrom stats rnorm t.test var optim approx density
+#' @importFrom stats rnorm t.test var optim approx density loess
 #' @importFrom methods is
 #' @importFrom graphics lines legend title par plot.new text
 #' @importFrom msm rtnorm

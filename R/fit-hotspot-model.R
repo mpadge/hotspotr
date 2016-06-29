@@ -65,11 +65,10 @@ fit_hotspot_model <- function (z, nbs, wts, alpha=c(0.1, 0.1), ntests=100,
     # Initial 3D optimisation to get nt
     fn_n <- function (x)
     {
-        test <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=x[1],
-                                              alpha_s=x[2], sd0=0.1,
-                                              nt=x[3], ntests=ntests, 
-                                              ac_type=ac_type)
-        sum ((test [,1] - zs) ^ 2) + sum ((test [,2] - ac) ^ 2)
+        test <- neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha=x[1:2],
+                                         sd0=0.1, nt=x[3], ntests=ntests, 
+                                         ac_type=ac_type)
+        sum ((test$z - zs) ^ 2) + sum ((test$ac - ac) ^ 2)
     }
     control <- list (reltol=1e-3)
     if (verbose) 
@@ -83,10 +82,10 @@ fit_hotspot_model <- function (z, nbs, wts, alpha=c(0.1, 0.1), ntests=100,
     alpha <- op$par [1:2]
     fn_a <- function (x)
     {
-        test <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=x [1],
-                                              alpha_s=x [2], sd0=0.1, nt=nt,
-                                              ntests=ntests, ac_type=ac_type)
-        sum ((test [,1] - zs) ^ 2) + sum ((test [,2] - ac) ^ 2)
+        test <- neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha=x [1:2],
+                                         sd0=0.1, nt=nt, ntests=ntests,
+                                         ac_type=ac_type)
+        sum ((test$z - zs) ^ 2) + sum ((test$ac - ac) ^ 2)
     }
     if (verbose) message ('done.\nOptimising for alpha ... ', appendLF=FALSE)
     op <- optim (alpha, fn_a, control=control)

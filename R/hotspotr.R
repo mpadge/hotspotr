@@ -20,6 +20,7 @@
 #' @importFrom graphics lines legend title par plot.new text
 #' @importFrom msm rtnorm
 #' @importFrom spdep dnearneigh
+#' @importFrom devtools load_all
 #' @importFrom Rcpp evalCpp
 #' @useDynLib hotspotr
 NULL

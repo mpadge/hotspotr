@@ -45,10 +45,8 @@ p_values <- function (z, nbs, wts, alpha=c(0.1, 0.1), nt=100, ntests=1000,
     if (verbose) 
         message ('Generating mean rank-scale distributions ... ',
                  appendLF=FALSE)
-    rs_means <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=alpha [1],
-                                          alpha_s=alpha [2], sd0=0.1,
-                                          nt=100, ntests=ntests, 
-                                          ac_type=ac_type)
+    rs_means <- neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha=alpha, sd0=0.1,
+                                         nt=nt, ntests=ntests, ac_type=ac_type)
 
     # Summed squared differences in rank-scale distributions:
     if (verbose) 

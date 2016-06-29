@@ -114,3 +114,92 @@ analyse (metal='zinc', ntests=1000)
 ![](fig/meuse-zinc.png)
 
 These plots demonstrate that in all cases, the observed values themselves (`z` in the figures) can not be reproduced by a neutral model, yet the actual spatial relationships between them can. This indicates that the generating processes can be modelled by assuming nothing other than simple spatial autocorrelation acting on a more complex, non-spatial process.
+
+Parallel tests
+--------------
+
+The current, non-parallel `Rcpp` version:
+
+``` r
+ntests <- 1000
+dat <- ives (size=10, seed=1)
+wts <- lapply (dat$nbs, function (x) rep (1, length (x)) / length (x))
+
+system.time (
+test <- rcpp_neutral_hotspots_ntests (nbs=dat$nbs, wts=wts, alpha_t=0.1,
+                  alpha_s=0.1, sd0=0.1, nt=10, ntests=ntests, ac_type='moran')
+)
+```
+
+    ##    user  system elapsed 
+    ##   0.685   0.004   0.689
+
+Then write an equivalent `R` `lapply` version
+
+``` r
+rloop <- function (ntests=1000)
+{
+    z <- lapply (seq (ntests), function (i) {
+        z1 <- rcpp_neutral_hotspots (dat$nbs, wts, alpha_t=0.1, alpha_s=0.1, 
+                                     sd0=0.1, nt=10);
+        ac1 <- rcpp_ac_stats (z1, dat$nbs, wts, "moran"); 
+        z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / diff (range (z1))
+        rbind (z1, ac1)
+        })
+    ac <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
+    z <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
+    cbind (ac, z)
+}
+system.time ( test <- rloop (ntests=ntests))
+```
+
+    ##    user  system elapsed 
+    ##   0.574   0.000   0.573
+
+And then an `R`-internal parallel version. First the slightly different function definition:
+
+``` r
+require (parallel)
+rParloop <- function (ntests=1000)
+{
+    z <- parLapply (clust, seq (ntests), function (i) 
+                    {
+                        z1 <- rcpp_neutral_hotspots (dat$nbs, wts, alpha_t=0.1, 
+                                                     alpha_s=0.1, sd0=0.1,
+                                                     nt=10)
+                        ac1 <- rcpp_ac_stats (z1, dat$nbs, wts, "moran")
+                        z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / 
+                                diff (range (z1)) 
+                        rbind (z1, ac1)
+                    })
+    ac <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
+    z <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
+    cbind (ac, z)
+}
+```
+
+Note that `makeCluster` with `type="FORK"` automatically attaches all environment variables, but is not portable, as detailed here: <http://www.r-bloggers.com/how-to-go-parallel-in-r-basics-tips/>. The `clusterExport` and `clusterCall` lines explicitly attach only the required bits.
+
+``` r
+#clust <- makeCluster (parallel::detectCores () - 1, type="FORK")
+clust <- makeCluster (parallel::detectCores () - 1)
+clusterExport (clust, "dat")
+clusterExport (clust, "wts")
+invisible (clusterCall (clust, function () {
+                        while (length (grep ('hotspotr', getwd ())) > 0) 
+                            setwd ("..")
+                        devtools::load_all ("hotspotr")
+                        setwd ("./hotspotr")
+                                         }))
+```
+
+``` r
+system.time (test <- rParloop (1000))
+```
+
+    ##    user  system elapsed 
+    ##   0.013   0.000   0.223
+
+``` r
+stopCluster (clust)
+```

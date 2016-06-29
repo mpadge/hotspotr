@@ -6,8 +6,8 @@ tmux -2 new-session -d -s $SESSION
 tmux new-window -t $SESSION:1 -k -n R
 tmux send-keys -t $SESSION:1 'vim README.Rmd' C-m
 tmux send-keys -t $SESSION:1 ':' 'tabe R/neutral-hotspots.R' C-m
-tmux send-keys -t $SESSION:1 ':' 'tabe R/p-values.R' C-m
 tmux send-keys -t $SESSION:1 ':' 'tabe R/fit-hotspot-model.R' C-m
+tmux send-keys -t $SESSION:1 ':' 'tabe R/p-values.R' C-m
 #tmux send-keys -t $SESSION:1 '2gt'
 
 tmux new-window -t $SESSION:2 -k -n cpp

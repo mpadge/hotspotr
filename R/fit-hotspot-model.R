@@ -28,6 +28,19 @@
 #'   required to reproduce statistical properties of observed data
 #' }
 #'
+#' @section Note:
+#' Fitting these neutral models is **not** a standard optimisation problem
+#' because the models are very noisy. Although \code{optim} with
+#' \code{method="SANN"} may be used, it often generates extremely large values
+#' for \code{alpha} (for example, > 10). \code{DEoptim} could also be applied,
+#' yet in generally does not explore anything useful---if given starting
+#' parameters, it will generally remain exactly in that place.
+#'
+#' The approach employed here reflects the comment of
+#' https://stat.ethz.ch/pipermail/r-help/2015-May/428751.html
+#' through simply producing regular series, fitting loess models, and taking the
+#' corresponding minima.
+#'
 #' @examples
 #' \dontrun{
 #' alpha <- c (0.1, 0.1)

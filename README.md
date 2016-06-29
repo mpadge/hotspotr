@@ -125,14 +125,15 @@ ntests <- 1000
 dat <- ives (size=10, seed=1)
 wts <- lapply (dat$nbs, function (x) rep (1, length (x)) / length (x))
 
+set.seed (1)
 system.time (
-test <- rcpp_neutral_hotspots_ntests (nbs=dat$nbs, wts=wts, alpha_t=0.1,
+test1 <- rcpp_neutral_hotspots_ntests (nbs=dat$nbs, wts=wts, alpha_t=0.1,
                   alpha_s=0.1, sd0=0.1, nt=10, ntests=ntests, ac_type='moran')
 )
 ```
 
     ##    user  system elapsed 
-    ##   0.685   0.004   0.689
+    ##   0.529   0.004   0.533
 
 Then write an equivalent `R` `lapply` version
 
@@ -140,21 +141,22 @@ Then write an equivalent `R` `lapply` version
 rloop <- function (ntests=1000)
 {
     z <- lapply (seq (ntests), function (i) {
-        z1 <- rcpp_neutral_hotspots (dat$nbs, wts, alpha_t=0.1, alpha_s=0.1, 
-                                     sd0=0.1, nt=10);
-        ac1 <- rcpp_ac_stats (z1, dat$nbs, wts, "moran"); 
-        z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / diff (range (z1))
-        rbind (z1, ac1)
-        })
+                 z1 <- rcpp_neutral_hotspots (dat$nbs, wts, alpha_t=0.1, 
+                                              alpha_s=0.1, sd0=0.1, nt=10)
+                 ac1 <- rcpp_ac_stats (z1, dat$nbs, wts, "moran")
+                 z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / diff (range (z1))
+                 rbind (z1, ac1)
+                })
     ac <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
     z <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
-    cbind (ac, z)
+    cbind (z, ac)
 }
-system.time ( test <- rloop (ntests=ntests))
+set.seed (1)
+system.time ( test2 <- rloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.574   0.000   0.573
+    ##    0.58    0.00    0.58
 
 And then an `R`-internal parallel version. First the slightly different function definition:
 
@@ -174,7 +176,7 @@ rParloop <- function (ntests=1000)
                     })
     ac <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
     z <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
-    cbind (ac, z)
+    cbind (z, ac)
 }
 ```
 
@@ -194,12 +196,42 @@ invisible (clusterCall (clust, function () {
 ```
 
 ``` r
-system.time (test <- rParloop (1000))
+system.time (test3 <- rParloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.013   0.000   0.223
+    ##   0.009   0.004   0.224
 
 ``` r
 stopCluster (clust)
 ```
+
+And the results look like this ...
+
+``` r
+plot (1:length (dat$nbs), test3 [,1], "l", xlab="rank", ylab="scale")
+lines (1:length (dat$nbs), test3 [,2], col="gray")
+legend ("topright", lwd=1, col=c("black", "gray"), bty="n", legend=c("z", "ac"))
+```
+
+![](fig/plot-parallel.png)
+
+The parallel version does not of course generate identical results, because each core starts with its own random seed, but nevertheless after
+
+``` r
+ntests
+```
+
+    ## [1] 1000
+
+the differences are very small:
+
+``` r
+max (abs (test1 - test2)); max (abs (test1 - test3))
+```
+
+    ## [1] 1.665335e-15
+
+    ## [1] 0.006559984
+
+The first of these is mere machine rounding tolerance; the second is a measure of convergence of randomised mean profiles.

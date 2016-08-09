@@ -56,7 +56,7 @@ rcpp_ives <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
 #'
 #' Implements neutral model of Ives & Klopfer (Ecology 1997) with additional
 #' spatial ' structure, implented here through replacing generic local
-#' autocorrelation ' with movement along maximal local gradients.
+#' autocorrelation ' with movement along maximal local gradients. 
 #'
 #' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
 #' point. 
@@ -70,6 +70,8 @@ rcpp_ives <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
 #' truncated normal ' distribution.
 #'
 #' @return A vector of simulated values of same size as \code{nbs}.
+#'
+#' @section Note: This is not yet implemented! DO NOT USE!
 #'
 rcpp_ives_spatial <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
     .Call('hotspotr_rcpp_ives_spatial', PACKAGE = 'hotspotr', nbs, nt, alpha_t, alpha_s, svec, rvec)

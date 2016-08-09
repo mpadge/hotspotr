@@ -51,7 +51,7 @@ Rcpp::NumericVector rcpp_ives (Rcpp::List nbs, int nt,
             tempd = 0.0;
             one_list = Rcpp::as <Rcpp::NumericVector> (nbs (i));
             for (int j=0; j<one_list.size (); j++)
-                tempd += x (j);
+                tempd += x (one_list (j) - 1); // nbs are R 1-indexed
             x2 (i) = (1.0 - (double) one_list.size () * alpha_s) * x (i) +
                 alpha_s * tempd;
         }
@@ -65,7 +65,7 @@ Rcpp::NumericVector rcpp_ives (Rcpp::List nbs, int nt,
 //'
 //' Implements neutral model of Ives & Klopfer (Ecology 1997) with additional
 //' spatial ' structure, implented here through replacing generic local
-//' autocorrelation ' with movement along maximal local gradients.
+//' autocorrelation ' with movement along maximal local gradients. 
 //'
 //' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
 //' point. 
@@ -79,6 +79,8 @@ Rcpp::NumericVector rcpp_ives (Rcpp::List nbs, int nt,
 //' truncated normal ' distribution.
 //'
 //' @return A vector of simulated values of same size as \code{nbs}.
+//'
+//' @section Note: This is not yet implemented! DO NOT USE!
 //'
 // [[Rcpp::export]]
 Rcpp::NumericVector rcpp_ives_spatial (Rcpp::List nbs, int nt, 

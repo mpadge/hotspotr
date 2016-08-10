@@ -84,7 +84,7 @@ rcpp_ives_spatial <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
 #' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
 #' point. 
 #' @param wts Weighting factors for each neighbour; must have same length as
-#' nbs. Uniform weights used if not given.
+#' nbs. 
 #' @param alpha_t Strength of temporal autocorrelation
 #' @param alpha_s Strength of spatial autocorrelation
 #' @param sd0 Standard deviation of truncated normal distribution used to model
@@ -96,5 +96,32 @@ rcpp_ives_spatial <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
 #'
 rcpp_neutral_hotspots <- function(nbs, wts, alpha_t, alpha_s, sd0, nt) {
     .Call('hotspotr_rcpp_neutral_hotspots', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt)
+}
+
+#' rcpp_neutral_hotspots_ntests
+#'
+#' Performs repeated neutral tests to yield average distributions of both
+#' hotspot values and spatial autocorrelation statistics.
+#'
+#' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
+#' point. 
+#' @param wts Weighting factors for each neighbour; must have same length as
+#' nbs. 
+#' @param alpha_t Strength of temporal autocorrelation
+#' @param alpha_s Strength of spatial autocorrelation
+#' @param sd0 Standard deviation of truncated normal distribution used to model
+#' environmental variation (with mean of 1)
+#' @param nt Number of successive layers of temporal and spatial autocorrelation
+#' used to generate final modelled values
+#' @param ntests Number of tests used to obtain average values
+#' @param ac_type Character string specifying type of aucorrelation
+#' (\code{moran}, \code{geary}, or code{getis-ord}).
+#'
+#' @return A matrix of dimension (size, 2), with first column containing
+#' sorted and re-scaled hotspot values, and second column containing sorted and
+#' re-scaled spatial autocorrelation statistics.
+#'
+rcpp_neutral_hotspots_ntests <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
+    .Call('hotspotr_rcpp_neutral_hotspots_ntests', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
 }
 

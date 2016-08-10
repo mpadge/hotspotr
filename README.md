@@ -234,7 +234,7 @@ legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
 
 ![](fig/brown-space.png)
 
-And in this case the introduction of spatial autocorrelation does enable the generation of rank--scale distributions that are notably more peaked than any non-spatially autocorrelation versions. This suggests the neutral models can most flexibly be based simply on the models of *Brown et al (1995)*---that is, simply normal distributions---with the additional aspect of spatial autocorrelation. The following two parameters therefore suffice:
+And in this case the introduction of spatial autocorrelation does enable the generation of rank--scale distributions that are notably more peaked than any non-spatially autocorrelation versions. This suggests the neutral models can most flexibly be based simply on the models of *Brown et al (1995)*---that is, simple normal distributions---with the additional aspect of spatial autocorrelation. The following two parameters therefore suffice:
 
 1.  Variance of the (truncated) normal distribution; and
 
@@ -265,7 +265,7 @@ test1 <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=0.1,
 ```
 
     ##    user  system elapsed 
-    ##   0.508   0.004   0.513
+    ##   0.528   0.004   0.535
 
 Then write an equivalent `R` `lapply` version
 
@@ -288,7 +288,7 @@ system.time ( test2 <- rloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.488   0.004   0.493
+    ##    0.56    0.00    0.56
 
 And then an `R`-internal parallel version. First the slightly different function definition:
 
@@ -333,7 +333,7 @@ system.time (test3 <- rParloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.012   0.000   0.196
+    ##   0.016   0.000   0.197
 
 ``` r
 stopCluster (clust)
@@ -365,7 +365,7 @@ max (abs (test1 - test2)); max (abs (test1 - test3))
 
     ## [1] 1.665335e-15
 
-    ## [1] 0.004418125
+    ## [1] 0.006393577
 
 The first of these is mere machine rounding tolerance; the second is a measure of convergence of randomised mean profiles.
 
@@ -374,48 +374,7 @@ The first of these is mere machine rounding tolerance; the second is a measure o
 <a name="4-tests"></a>4. Tests
 ==============================
 
-Test\#1
--------
-
-First a demonstration that the model of Ives & Klopfer (Ecology 1997) can be reproduced with a simpler neutral model. This uses the function `ives` which generates random values on a square grid of dimensions `(size, size)`. The resultant ranks therefore range from 1 to 10× 10=100.
-
-``` r
-plot.new ()
-dat <- ives (size=10, seed=1)
-mod <- fit_hotspot_model (z=dat$dat$z, nbs=dat$nbs)
-p <- p_values (z=dat$dat$z, nbs=dat$nbs, alpha=mod$alpha, nt=mod$nt, plot=TRUE)
-```
-
-![](fig/demo-moran.png)
-
-The panel on the left shows the rank--scale distribution of the data produced by the model of Ives & Klopfer (`test data`), along with the mean rank--scale distribution of a series of neutral models. The two are highly similar, and the corresponding probability (`p=0.62`) indicates no significant difference between them. The panel on the right performs the same analysis on the local autocorrelation statistics, again revealing no significant difference with a neutral model.
-
-The default spatial autocorrelation statistic is Moran's I, with analyses also possible using Geary's C:
-
-``` r
-plot.new ()
-mod <- fit_hotspot_model (z=dat$dat$z, nbs=dat$nbs, ac_type='geary')
-p_values (z=dat$dat$z, nbs=dat$nbs, alpha=mod$alpha, nt=mod$nt, ac_type='geary', 
-          plot=TRUE)
-```
-
-![](fig/demo-geary.png)
-
-And the Getis-Ord statistic:
-
-``` r
-plot.new ()
-mod <- fit_hotspot_model (z=dat$dat$z, nbs=dat$nbs, ac_type='getis')
-p_values (z=dat$dat$z, nbs=dat$nbs, alpha=mod$alpha, nt=mod$nt, ac_type='getis', 
-          plot=TRUE)
-```
-
-![](fig/demo-getis.png)
-
-Test\#2
--------
-
-Then test the more complex case of the `meuse` data from the `sp` package, which contain topsoil heavy metal concentrations near Meuse, NL.
+Test the distributional properties of the `meuse` data from the `sp` package, which contain topsoil heavy metal concentrations near Meuse, NL.
 
 ``` r
 data (meuse, package='sp')
@@ -433,6 +392,75 @@ nbs <- spdep::knn2nb (spdep::knearneigh (xy, k=4))
 dists <- spdep::nbdists (nbs, xy)
 d1 <- lapply (dists, function (i) 1/i)
 ```
+
+First examine whether the `fit_hotspot_model` function gives sensible results
+
+``` r
+z <- meuse ['copper'] [,1]
+wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
+ac_type <- 'moran'
+size <- length (z)
+
+ac <- rcpp_ac_stats (z, nbs, wts, ac_type)
+zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
+indx_nbso <- unlist (lapply (seq (nbs), function (i) 
+                             rep (i, length (nbs [[i]]))))
+indx_nbs <- unlist (nbs)
+indx_wts <- unlist (wts)
+
+clust <- parallel::makeCluster (parallel::detectCores () - 1)
+exports <- list ("size", "nbs", "wts", "ac_type",
+                 "indx_nbso", "indx_nbs", "indx_wts")
+parallel::clusterExport (clust, exports, envir=environment ())
+invisible (parallel::clusterCall (clust, function () {
+                                  while (length (grep ('hotspotr', getwd ())) > 0) 
+                                      setwd ("..")
+                                  devtools::load_all ("hotspotr")
+                                  setwd ("./hotspotr")
+                             }))
+
+ntests <- 100
+opt_fn <- function (x)
+{
+    parallel::clusterExport (clust, list ("x"), envir=environment ())
+    z <- parallel::parLapply (clust, seq (ntests), function (i) 
+                              {
+                                  z1 <- msm::rtnorm (size, mean=1, sd=x [1], 
+                                                     lower=0, upper=2)
+                                  z1 [indx_nbso] <- (1 - x [2]) * 
+                                      z1 [indx_nbso] + 
+                                      x [2] * z1 [indx_nbs] * 
+                                      indx_wts [indx_nbs]
+                                  ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
+                                  z1 <- sort (log10 (z1), decreasing=TRUE)
+                                  (z1 - min (z1)) / diff (range (z1))
+                                  rbind (z1, ac1)
+                              })
+    ac1 <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
+    z1 <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
+    sum ((z1 - zs) ^ 2) + sum ((ac1 - ac) ^ 2)
+}
+
+alpha <- 1:30 / 100
+yac <- sapply (alpha, function (i) opt_fn (c (0.1, i)))
+ysd <- sapply (alpha, function (i) opt_fn (c (i, alpha [which.min (yac)])))
+yac <- sapply (alpha, function (i) opt_fn (c (alpha [which.min (ysd)], i)))
+
+parallel::stopCluster (clust)
+```
+
+Then plot results
+
+``` r
+plot (alpha, yac, "l", col="red", xlab="ac/sd", ylab="error")
+lines (alpha, ysd, col="blue")
+```
+
+![](fig/hotspot-model-print.png)
+
+... up to here. It still looks like the optimisation functions are too noisy to `optim`-ize, and so a simple dimensional search for `loess`-smoothed minima is still likely to be best. Next step: apply this and modify `p-values.R` so that it plots results.
+
+------------------------------------------------------------------------
 
 Spatial patterns for the different metals can then be statistically compared with neutral models:
 

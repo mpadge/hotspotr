@@ -17,9 +17,11 @@ Contents
 
 [1. Brown vs Ives](#1-brown-ives)
 
-[2. Parallel and Rcpp Tests](#2-parallel)
+[2. A Spatial Version of Brown et al (1995)?](#2-brown-spatial)
 
-[3. Tests (currently rubbish)](#3-tests)
+[3. Parallel and Rcpp Tests](#3-parallel)
+
+[4. Tests (currently rubbish)](#4-tests)
 
 ------------------------------------------------------------------------
 
@@ -94,7 +96,7 @@ Then compare them both
 
 ``` r
 size <- 10
-nlayers <- c (2, 10, 100)
+nlayers <- c (1, 10, 100)
 ntests <- 10
 yb <- lapply (nlayers, function (i) 
               brown_core (nlayers=i, ntests=ntests, size=size, sd0=1))
@@ -118,7 +120,7 @@ The only other variable in both cases is `sd0`
 
 ``` r
 size <- 10
-nlayers <- 2
+nlayers <- 1
 sd0 <- c (0.1, 0.2, 0.5)
 ntests <- 10
 yb <- lapply (sd0, function (i) 
@@ -142,7 +144,7 @@ And again, Ives does respond, but only marginally compared to Brown. Moreover, s
 ``` r
 size <- 10
 ntests <- 100
-nlayers <- c (2, 10, 100)
+nlayers <- c (1, 10, 100)
 sd0 <- c (0.001, 0.3, 1)
 ylayers <- lapply (nlayers, function (i) 
               brown_core (nlayers=i, ntests=ntests, size=size, sd0=0.1))
@@ -177,7 +179,72 @@ Note that although increasing the variance always decreases the relative probabi
 
 ------------------------------------------------------------------------
 
-<a name="2-parallel"></a>2. Parallel and Rcpp Tests
+<a name="2-brown-spatial"></a>2. A Spatial Version of Brown et al (1995)?
+=========================================================================
+
+There is no 'model' to speak of in *Brown et al (1995)*, rather they merely examine the rank-scale properties of normal distributions. Spatial relationships will act in this case simply by smoothing the normal distribution, which will do nothing other than again increase the distributional variance, as now demonstrated.
+
+First define a function to generate spatial autocorrelation on a grid.
+
+``` r
+brown_space <- function (sd0=0.5, alpha=0.1, size=10, nt=100)
+{
+    xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
+    dhi <- 1 # for rook; dhi=1.5 for queen
+    nbs <- spdep::dnearneigh (xy, 0, dhi)
+    wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
+    # then convert nbs to 2 vectors of origins and destinations
+    nbso <- unlist (lapply (seq (nbs), function (i) rep (i, length (nbs [[i]]))))
+    nbs <- unlist (nbs)
+    wts <- unlist (wts)
+
+    y <- lapply (seq (nt), function (i) 
+                 {
+                     z <- msm::rtnorm (size ^ 2, mean=1, sd=sd0, lower=0, upper=2)
+                     z [nbso] <- (1 - alpha) * z [nbso] + alpha * z [nbs] * wts [nbs]
+                     z <- sort (log10 (z), decreasing=TRUE)
+                     (z - min (z)) / diff (range (z))
+                 })
+    colMeans (do.call (rbind, y))
+}
+```
+
+Then compare different values of `alpha`
+
+``` r
+sd0 <- c (0.00001, 0.3, 1)
+size <- 10
+ysd <- lapply (sd0, function (i) brown_space (sd0=i, alpha=0, size=size))
+alpha <- c (0.1, 0.5, 0.9)
+yalpha <- lapply (alpha, function (i) brown_space (sd0=0.1, alpha=i, size=size))
+
+plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale")
+cols <- rainbow (length (sd0))
+for (i in 1:length (sd0)) 
+{
+    lines (seq (size^2), yalpha [[i]], col=cols [i])
+    lines (seq (size^2), ysd [[i]], col=cols [i], lty=2)
+}
+
+ltxt <- sapply (alpha, function (i) paste0 ('alpha=', i))
+ltxt <- c (ltxt, sapply (sd0, function (i) paste0 ('sd=', i)))
+legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
+        legend=ltxt)
+```
+
+![](fig/brown-space.png)
+
+And in this case the introduction of spatial autocorrelation does enable the generation of rank--scale distributions that are notably more peaked than any non-spatially autocorrelation versions. This suggests the neutral models can most flexibly be based simply on the models of *Brown et al (1995)*---that is, simply normal distributions---with the additional aspect of spatial autocorrelation. The following two parameters therefore suffice:
+
+1.  Variance of the (truncated) normal distribution; and
+
+2.  Strength of spatial autocorrelation.
+
+Temporal autocorrelation is formally equivalent to increasing the value of the first parameter, and may be merely **implicitly** rather than explicitly modelled.
+
+------------------------------------------------------------------------
+
+<a name="3-parallel"></a>3. Parallel and Rcpp Tests
 ===================================================
 
 The current, non-parallel `Rcpp` version:
@@ -198,7 +265,7 @@ test1 <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=0.1,
 ```
 
     ##    user  system elapsed 
-    ##   0.512   0.008   0.519
+    ##   0.508   0.004   0.513
 
 Then write an equivalent `R` `lapply` version
 
@@ -221,7 +288,7 @@ system.time ( test2 <- rloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.536   0.000   0.536
+    ##   0.488   0.004   0.493
 
 And then an `R`-internal parallel version. First the slightly different function definition:
 
@@ -266,7 +333,7 @@ system.time (test3 <- rParloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.016   0.000   0.192
+    ##   0.012   0.000   0.196
 
 ``` r
 stopCluster (clust)
@@ -298,13 +365,13 @@ max (abs (test1 - test2)); max (abs (test1 - test3))
 
     ## [1] 1.665335e-15
 
-    ## [1] 0.003785547
+    ## [1] 0.004418125
 
 The first of these is mere machine rounding tolerance; the second is a measure of convergence of randomised mean profiles.
 
 ------------------------------------------------------------------------
 
-<a name="3-tests"></a>3. Tests
+<a name="4-tests"></a>4. Tests
 ==============================
 
 Test\#1

@@ -4,8 +4,8 @@
 \alias{p_values}
 \title{p_values}
 \usage{
-p_values(z, nbs, wts, alpha = c(0.1, 0.1), nt = 100, ntests = 1000,
-  ac_type = "moran", plot = FALSE, verbose = FALSE)
+p_values(z, nbs, wts, sd0, alpha, ntests = 1000, ac_type = "moran",
+  plot = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{z}{Vector of observed values to be tested}
@@ -16,11 +16,10 @@ point}
 \item{wts}{Weighting factors for each neighbour; must have same length as
 nbs. Uniform weights used if not given.}
 
-\item{alpha}{Vector of two components providing starting values for the
-strength of autocorrelation in time and space}
+\item{sd0}{Standard deviation of truncated normal distribution used to model
+environmental variation (with mean of 1)}
 
-\item{nt}{Number of successive layers of temporal and spatial autocorrelation
-used to generate test field}
+\item{alpha}{Strength of spatial autocorrelation}
 
 \item{ntests}{Number of tests to run, with statistics calculated from the
 mean of \code{ntests}}

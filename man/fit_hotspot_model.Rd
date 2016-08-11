@@ -4,8 +4,8 @@
 \alias{fit_hotspot_model}
 \title{fit_hotspot_model}
 \usage{
-fit_hotspot_model(z, nbs, wts, alpha = c(0.1, 0.1), ntests = 100,
-  ac_type = "moran", sd0 = 0.1, verbose = FALSE, plot = FALSE)
+fit_hotspot_model(z, nbs, wts, ac_type = "moran", ntests = 100,
+  verbose = FALSE, plot = FALSE)
 }
 \arguments{
 \item{z}{Vector of observed values to be tested}
@@ -16,29 +16,21 @@ point}
 \item{wts}{Weighting factors for each neighbour; must have same length as
 nbs. Uniform weights used if not given.}
 
-\item{alpha}{Vector of two components providing starting values for the
-strength of autocorrelation in time and space}
-
-\item{ntests}{Number of repeats of neutral model used to calculate mean
-rank--scale distribution}
-
 \item{ac_type}{type of autocorrelation statistic to use in tests
 (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}
 
-\item{sd0}{Standard deviation of truncated normal distribution used to model
-environmental variation (with mean of 1)}
+\item{ntests}{Number of repeats of neutral model used to calculate mean
+rank--scale distribution}
 
 \item{verbose}{If TRUE, dump progress details to screen}
 
 \item{plot}{If TRUE, produces a plot of rank--scale distributions}
 }
 \value{
-A vector of four values as estimated by the neutral model:
+A vector of two values as estimated by the neutral model:
 \enumerate{
-  \item alpha respectively containing temporal and spatial autocorrelation
-  coefficients
-  \item nt = Number of successive layers of spatio-temporal autocorrelation
-  required to reproduce statistical properties of observed data
+  \item sd0 = standard deviation of normal distribution
+  \item alpha = temporal autocorrelation coefficient
 }
 }
 \description{

@@ -4,8 +4,8 @@
 \alias{rs_dist_diff}
 \title{rs_dist_diff}
 \usage{
-rs_dist_diff(nbs, wts, alpha = c(0.1, 0.1), sd0 = 0.1, ntests = 1000,
-  nt = 100, ac_type = "moran", mean_stats)
+rs_dist_diff(nbs, wts, alpha = 0.1, sd0 = 0.1, ntests = 1000,
+  ac_type = "moran", mean_stats)
 }
 \arguments{
 \item{nbs}{An \code{spdep} \code{nb} object listing all neighbours of each
@@ -14,17 +14,13 @@ point}
 \item{wts}{Weighting factors for each neighbour; must have same length as
 nbs. Uniform weights used if not given.}
 
-\item{alpha}{Vector of two components respectively specifying the strength of
-autocorrelation in time and space.}
+\item{alpha}{Strength of spatial autocorrelation}
 
 \item{sd0}{Standard deviation of truncated normal distribution used to model
 environmental variation (with mean of 1)}
 
 \item{ntests}{Number of repeats of neutral model used to calculate mean
 rank--scale distribution}
-
-\item{nt}{Number of successive layers of temporal and spatial autocorrelation
-used to generate final modelled values}
 
 \item{ac_type}{type of autocorrelation statistic to use in tests
 (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}

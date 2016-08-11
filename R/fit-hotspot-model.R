@@ -9,23 +9,17 @@
 #' point
 #' @param wts Weighting factors for each neighbour; must have same length as
 #' nbs. Uniform weights used if not given.
-#' @param alpha Vector of two components providing starting values for the
-#' strength of autocorrelation in time and space
-#' @param ntests Number of repeats of neutral model used to calculate mean
-#' rank--scale distribution
 #' @param ac_type type of autocorrelation statistic to use in tests
 #' (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})
-#' @param sd0 Standard deviation of truncated normal distribution used to model
-#' environmental variation (with mean of 1)
+#' @param ntests Number of repeats of neutral model used to calculate mean
+#' rank--scale distribution
 #' @param verbose If TRUE, dump progress details to screen
 #' @param plot If TRUE, produces a plot of rank--scale distributions
 #'
-#' @return A vector of four values as estimated by the neutral model:
+#' @return A vector of two values as estimated by the neutral model:
 #' \enumerate{
-#'   \item alpha respectively containing temporal and spatial autocorrelation
-#'   coefficients
-#'   \item nt = Number of successive layers of spatio-temporal autocorrelation
-#'   required to reproduce statistical properties of observed data
+#'   \item sd0 = standard deviation of normal distribution
+#'   \item alpha = temporal autocorrelation coefficient
 #' }
 #'
 #' @section Note:
@@ -49,15 +43,21 @@
 #' }
 #'
 #' @export
-fit_hotspot_model <- function (z, nbs, wts, alpha=c(0.1, 0.1), ntests=100,
-                               ac_type='moran', sd0=0.1, verbose=FALSE, plot=FALSE)
+fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
+                               verbose=FALSE, plot=FALSE)
 {
-    if (!is.numeric (z)) 
-        stop ('z must be numeric')
-    if (!is (nbs, 'nb'))
-        stop ('nbs must of class spdep::nb')
+    if (missing (z)) stop ('z must be provided')
+    if (missing (nbs)) stop ('nbs must be provided')
+    if (!is.numeric (z)) stop ('z must be numeric')
+    if (!is (nbs, 'nb')) stop ('nbs must of class spdep::nb')
     if (length (z) != length (nbs))
-        stop ('nbs must have same length as z')
+        stop ('z must have the same length as nbs')
+    if (!missing (wts))
+    {
+        if (length (wts) != length (nbs))
+            stop ('wts must have the same length as nbs')
+    } else
+        wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
 
     ac_type <- tolower (ac_type)
     if (substring (ac_type, 1, 1) == 'g')
@@ -71,19 +71,20 @@ fit_hotspot_model <- function (z, nbs, wts, alpha=c(0.1, 0.1), ntests=100,
 
     size <- length (z)
 
-    if (missing (wts)) 
-        wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
-
     ac <- rcpp_ac_stats (z, nbs, wts, ac_type)
     zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
-    test <- NULL # remove no visible binding warning
 
-    # Initial 3D optimisation to get nt. This is a repeat of the code from
-    # neutral-hotspots-ntests, repeated here to avoid constantly recreating the
-    # cluster for each call
+    # single vector indices of all neighbours of each points and associated wts
+    indx_nbso <- unlist (lapply (seq (nbs), function (i) 
+                                 rep (i, length (nbs [[i]]))))
+    indx_nbs <- unlist (nbs)
+    indx_wts <- unlist (wts)
+
+    # Optimise over 2D space of (sd0, alpha)
     clust <- parallel::makeCluster (parallel::detectCores () - 1)
-    parallel::clusterExport (clust, list ("nbs", "wts", "alpha", "sd0", 
-                                          "ac_type"), envir=environment ())
+    exports <- list ("size", "nbs", "wts", "ac_type",
+                     "indx_nbso", "indx_nbs", "indx_wts")
+    parallel::clusterExport (clust, exports, envir=environment ())
     invisible (parallel::clusterCall (clust, function () {
                             while (length (grep ('hotspotr', getwd ())) > 0) 
                                 setwd ("..")
@@ -91,95 +92,81 @@ fit_hotspot_model <- function (z, nbs, wts, alpha=c(0.1, 0.1), ntests=100,
                             setwd ("./hotspotr")
                                              }))
 
-    fn_n <- function (x)
+    opt_fn <- function (x)
     {
         parallel::clusterExport (clust, list ("x"), envir=environment ())
         z <- parallel::parLapply (clust, seq (ntests), function (i) 
-                        {
-                            z1 <- rcpp_neutral_hotspots (nbs, wts, 
-                                                         alpha_t=alpha [1],
-                                                         alpha_s=alpha [2],
-                                                         sd0=sd0, nt=x)
-                            ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
-                            z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / 
-                                    diff (range (z1)) 
-                            rbind (z1, ac1)
-                        })
+                                  {
+                                      z1 <- msm::rtnorm (size, mean=1, sd=x [1], 
+                                                         lower=0, upper=2)
+                                      z1 [indx_nbso] <- (1 - x [2]) * 
+                                          z1 [indx_nbso] + 
+                                          x [2] * z1 [indx_nbs] * 
+                                          indx_wts [indx_nbs]
+                                      #z1 <- rcpp_neutral_hotspots (nbs, wts, 
+                                      #                             alpha_t=x [1],
+                                      #                             alpha_s=x [2],
+                                      #                             sd0=sd0, nt=nt)
+                                      ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
+                                      z1 <- (sort (z1, decreasing=TRUE) - 
+                                             min (z1)) / diff (range (z1)) 
+                                      #z1 <- sort (log10 (z1), decreasing=TRUE)
+                                      #z1 <- (z1 - min (z1)) / diff (range (z1))
+                                      rbind (z1, ac1)
+                                  })
         ac1 <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
         z1 <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
         sum ((z1 - zs) ^ 2) + sum ((ac1 - ac) ^ 2)
     }
 
-    if (verbose) cat ("optimising for n ... ")
-    nt <- 1:20
-    nt0 <- 1
-    while (nt0 == 1 | nt0 == 20)
+    # opt_fn is too noisy for optim to work
+    #control <- list (reltol=1e-3)
+    #if (verbose)
+    #{
+    #    control <- c (control, trace=1)
+    #    message ('optimising ...')
+    #}
+    #op <- optim (c (0.1, 0.1), opt_fn, control=control)
+
+    # Instead, a succession of localised 1D loess-smoothed approaches are used
+    alpha_lims <- c (-1, 1)
+    sd_lims <- c (1e-6, 1)
+    alpha <- seq (alpha_lims [1], alpha_lims [2], length.out=50)
+    sd0 <- seq (sd_lims [1], sd_lims [2], length.out=50)
+    err <- opt_fn (c (mean (sd0), mean (alpha)))
+    tol <- 1e-3
+    iter <- 0
+    maxiters <- 10
+    alpha1 <- mean (alpha) # arbitrary values used to calculate err
+    sd1 <- mean (sd0)
+    while (err > tol & iter < maxiters)
     {
-        y <- sapply (nt, fn_n)
-        mod <- loess (y ~ nt, span=0.5)$fitted
-        nt0 <- nt [which.min (mod)]
+        if (verbose) message ('iteration#', iter, ': ', appendLF=FALSE)
+        alpha2 <- alpha1
+        sd2 <- sd1
+
+        yac <- sapply (alpha, function (i) opt_fn (c (sd1, i)))
+        mod <- loess (yac ~ alpha, span=0.5)$fitted
+        alpha1 <- alpha [which.min (mod)]
+        ysd <- sapply (sd0, function (i) opt_fn (c (i, alpha1)))
+        mod <- loess (ysd ~ sd0, span=0.5)$fitted
+        sd1 <- sd0 [which.min (mod)]
+
+        alpha_lims [1] <- (alpha_lims [1] + alpha1) / 2
+        alpha_lims [2] <- (alpha_lims [2] + alpha1) / 2
+        sd_lims [1] <- (sd_lims [1] + sd1) / 2
+        sd_lims [2] <- (sd_lims [2] + sd1) / 2
+        alpha <- seq (alpha_lims [1], alpha_lims [2], length.out=50)
+        sd0 <- seq (sd_lims [1], sd_lims [2], length.out=50)
+
+        err <- abs (alpha1 - alpha2) + abs (sd1 - sd2)
+        iter <- iter + 1
+        if (verbose)
+            message ('(alpha, sd) = (', alpha1, ', ', sd1, '), err = ', err)
     }
-    nt <- nt0
-    parallel::stopCluster (clust)
-
-    # then reduce to 2d optimisation
-    clust <- parallel::makeCluster (parallel::detectCores () - 1)
-    parallel::clusterExport (clust, list ("nbs", "wts", "sd0", "nt",
-                                          "ac_type"), envir=environment ())
-    invisible (parallel::clusterCall (clust, function () {
-                            while (length (grep ('hotspotr', getwd ())) > 0) 
-                                setwd ("..")
-                            devtools::load_all ("hotspotr")
-                            setwd ("./hotspotr")
-                                             }))
-    fn_a <- function (x)
-    {
-        parallel::clusterExport (clust, list ("x"), envir=environment ())
-        z <- parallel::parLapply (clust, seq (ntests), function (i) 
-                        {
-                            z1 <- rcpp_neutral_hotspots (nbs, wts, 
-                                                         alpha_t=x [1],
-                                                         alpha_s=x [2],
-                                                         sd0=sd0, nt=nt)
-                            ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
-                            z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / 
-                                    diff (range (z1)) 
-                            rbind (z1, ac1)
-                        })
-        ac1 <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
-        z1 <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
-        sum ((z1 - zs) ^ 2) + sum ((ac1 - ac) ^ 2)
-    }
-    if (verbose) cat ("done.\noptimising for alpha ... ")
-    # Note that a full 2D search with loess surface is much more likely to to
-    # find minima at the edges rather than the interior. While nevertheless
-    # notionally better, it's much quicker to conduct a series of 1D searches
-    at <- -10:10 / 10
-    at <- at [!at == 0]
-    asp <- at
-    alpha_s <- 0.1
-    for (i in 1:4)
-    {
-        y <- sapply (at, function (i) fn_a (c (i, alpha_s)))
-        mod <- loess (y ~ at, span=0.5)$fitted
-        alpha_t <- at [which.min (mod)]
-
-        y <- sapply (asp, function (i) fn_a (c (alpha_t, i)))
-        mod <- loess (y ~ asp, span=0.5)$fitted
-        alpha_s <- asp [which.min (mod)]
-
-        if (i == 2)
-        {
-            at <- alpha_t + -10:10 / 50
-            at <- at [!at == 0]
-            asp <- alpha_s + -10:10 / 50
-            asp <- asp [!asp == 0]
-        }
-    }
-
-    if (verbose) cat ("done\n")
 
     parallel::stopCluster (clust)
 
-    list (alpha=c(alpha_t, alpha_s), nt=nt)
+    #list (sd0=op$par [1], ac=op$par [2])
+    list (sd0=sd1, ac=alpha1)
 }

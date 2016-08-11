@@ -4,8 +4,8 @@
 \alias{neutral_hotspots_ntests}
 \title{neutral_hotspots_ntests}
 \usage{
-neutral_hotspots_ntests(nbs, wts, alpha = c(0.1, 0.1), ntests = 1000,
-  nt = 100, sd0 = 0.1, ac_type = "moran", seed)
+neutral_hotspots_ntests(nbs, wts, alpha = 0.1, sd0 = 0.1, ntests = 1000,
+  ac_type = "moran", seed)
 }
 \arguments{
 \item{nbs}{An \code{spdep} \code{nb} object listing all neighbours of each
@@ -14,17 +14,13 @@ point}
 \item{wts}{Weighting factors for each neighbour; must have same length as
 nbs. Uniform weights used if not given.}
 
-\item{alpha}{Vector of two components respectively specifying the strength of
-autocorrelation in time and space.}
-
-\item{ntests}{Number of repeats of neutral model used to calculate mean
-rank--scale distribution}
-
-\item{nt}{Number of successive layers of temporal and spatial autocorrelation
-used to generate final modelled values}
+\item{alpha}{Strength of spatial autocorrelation}
 
 \item{sd0}{Standard deviation of truncated normal distribution used to model
 environmental variation (with mean of 1)}
+
+\item{ntests}{Number of repeats of neutral model used to calculate mean
+rank--scale distribution}
 
 \item{ac_type}{type of autocorrelation statistic to use in tests
 (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}

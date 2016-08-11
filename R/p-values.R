@@ -7,10 +7,9 @@
 #' point
 #' @param wts Weighting factors for each neighbour; must have same length as
 #' nbs. Uniform weights used if not given.
-#' @param alpha Vector of two components providing starting values for the
-#' strength of autocorrelation in time and space
-#' @param nt Number of successive layers of temporal and spatial autocorrelation
-#' used to generate test field
+#' @param sd0 Standard deviation of truncated normal distribution used to model
+#' environmental variation (with mean of 1)
+#' @param alpha Strength of spatial autocorrelation 
 #' @param ntests Number of tests to run, with statistics calculated from the
 #' mean of \code{ntests}
 #' @param ac_type type of autocorrelation statistic to use in tests
@@ -22,7 +21,7 @@
 #' @return Nothing (dumps statistics to screen)
 #'
 #' @export
-p_values <- function (z, nbs, wts, alpha=c(0.1, 0.1), nt=100, ntests=1000,
+p_values <- function (z, nbs, wts, sd0, alpha, ntests=1000,
                       ac_type='moran', plot=FALSE, verbose=FALSE)
 {
     if (length (z) != length (nbs))
@@ -45,8 +44,8 @@ p_values <- function (z, nbs, wts, alpha=c(0.1, 0.1), nt=100, ntests=1000,
     if (verbose) 
         message ('Generating mean rank-scale distributions ... ',
                  appendLF=FALSE)
-    rs_means <- neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha=alpha, sd0=0.1,
-                                         nt=nt, ntests=ntests, ac_type=ac_type)
+    rs_means <- neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha=alpha, sd0=sd0,
+                                         ntests=ntests, ac_type=ac_type)
 
     # Summed squared differences in rank-scale distributions:
     if (verbose) 
@@ -54,8 +53,8 @@ p_values <- function (z, nbs, wts, alpha=c(0.1, 0.1), nt=100, ntests=1000,
         message ('done\nGenerating difference statistics for ', appendLF=FALSE)
         message ('rank-scale distributions ... ', appendLF=FALSE)
     }
-    distributions <- rs_dist_diff (nbs=nbs, wts=wts, alpha=alpha, sd0=0.1,
-                                   nt=nt, ntests=ntests, ac_type=ac_type,
+    distributions <- rs_dist_diff (nbs=nbs, wts=wts, alpha=alpha, sd0=sd0,
+                                   ntests=ntests, ac_type=ac_type,
                                    mean_stats=rs_means)
     if (verbose) message ('done')
 

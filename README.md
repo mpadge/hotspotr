@@ -115,7 +115,7 @@ ploty (nlayers, yi)
 title (main=paste ("ives"))
 ```
 
-![](README_files/figure-markdown_github/ives-vs-brown-plot-1.png)
+![](fig/ives-vs-brown-plot.png)
 
 And the difference is clearly that Brown is able to respond to differences in numbers of layers, while Ives remains entirely invariant. In other words, the model of Ives et al (1997) may *not* be used as a neutral model because it is does not respond to structural differences!
 
@@ -140,7 +140,7 @@ ploty (sd0, yi)
 title (main=paste ("ives"))
 ```
 
-![](README_files/figure-markdown_github/ives-vs-brown-plot2-1.png)
+![](fig/ives-vs-brown-plot2.png)
 
 And again, Ives does respond, but only marginally compared to Brown. Moreover, since the product of two normal distributions is also a normal distribution, changes in `nlayers` within the model of Brown et al (1995) are the same as changes in the distributional variance, and so only one of these parameters needs to be considered. The following graphs also include a Poisson distribution for comparison.
 
@@ -174,7 +174,7 @@ legend ("bottomleft", lwd=1, col=c (rep (cols, 2), "black"),
         lty=c (1,1,1,2,2,2,1), legend=ltxt)
 ```
 
-![](README_files/figure-markdown_github/brown-plot-1.png)
+![](fig/brown-plot.png)
 
 It's obviously far more computationally efficient to consider variance rather than `nlayers`, and this also seems to allow a greater range of possible forms of response. Moreover, the response with increasing variance clearly approaches a Poisson distribution.
 
@@ -303,25 +303,25 @@ Then manually check the values
 z2 [1]; (1-alpha) * z1 [1] + alpha * (z1 [2] + z1 [11]) / 2
 ```
 
-    ## [1] 0.8519502
+    ## [1] 0.9297134
 
-    ## [1] 0.8519502
+    ## [1] 0.9297134
 
 ``` r
 z2 [2]; (1-alpha) * z1 [2] + alpha * (z1 [1] + z1 [3] + z1 [12]) / 3
 ```
 
-    ## [1] 0.8808347
+    ## [1] 1.103574
 
-    ## [1] 0.8808347
+    ## [1] 1.103574
 
 ``` r
 z2 [15]; (1-alpha) * z1 [15] + alpha * (z1 [5] + z1 [14] + z1 [16] + z1 [25]) / 4
 ```
 
-    ## [1] 0.4763898
+    ## [1] 0.4677977
 
-    ## [1] 0.4763898
+    ## [1] 0.4677977
 
 The final function definition
 
@@ -430,7 +430,7 @@ par (mfrow=c(1,2))
 doplots ()
 ```
 
-![](README_files/figure-markdown_github/brown-space-plots-1.png)
+![](fig/brown-space-plots.png)
 
 Then repeat for log-scaled values
 
@@ -452,7 +452,7 @@ par (mfrow=c(1,2))
 doplots ()
 ```
 
-![](README_files/figure-markdown_github/brown-space-log-plots-1.png)
+![](fig/brown-space-log-plots.png)
 
 And then examine the effect of multiple iterations of spatial autocorrelation
 
@@ -496,15 +496,9 @@ for (j in 1:length (niters))
 }
 ```
 
-![](README_files/figure-markdown_github/brown-niters-plots-1.png)
+![](fig/brown-niters-plots.png)
 
-And in this case the introduction of spatial autocorrelation does enable the generation of rank--scale distributions that are notably more peaked than any non-spatially autocorrelation versions. This suggests the neutral models can most flexibly be based simply on the models of *Brown et al (1995)*---that is, simple normal distributions---with the additional aspect of spatial autocorrelation. The following two parameters therefore suffice:
-
-1.  Variance of the (truncated) normal distribution; and
-
-2.  Strength of spatial autocorrelation.
-
-Temporal autocorrelation is formally equivalent to increasing the value of the first parameter, and may be merely **implicitly** rather than explicitly modelled.
+... up to the interpretation here ...
 
 ------------------------------------------------------------------------
 
@@ -529,7 +523,7 @@ test1 <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=0.1,
 ```
 
     ##    user  system elapsed 
-    ##   0.604   0.000   0.606
+    ##   0.584   0.000   0.583
 
 Then write an equivalent `R` `lapply` version
 
@@ -552,7 +546,7 @@ system.time ( test2 <- rloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.636   0.004   0.641
+    ##   0.732   0.004   0.734
 
 And then an `R`-internal parallel version. First the slightly different function definition:
 
@@ -597,7 +591,7 @@ system.time (test3 <- rParloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.032   0.000   0.425
+    ##   0.020   0.004   0.455
 
 ``` r
 stopCluster (clust)
@@ -611,7 +605,7 @@ lines (1:length (nbs), test3 [,2], col="gray")
 legend ("topright", lwd=1, col=c("black", "gray"), bty="n", legend=c("z", "ac"))
 ```
 
-![](README_files/figure-markdown_github/plot-parallel-1.png)
+![](fig/plot-parallel.png)
 
 The parallel version does not of course generate identical results, because each core starts with its own random seed, but nevertheless after
 
@@ -629,7 +623,7 @@ max (abs (test1 - test2)); max (abs (test1 - test3))
 
     ## [1] 1.665335e-15
 
-    ## [1] 0.00452861
+    ## [1] 0.004096253
 
 The first of these is mere machine rounding tolerance; the second is a measure of convergence of randomised mean profiles.
 

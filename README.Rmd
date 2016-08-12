@@ -458,20 +458,7 @@ for (j in 1:length (niters))
 }
 ```
 
-And in this case the introduction of spatial autocorrelation does enable the
-generation of rank--scale distributions that are notably more peaked than any
-non-spatially autocorrelation versions. This suggests the neutral models can
-most flexibly be based simply on the models of *Brown et al (1995)*---that is,
-simple normal distributions---with the additional aspect of spatial
-autocorrelation. The following two parameters therefore suffice:
-
-1. Variance of the (truncated) normal distribution; and
-
-2. Strength of spatial autocorrelation.
-
-Temporal autocorrelation is formally equivalent to increasing the value of the
-first parameter, and may be merely **implicitly** rather than explicitly
-modelled.
+... up to the interpretation here ...
 
 
 

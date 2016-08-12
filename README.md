@@ -1,5 +1,8 @@
 [![Build Status](https://travis-ci.org/mpadge/hotspotr.svg?branch=master)](https://travis-ci.org/mpadge/hotspotr) [![codecov](https://codecov.io/gh/mpadge/hotspotr/branch/master/graph/badge.svg)](https://codecov.io/gh/mpadge/hotspotr)
 
+hotspotr
+========
+
 There are a number of statistical tools for evaluating the significance of observed spatial patterns of hotspots (such as those in [`spdep`](https://cran.r-project.org/package=spdep)). While such tools enable hotspots to be identified within a given set of spatial data, they do not allow quantification of whether the entire data set in fact reflects significant spatial structuring. For example, numbers of locally significant hotspots must be expected to increase with numbers of spatial observations.
 
 The `R` package `hotspotr` enables the global significance of an observed spatial data set to be quantified by comparing both raw values and their local spatial relationships with those generated from a neutral model. If the global pattern of observed values is able to be reproduced by a neutral model, then any local hotspots may not be presumed significant regardless of the values of local statistics. Conversely, if the global pattern is unable to be reproduced by a neutral model, then local hotspots may indeed be presumed to be statistically significant.
@@ -112,7 +115,7 @@ ploty (nlayers, yi)
 title (main=paste ("ives"))
 ```
 
-![](fig/ives-vs-brown-plot.png)
+![](README_files/figure-markdown_github/ives-vs-brown-plot-1.png)
 
 And the difference is clearly that Brown is able to respond to differences in numbers of layers, while Ives remains entirely invariant. In other words, the model of Ives et al (1997) may *not* be used as a neutral model because it is does not respond to structural differences!
 
@@ -137,7 +140,7 @@ ploty (sd0, yi)
 title (main=paste ("ives"))
 ```
 
-![](fig/ives-vs-brown-plot2.png)
+![](README_files/figure-markdown_github/ives-vs-brown-plot2-1.png)
 
 And again, Ives does respond, but only marginally compared to Brown. Moreover, since the product of two normal distributions is also a normal distribution, changes in `nlayers` within the model of Brown et al (1995) are the same as changes in the distributional variance, and so only one of these parameters needs to be considered. The following graphs also include a Poisson distribution for comparison.
 
@@ -171,7 +174,7 @@ legend ("bottomleft", lwd=1, col=c (rep (cols, 2), "black"),
         lty=c (1,1,1,2,2,2,1), legend=ltxt)
 ```
 
-![](fig/brown-plot.png)
+![](README_files/figure-markdown_github/brown-plot-1.png)
 
 It's obviously far more computationally efficient to consider variance rather than `nlayers`, and this also seems to allow a greater range of possible forms of response. Moreover, the response with increasing variance clearly approaches a Poisson distribution.
 
@@ -184,55 +187,316 @@ Note that although increasing the variance always decreases the relative probabi
 
 There is no 'model' to speak of in *Brown et al (1995)*, rather they merely examine the rank-scale properties of normal distributions. Spatial relationships will act in this case simply by smoothing the normal distribution, which will do nothing other than again increase the distributional variance, as now demonstrated.
 
-First define a function to generate spatial autocorrelation on a grid.
+First define a function to generate spatial autocorrelation on a grid, this time including autocorrelation statistics as well. An additional option controls whether values should be log-scaled or not.
+
+Spatial autocorrelation has to be implemented by looping over the lists of neighbours. First define the neighbourhood lists for a rectangular grid of a given size.
 
 ``` r
-brown_space <- function (sd0=0.5, alpha=0.1, size=10, nt=100)
+xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
+dhi <- 1 # for rook; dhi=1.5 for queen
+nbs <- spdep::dnearneigh (xy, 0, dhi)
+```
+
+The actual lists of neighbours can be obtained simply as:
+
+``` r
+indx_nbs_to <- unlist (lapply (seq (nbs), function (i) 
+                             rep (i, length (nbs [[i]]))))
+indx_nbs_from <- unlist (nbs)
+lens <- unlist (lapply (nbs, function (i) rep (length (i), length (i))))
+head(indx_nbs_to, 10); head(indx_nbs_from, 10); head(lens, 10);
+```
+
+    ##  [1] 1 1 2 2 2 3 3 3 4 4
+
+    ##  [1]  2 11  1  3 12  2  4 13  3  5
+
+    ##  [1] 2 2 3 3 3 3 3 3 3 3
+
+Then define a function to extract the iterative lists of neighbours (the lengths of each list are also needed):
+
+``` r
+maxnbs <- max (sapply (nbs, length))
+get_nbsi <- function (i)
+{
+    res <- lapply (seq (nbs), function (j)
+                   {
+                       if (length (nbs [[j]]) >= i)
+                           c (j, nbs [[j]] [i], length (nbs [[j]]))
+                       else
+                           NULL
+                   })
+    res <- res [lapply (res, length) != 0]
+    res <- do.call (rbind, res)
+    data.frame (to=res [,1], from=res [,2], n=res [,3])
+}
+```
+
+And confirm that it works:
+
+``` r
+head (get_nbsi (1))
+```
+
+    ##   to from n
+    ## 1  1    2 2
+    ## 2  2    1 3
+    ## 3  3    2 3
+    ## 4  4    3 3
+    ## 5  5    4 3
+    ## 6  6    5 3
+
+``` r
+head (get_nbsi (2))
+```
+
+    ##   to from n
+    ## 1  1   11 2
+    ## 2  2    3 3
+    ## 3  3    4 3
+    ## 4  4    5 3
+    ## 5  5    6 3
+    ## 6  6    7 3
+
+``` r
+head (get_nbsi (3))
+```
+
+    ##   to from n
+    ## 1  2   12 3
+    ## 2  3   13 3
+    ## 3  4   14 3
+    ## 4  5   15 3
+    ## 5  6   16 3
+    ## 6  7   17 3
+
+``` r
+head (get_nbsi (4))
+```
+
+    ##   to from n
+    ## 1 12   22 4
+    ## 2 13   23 4
+    ## 3 14   24 4
+    ## 4 15   25 4
+    ## 5 16   26 4
+    ## 6 17   27 4
+
+Then the actual loop to implement the spatial autocorrelation is:
+
+``` r
+alpha <- 0.5
+z1 <- msm::rtnorm (size ^ 2, mean=1, sd=sd0, lower=0, upper=2)
+maxnbs <- max (sapply (nbs, length))
+z2 <- rep (0, length (z1))
+for (i in seq (maxnbs))
+{
+    nbsi <- get_nbsi (i)
+    z2 [nbsi$to] <- z2 [nbsi$to] + ((1 - alpha) * z1 [nbsi$to] +
+        alpha * z1 [nbsi$from]) / nbsi$n
+}
+```
+
+Then manually check the values
+
+``` r
+z2 [1]; (1-alpha) * z1 [1] + alpha * (z1 [2] + z1 [11]) / 2
+```
+
+    ## [1] 0.8519502
+
+    ## [1] 0.8519502
+
+``` r
+z2 [2]; (1-alpha) * z1 [2] + alpha * (z1 [1] + z1 [3] + z1 [12]) / 3
+```
+
+    ## [1] 0.8808347
+
+    ## [1] 0.8808347
+
+``` r
+z2 [15]; (1-alpha) * z1 [15] + alpha * (z1 [5] + z1 [14] + z1 [16] + z1 [25]) / 4
+```
+
+    ## [1] 0.4763898
+
+    ## [1] 0.4763898
+
+The final function definition
+
+``` r
+sd0 <- 0.1
+alpha <- 0.9
+size <- 10
+ntests <- 20
+log_scale <- TRUE
+brown_space <- function (sd0=0.5, alpha=0.1, size=10, ntests=100, 
+                         niters=1, log_scale=FALSE)
 {
     xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
     dhi <- 1 # for rook; dhi=1.5 for queen
     nbs <- spdep::dnearneigh (xy, 0, dhi)
     wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
     # then convert nbs to 2 vectors of origins and destinations
-    nbso <- unlist (lapply (seq (nbs), function (i) rep (i, length (nbs [[i]]))))
-    nbs <- unlist (nbs)
-    wts <- unlist (wts)
+    indx_nbso <- unlist (lapply (seq (nbs), function (i) 
+                                 rep (i, length (nbs [[i]]))))
+    indx_nbs <- unlist (nbs)
+    indx_wts <- unlist (wts)
+    lens <- unlist (lapply (nbs, function (i) rep (length (i), length (i))))
 
-    y <- lapply (seq (nt), function (i) 
+    ac_type <- 'moran'
+
+    get_nbsi <- function (i)
+    {
+        res <- lapply (seq (nbs), function (j)
+                       {
+                           if (length (nbs [[j]]) >= i)
+                               c (j, nbs [[j]] [i], length (nbs [[j]]))
+                           else
+                               NULL
+                       })
+        res <- res [lapply (res, length) != 0]
+        res <- do.call (rbind, res)
+        data.frame (to=res [,1], from=res [,2], n=res [,3])
+    }
+    maxnbs <- max (sapply (nbs, length))
+
+    z <- lapply (seq (ntests), function (i) 
                  {
-                     z <- msm::rtnorm (size ^ 2, mean=1, sd=sd0, lower=0, upper=2)
-                     z [nbso] <- (1 - alpha) * z [nbso] + alpha * z [nbs] * wts [nbs]
-                     z <- sort (log10 (z), decreasing=TRUE)
-                     (z - min (z)) / diff (range (z))
+                     z1 <- msm::rtnorm (size ^ 2, mean=1, sd=sd0, lower=0, upper=2)
+                     for (j in seq (niters))
+                     {
+                         z2 <- rep (0, size ^ 2)
+                         for (k in seq (maxnbs))
+                         {
+                             nbsi <- get_nbsi (k)
+                             z2 [nbsi$to] <- z2 [nbsi$to] + 
+                                 ((1 - alpha) * z1 [nbsi$to] +
+                                  alpha * z1 [nbsi$from]) / nbsi$n
+                         }
+                         z1 <- z2
+                     }
+                     if (log_scale) z2 <- log10 (z2)
+                     ac1 <- rcpp_ac_stats (z2, nbs, wts, ac_type)
+                     z2 <- sort (z2, decreasing=TRUE)
+                     z2 <- (z2 - min (z2)) / diff (range (z2))
+                     cbind (z2, ac1)
                  })
-    colMeans (do.call (rbind, y))
+
+    ac1 <- colMeans (do.call (rbind, lapply (z, function (i) i [,2])))
+    z <- colMeans (do.call (rbind, lapply (z, function (i) i [,1])))
+    cbind (z, ac1)
 }
 ```
 
 Then compare different values of `alpha`
 
 ``` r
+log_scale <- FALSE
 sd0 <- c (0.00001, 0.3, 1)
+sd0 <- c (0.01, 0.3, 1)
 size <- 10
-ysd <- lapply (sd0, function (i) brown_space (sd0=i, alpha=0, size=size))
+ysd <- lapply (sd0, function (i) 
+               brown_space (sd0=i, alpha=0, size=size, log_scale=log_scale))
 alpha <- c (0.1, 0.5, 0.9)
-yalpha <- lapply (alpha, function (i) brown_space (sd0=0.1, alpha=i, size=size))
+yalpha <- lapply (alpha, function (i) 
+               brown_space (sd0=sd0 [1], alpha=i, size=size, log_scale=log_scale))
 
-plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale")
-cols <- rainbow (length (sd0))
-for (i in 1:length (sd0)) 
+doplots <- function ()
 {
-    lines (seq (size^2), yalpha [[i]], col=cols [i])
-    lines (seq (size^2), ysd [[i]], col=cols [i], lty=2)
+    mts <- c ("raw values", "AC")
+    cols <- rainbow (length (sd0))
+    ltxt <- sapply (alpha, function (i) paste0 ('alpha=', i))
+    ltxt <- c (ltxt, sapply (sd0, function (i) paste0 ('sd=', i)))
+    for (i in 1:2)
+    {
+        plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale")
+        title (main=mts [i])
+        for (j in 1:length (sd0)) 
+        {
+            lines (seq (size^2), yalpha [[j]] [,i], col=cols [j])
+            lines (seq (size^2), ysd [[j]] [,i], col=cols [j], lty=2)
+        }
+        legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
+                legend=ltxt)
+    }
 }
-
-ltxt <- sapply (alpha, function (i) paste0 ('alpha=', i))
-ltxt <- c (ltxt, sapply (sd0, function (i) paste0 ('sd=', i)))
-legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
-        legend=ltxt)
 ```
 
-![](fig/brown-space.png)
+``` r
+plot.new ()
+par (mfrow=c(1,2))
+doplots ()
+```
+
+![](README_files/figure-markdown_github/brown-space-plots-1.png)
+
+Then repeat for log-scaled values
+
+``` r
+log_scale <- TRUE
+sd0 <- c (0.00001, 0.3, 1)
+sd0 <- c (0.01, 0.3, 1)
+size <- 10
+ysd <- lapply (sd0, function (i) 
+               brown_space (sd0=i, alpha=0, size=size, log_scale=log_scale))
+alpha <- c (0.1, 0.5, 0.9)
+yalpha <- lapply (alpha, function (i) 
+               brown_space (sd0=sd0 [1], alpha=i, size=size, log_scale=log_scale))
+```
+
+``` r
+plot.new ()
+par (mfrow=c(1,2))
+doplots ()
+```
+
+![](README_files/figure-markdown_github/brown-space-log-plots-1.png)
+
+And then examine the effect of multiple iterations of spatial autocorrelation
+
+``` r
+niters <- c (1, 2, 10)
+log_scale <- TRUE
+sd0 <- 0.5
+alpha <- 0.5
+size <- 10
+y1 <- lapply (niters, function (i) 
+               brown_space (sd0=0.1, alpha=0.5, size=size, niters=i,
+                            log_scale=log_scale))
+y2 <- lapply (niters, function (i) 
+               brown_space (sd0=0.9, alpha=0.5, size=size, niters=i,
+                            log_scale=log_scale))
+```
+
+``` r
+mts <- c ("sd0=0.1", "sd0=0.5")
+cols <- rainbow (length (niters))
+ltxt <- sapply (niters, function (i) paste0 ('(sd=0.1; niters=', i))
+ltxt <- c (ltxt, sapply (niters, function (i) paste0 ('sd=0.5; niters=', i)))
+plot.new ()
+par (mfrow=c(1,2))
+plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
+      main="raw data")
+for (j in 1:length (niters)) 
+{
+    lines (seq (size^2), y1 [[j]] [,1], col=cols [j])
+    lines (seq (size^2), y2 [[j]] [,1], col=cols [j], lty=2)
+}
+legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
+        legend=ltxt)
+
+plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
+      main="AC")
+for (j in 1:length (niters)) 
+{
+    lines (seq (size^2), y1 [[j]] [,2], col=cols [j])
+    lines (seq (size^2), y2 [[j]] [,2], col=cols [j], lty=2)
+}
+```
+
+![](README_files/figure-markdown_github/brown-niters-plots-1.png)
 
 And in this case the introduction of spatial autocorrelation does enable the generation of rank--scale distributions that are notably more peaked than any non-spatially autocorrelation versions. This suggests the neutral models can most flexibly be based simply on the models of *Brown et al (1995)*---that is, simple normal distributions---with the additional aspect of spatial autocorrelation. The following two parameters therefore suffice:
 
@@ -265,7 +529,7 @@ test1 <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=0.1,
 ```
 
     ##    user  system elapsed 
-    ##   0.528   0.004   0.535
+    ##   0.604   0.000   0.606
 
 Then write an equivalent `R` `lapply` version
 
@@ -288,7 +552,7 @@ system.time ( test2 <- rloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##    0.56    0.00    0.56
+    ##   0.636   0.004   0.641
 
 And then an `R`-internal parallel version. First the slightly different function definition:
 
@@ -333,7 +597,7 @@ system.time (test3 <- rParloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.016   0.000   0.197
+    ##   0.032   0.000   0.425
 
 ``` r
 stopCluster (clust)
@@ -347,7 +611,7 @@ lines (1:length (nbs), test3 [,2], col="gray")
 legend ("topright", lwd=1, col=c("black", "gray"), bty="n", legend=c("z", "ac"))
 ```
 
-![](fig/plot-parallel.png)
+![](README_files/figure-markdown_github/plot-parallel-1.png)
 
 The parallel version does not of course generate identical results, because each core starts with its own random seed, but nevertheless after
 
@@ -365,7 +629,7 @@ max (abs (test1 - test2)); max (abs (test1 - test3))
 
     ## [1] 1.665335e-15
 
-    ## [1] 0.006393577
+    ## [1] 0.00452861
 
 The first of these is mere machine rounding tolerance; the second is a measure of convergence of randomised mean profiles.
 
@@ -393,84 +657,14 @@ dists <- spdep::nbdists (nbs, xy)
 d1 <- lapply (dists, function (i) 1/i)
 ```
 
-First examine whether the `fit_hotspot_model` function gives sensible results
-
-``` r
-z <- meuse ['copper'] [,1]
-wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
-ac_type <- 'moran'
-size <- length (z)
-
-ac <- rcpp_ac_stats (z, nbs, wts, ac_type)
-zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
-indx_nbso <- unlist (lapply (seq (nbs), function (i) 
-                             rep (i, length (nbs [[i]]))))
-indx_nbs <- unlist (nbs)
-indx_wts <- unlist (wts)
-
-clust <- parallel::makeCluster (parallel::detectCores () - 1)
-exports <- list ("size", "nbs", "wts", "ac_type",
-                 "indx_nbso", "indx_nbs", "indx_wts")
-parallel::clusterExport (clust, exports, envir=environment ())
-invisible (parallel::clusterCall (clust, function () {
-                                  while (length (grep ('hotspotr', getwd ())) > 0) 
-                                      setwd ("..")
-                                  devtools::load_all ("hotspotr")
-                                  setwd ("./hotspotr")
-                             }))
-
-ntests <- 100
-opt_fn <- function (x)
-{
-    parallel::clusterExport (clust, list ("x"), envir=environment ())
-    z <- parallel::parLapply (clust, seq (ntests), function (i) 
-                              {
-                                  z1 <- msm::rtnorm (size, mean=1, sd=x [1], 
-                                                     lower=0, upper=2)
-                                  z1 [indx_nbso] <- (1 - x [2]) * 
-                                      z1 [indx_nbso] + 
-                                      x [2] * z1 [indx_nbs] * 
-                                      indx_wts [indx_nbs]
-                                  ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
-                                  z1 <- sort (log10 (z1), decreasing=TRUE)
-                                  (z1 - min (z1)) / diff (range (z1))
-                                  rbind (z1, ac1)
-                              })
-    ac1 <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
-    z1 <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
-    sum ((z1 - zs) ^ 2) + sum ((ac1 - ac) ^ 2)
-}
-
-alpha <- 1:30 / 100
-yac <- sapply (alpha, function (i) opt_fn (c (0.1, i)))
-ysd <- sapply (alpha, function (i) opt_fn (c (i, alpha [which.min (yac)])))
-yac <- sapply (alpha, function (i) opt_fn (c (alpha [which.min (ysd)], i)))
-
-parallel::stopCluster (clust)
-```
-
-Then plot results
-
-``` r
-plot (alpha, yac, "l", col="red", xlab="ac/sd", ylab="error")
-lines (alpha, ysd, col="blue")
-```
-
-![](fig/hotspot-model-print.png)
-
-... up to here. It still looks like the optimisation functions are too noisy to `optim`-ize, and so a simple dimensional search for `loess`-smoothed minima is still likely to be best. Next step: apply this and modify `p-values.R` so that it plots results.
-
-------------------------------------------------------------------------
-
 Spatial patterns for the different metals can then be statistically compared with neutral models:
 
 ``` r
 analyse <- function (metal='copper', ntests=1000)
 {
     z <- meuse [metal] [,1]
-    mod <- fit_hotspot_model (z=z, nbs=nbs)
-    p_values (z=z, nbs=nbs, alpha=mod$alpha, nt=mod$nt, ntests=ntests,
-              plot=TRUE)
+    mod <- fit_hotspot_model (z=z, nbs=nbs, verbose=FALSE)
+    p_values (z=z, nbs=nbs, sd0=mod$sd0, alpha=mod$ac, ntests=ntests, plot=TRUE)
 }
 ```
 

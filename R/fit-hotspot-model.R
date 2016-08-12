@@ -71,19 +71,28 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
 
     size <- length (z)
 
+    get_nbsi <- function (i)
+    {
+        res <- lapply (seq (nbs), function (j)
+                       {
+                           if (length (nbs [[j]]) >= i)
+                               c (j, nbs [[j]] [i], length (nbs [[j]]))
+                           else
+                               NULL
+                       })
+        res <- res [lapply (res, length) != 0]
+        res <- do.call (rbind, res)
+        data.frame (to=res [,1], from=res [,2], n=res [,3])
+    }
+    maxnbs <- max (sapply (nbs, length))
+
     ac <- rcpp_ac_stats (z, nbs, wts, ac_type)
     zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
 
-    # single vector indices of all neighbours of each points and associated wts
-    indx_nbso <- unlist (lapply (seq (nbs), function (i) 
-                                 rep (i, length (nbs [[i]]))))
-    indx_nbs <- unlist (nbs)
-    indx_wts <- unlist (wts)
-
     # Optimise over 2D space of (sd0, alpha)
     clust <- parallel::makeCluster (parallel::detectCores () - 1)
-    exports <- list ("size", "nbs", "wts", "ac_type",
-                     "indx_nbso", "indx_nbs", "indx_wts")
+    exports <- list ("size", "nbs", "wts", "ac_type", "alpha", "sd0",
+                     "ntests", "get_nbsi", "maxnbs")
     parallel::clusterExport (clust, exports, envir=environment ())
     invisible (parallel::clusterCall (clust, function () {
                             while (length (grep ('hotspotr', getwd ())) > 0) 
@@ -99,14 +108,21 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
                                   {
                                       z1 <- msm::rtnorm (size, mean=1, sd=x [1], 
                                                          lower=0, upper=2)
-                                      z1 [indx_nbso] <- (1 - x [2]) * 
-                                          z1 [indx_nbso] + 
-                                          x [2] * z1 [indx_nbs] * 
-                                          indx_wts [indx_nbs]
-                                      #z1 <- rcpp_neutral_hotspots (nbs, wts, 
-                                      #                             alpha_t=x [1],
-                                      #                             alpha_s=x [2],
-                                      #                             sd0=sd0, nt=nt)
+
+                                      for (j in seq (x [3]))
+                                      {
+                                          z2 <- rep (0, size ^ 2)
+                                          for (k in seq (maxnbs))
+                                          {
+                                              nbsi <- get_nbsi (k)
+                                              z2 [nbsi$to] <- z2 [nbsi$to] + 
+                                                  ((1 - x [2]) * z1 [nbsi$to] +
+                                                   x [2] * z1 [nbsi$from]) / 
+                                                  nbsi$n
+                                          }
+                                          z1 <- z2
+                                      }
+
                                       ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
                                       z1 <- (sort (z1, decreasing=TRUE) - 
                                              min (z1)) / diff (range (z1)) 

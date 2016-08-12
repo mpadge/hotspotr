@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/mpadge/hotspotr.svg?branch=master)](https://travis-ci.org/mpadge/hotspotr)
 [![codecov](https://codecov.io/gh/mpadge/hotspotr/branch/master/graph/badge.svg)](https://codecov.io/gh/mpadge/hotspotr)
 
+# hotspotr
+
 There are a number of statistical tools for evaluating the significance of
 observed spatial patterns of hotspots (such as those in
 [`spdep`](https://cran.r-project.org/package=spdep)). While such tools enable
@@ -223,51 +225,237 @@ will act in this case simply by smoothing the normal distribution, which will do
 nothing other than again increase the distributional variance, as now
 demonstrated.
 
-First define a function to generate spatial autocorrelation on a grid.
+First define a function to generate spatial autocorrelation on a grid, this time
+including autocorrelation statistics as well. An additional option controls
+whether values should be log-scaled or not.
+
+Spatial autocorrelation has to be implemented by looping over the lists of
+neighbours. First define the neighbourhood lists for a rectangular grid of a
+given size.
+```{r}
+xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
+dhi <- 1 # for rook; dhi=1.5 for queen
+nbs <- spdep::dnearneigh (xy, 0, dhi)
+```
+The actual lists of neighbours can be obtained simply as:
+```{r}
+indx_nbs_to <- unlist (lapply (seq (nbs), function (i) 
+                             rep (i, length (nbs [[i]]))))
+indx_nbs_from <- unlist (nbs)
+lens <- unlist (lapply (nbs, function (i) rep (length (i), length (i))))
+head(indx_nbs_to, 10); head(indx_nbs_from, 10); head(lens, 10);
+```
+
+Then define  a function to extract the iterative lists of
+neighbours (the lengths of each list are also needed):
+```{r}
+maxnbs <- max (sapply (nbs, length))
+get_nbsi <- function (i)
+{
+    res <- lapply (seq (nbs), function (j)
+                   {
+                       if (length (nbs [[j]]) >= i)
+                           c (j, nbs [[j]] [i], length (nbs [[j]]))
+                       else
+                           NULL
+                   })
+    res <- res [lapply (res, length) != 0]
+    res <- do.call (rbind, res)
+    data.frame (to=res [,1], from=res [,2], n=res [,3])
+}
+```
+And confirm that it works:
+```{r}
+head (get_nbsi (1))
+head (get_nbsi (2))
+head (get_nbsi (3))
+head (get_nbsi (4))
+```
+Then the actual loop to implement the spatial autocorrelation is:
+```{r}
+alpha <- 0.5
+z1 <- msm::rtnorm (size ^ 2, mean=1, sd=sd0, lower=0, upper=2)
+maxnbs <- max (sapply (nbs, length))
+z2 <- rep (0, length (z1))
+for (i in seq (maxnbs))
+{
+    nbsi <- get_nbsi (i)
+    z2 [nbsi$to] <- z2 [nbsi$to] + ((1 - alpha) * z1 [nbsi$to] +
+        alpha * z1 [nbsi$from]) / nbsi$n
+}
+```
+Then manually check the values
+```{r}
+z2 [1]; (1-alpha) * z1 [1] + alpha * (z1 [2] + z1 [11]) / 2
+z2 [2]; (1-alpha) * z1 [2] + alpha * (z1 [1] + z1 [3] + z1 [12]) / 3
+z2 [15]; (1-alpha) * z1 [15] + alpha * (z1 [5] + z1 [14] + z1 [16] + z1 [25]) / 4
+```
+The final function definition
 
 ```{r}
-brown_space <- function (sd0=0.5, alpha=0.1, size=10, nt=100)
+sd0 <- 0.1
+alpha <- 0.9
+size <- 10
+ntests <- 20
+log_scale <- TRUE
+brown_space <- function (sd0=0.5, alpha=0.1, size=10, ntests=100, 
+                         niters=1, log_scale=FALSE)
 {
     xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
     dhi <- 1 # for rook; dhi=1.5 for queen
     nbs <- spdep::dnearneigh (xy, 0, dhi)
     wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
     # then convert nbs to 2 vectors of origins and destinations
-    nbso <- unlist (lapply (seq (nbs), function (i) rep (i, length (nbs [[i]]))))
-    nbs <- unlist (nbs)
-    wts <- unlist (wts)
+    indx_nbso <- unlist (lapply (seq (nbs), function (i) 
+                                 rep (i, length (nbs [[i]]))))
+    indx_nbs <- unlist (nbs)
+    indx_wts <- unlist (wts)
+    lens <- unlist (lapply (nbs, function (i) rep (length (i), length (i))))
 
-    y <- lapply (seq (nt), function (i) 
+    ac_type <- 'moran'
+
+    get_nbsi <- function (i)
+    {
+        res <- lapply (seq (nbs), function (j)
+                       {
+                           if (length (nbs [[j]]) >= i)
+                               c (j, nbs [[j]] [i], length (nbs [[j]]))
+                           else
+                               NULL
+                       })
+        res <- res [lapply (res, length) != 0]
+        res <- do.call (rbind, res)
+        data.frame (to=res [,1], from=res [,2], n=res [,3])
+    }
+    maxnbs <- max (sapply (nbs, length))
+
+    z <- lapply (seq (ntests), function (i) 
                  {
-                     z <- msm::rtnorm (size ^ 2, mean=1, sd=sd0, lower=0, upper=2)
-                     z [nbso] <- (1 - alpha) * z [nbso] + alpha * z [nbs] * wts [nbs]
-                     z <- sort (log10 (z), decreasing=TRUE)
-                     (z - min (z)) / diff (range (z))
+                     z1 <- msm::rtnorm (size ^ 2, mean=1, sd=sd0, lower=0, upper=2)
+                     for (j in seq (niters))
+                     {
+                         z2 <- rep (0, size ^ 2)
+                         for (k in seq (maxnbs))
+                         {
+                             nbsi <- get_nbsi (k)
+                             z2 [nbsi$to] <- z2 [nbsi$to] + 
+                                 ((1 - alpha) * z1 [nbsi$to] +
+                                  alpha * z1 [nbsi$from]) / nbsi$n
+                         }
+                         z1 <- z2
+                     }
+                     if (log_scale) z2 <- log10 (z2)
+                     ac1 <- rcpp_ac_stats (z2, nbs, wts, ac_type)
+                     z2 <- sort (z2, decreasing=TRUE)
+                     z2 <- (z2 - min (z2)) / diff (range (z2))
+                     cbind (z2, ac1)
                  })
-    colMeans (do.call (rbind, y))
+
+    ac1 <- colMeans (do.call (rbind, lapply (z, function (i) i [,2])))
+    z <- colMeans (do.call (rbind, lapply (z, function (i) i [,1])))
+    cbind (z, ac1)
 }
 ```
 Then compare different values of `alpha`
 
+
 ```{r brown-space}
+log_scale <- FALSE
 sd0 <- c (0.00001, 0.3, 1)
+sd0 <- c (0.01, 0.3, 1)
 size <- 10
-ysd <- lapply (sd0, function (i) brown_space (sd0=i, alpha=0, size=size))
+ysd <- lapply (sd0, function (i) 
+               brown_space (sd0=i, alpha=0, size=size, log_scale=log_scale))
 alpha <- c (0.1, 0.5, 0.9)
-yalpha <- lapply (alpha, function (i) brown_space (sd0=0.1, alpha=i, size=size))
+yalpha <- lapply (alpha, function (i) 
+               brown_space (sd0=sd0 [1], alpha=i, size=size, log_scale=log_scale))
 
-plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale")
-cols <- rainbow (length (sd0))
-for (i in 1:length (sd0)) 
+doplots <- function ()
 {
-    lines (seq (size^2), yalpha [[i]], col=cols [i])
-    lines (seq (size^2), ysd [[i]], col=cols [i], lty=2)
+    mts <- c ("raw values", "AC")
+    cols <- rainbow (length (sd0))
+    ltxt <- sapply (alpha, function (i) paste0 ('alpha=', i))
+    ltxt <- c (ltxt, sapply (sd0, function (i) paste0 ('sd=', i)))
+    for (i in 1:2)
+    {
+        plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale")
+        title (main=mts [i])
+        for (j in 1:length (sd0)) 
+        {
+            lines (seq (size^2), yalpha [[j]] [,i], col=cols [j])
+            lines (seq (size^2), ysd [[j]] [,i], col=cols [j], lty=2)
+        }
+        legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
+                legend=ltxt)
+    }
 }
+```
 
-ltxt <- sapply (alpha, function (i) paste0 ('alpha=', i))
-ltxt <- c (ltxt, sapply (sd0, function (i) paste0 ('sd=', i)))
+```{r brown-space-plots, fig.width=12}
+plot.new ()
+par (mfrow=c(1,2))
+doplots ()
+```
+
+Then repeat for log-scaled values
+```{r brown-space-log}
+log_scale <- TRUE
+sd0 <- c (0.00001, 0.3, 1)
+sd0 <- c (0.01, 0.3, 1)
+size <- 10
+ysd <- lapply (sd0, function (i) 
+               brown_space (sd0=i, alpha=0, size=size, log_scale=log_scale))
+alpha <- c (0.1, 0.5, 0.9)
+yalpha <- lapply (alpha, function (i) 
+               brown_space (sd0=sd0 [1], alpha=i, size=size, log_scale=log_scale))
+```
+
+```{r brown-space-log-plots, fig.width=12}
+plot.new ()
+par (mfrow=c(1,2))
+doplots ()
+```
+
+And then examine the effect of multiple iterations of spatial autocorrelation
+
+```{r brown-niters}
+niters <- c (1, 2, 10)
+log_scale <- TRUE
+sd0 <- 0.5
+alpha <- 0.5
+size <- 10
+y1 <- lapply (niters, function (i) 
+               brown_space (sd0=0.1, alpha=0.5, size=size, niters=i,
+                            log_scale=log_scale))
+y2 <- lapply (niters, function (i) 
+               brown_space (sd0=0.9, alpha=0.5, size=size, niters=i,
+                            log_scale=log_scale))
+```
+
+```{r brown-niters-plots, fig.width=12}
+mts <- c ("sd0=0.1", "sd0=0.5")
+cols <- rainbow (length (niters))
+ltxt <- sapply (niters, function (i) paste0 ('(sd=0.1; niters=', i))
+ltxt <- c (ltxt, sapply (niters, function (i) paste0 ('sd=0.5; niters=', i)))
+plot.new ()
+par (mfrow=c(1,2))
+plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
+      main="raw data")
+for (j in 1:length (niters)) 
+{
+    lines (seq (size^2), y1 [[j]] [,1], col=cols [j])
+    lines (seq (size^2), y2 [[j]] [,1], col=cols [j], lty=2)
+}
 legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
         legend=ltxt)
+
+plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
+      main="AC")
+for (j in 1:length (niters)) 
+{
+    lines (seq (size^2), y1 [[j]] [,2], col=cols [j])
+    lines (seq (size^2), y2 [[j]] [,2], col=cols [j], lty=2)
+}
 ```
 
 And in this case the introduction of spatial autocorrelation does enable the
@@ -419,7 +607,7 @@ with neutral models:
 analyse <- function (metal='copper', ntests=1000)
 {
     z <- meuse [metal] [,1]
-    mod <- fit_hotspot_model (z=z, nbs=nbs, verbose=TRUE)
+    mod <- fit_hotspot_model (z=z, nbs=nbs, verbose=FALSE)
     p_values (z=z, nbs=nbs, sd0=mod$sd0, alpha=mod$ac, ntests=ntests, plot=TRUE)
 }
 ```

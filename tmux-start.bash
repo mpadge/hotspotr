@@ -28,6 +28,7 @@ tmux select-window -t $SESSION:3
 tmux send-keys -t $SESSION:3 'vim tmux-start.bash' C-m
 tmux send-keys -t $SESSION:3 ':' 'tabe makefile' C-m
 tmux split-window -h
+tmux send-keys -t $SESSION:3 'xdg-open README.html &' C-m
 tmux send-keys -t $SESSION:3 'git status -uno' C-m
 tmux select-pane -t 0
 

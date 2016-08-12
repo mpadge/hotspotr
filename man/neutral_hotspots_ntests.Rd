@@ -5,7 +5,7 @@
 \title{neutral_hotspots_ntests}
 \usage{
 neutral_hotspots_ntests(nbs, wts, alpha = 0.1, sd0 = 0.1, ntests = 1000,
-  ac_type = "moran", seed)
+  niters = 1, ac_type = "moran", seed)
 }
 \arguments{
 \item{nbs}{An \code{spdep} \code{nb} object listing all neighbours of each
@@ -21,6 +21,8 @@ environmental variation (with mean of 1)}
 
 \item{ntests}{Number of repeats of neutral model used to calculate mean
 rank--scale distribution}
+
+\item{niters}{Number of sequential iterations of spatial autocorrelation}
 
 \item{ac_type}{type of autocorrelation statistic to use in tests
 (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}

@@ -115,7 +115,7 @@ ploty (nlayers, yi)
 title (main=paste ("ives"))
 ```
 
-![](fig/ives-vs-brown-plot.png)
+![](README_files/figure-markdown_github/ives-vs-brown-plot-1.png)
 
 And the difference is clearly that Brown is able to respond to differences in numbers of layers, while Ives remains entirely invariant. In other words, the model of Ives et al (1997) may *not* be used as a neutral model because it is does not respond to structural differences!
 
@@ -140,7 +140,7 @@ ploty (sd0, yi)
 title (main=paste ("ives"))
 ```
 
-![](fig/ives-vs-brown-plot2.png)
+![](README_files/figure-markdown_github/ives-vs-brown-plot2-1.png)
 
 And again, Ives does respond, but only marginally compared to Brown. Moreover, since the product of two normal distributions is also a normal distribution, changes in `nlayers` within the model of Brown et al (1995) are the same as changes in the distributional variance, and so only one of these parameters needs to be considered. The following graphs also include a Poisson distribution for comparison.
 
@@ -174,7 +174,7 @@ legend ("bottomleft", lwd=1, col=c (rep (cols, 2), "black"),
         lty=c (1,1,1,2,2,2,1), legend=ltxt)
 ```
 
-![](fig/brown-plot.png)
+![](README_files/figure-markdown_github/brown-plot-1.png)
 
 It's obviously far more computationally efficient to consider variance rather than `nlayers`, and this also seems to allow a greater range of possible forms of response. Moreover, the response with increasing variance clearly approaches a Poisson distribution.
 
@@ -303,25 +303,25 @@ Then manually check the values
 z2 [1]; (1-alpha) * z1 [1] + alpha * (z1 [2] + z1 [11]) / 2
 ```
 
-    ## [1] 0.9297134
+    ## [1] 0.9285718
 
-    ## [1] 0.9297134
+    ## [1] 0.9285718
 
 ``` r
 z2 [2]; (1-alpha) * z1 [2] + alpha * (z1 [1] + z1 [3] + z1 [12]) / 3
 ```
 
-    ## [1] 1.103574
+    ## [1] 1.105333
 
-    ## [1] 1.103574
+    ## [1] 1.105333
 
 ``` r
 z2 [15]; (1-alpha) * z1 [15] + alpha * (z1 [5] + z1 [14] + z1 [16] + z1 [25]) / 4
 ```
 
-    ## [1] 0.4677977
+    ## [1] 1.274294
 
-    ## [1] 0.4677977
+    ## [1] 1.274294
 
 The final function definition
 
@@ -430,7 +430,7 @@ par (mfrow=c(1,2))
 doplots ()
 ```
 
-![](fig/brown-space-plots.png)
+![](README_files/figure-markdown_github/brown-space-plots-1.png)
 
 Then repeat for log-scaled values
 
@@ -452,12 +452,12 @@ par (mfrow=c(1,2))
 doplots ()
 ```
 
-![](fig/brown-space-log-plots.png)
+![](README_files/figure-markdown_github/brown-space-log-plots-1.png)
 
 And then examine the effect of multiple iterations of spatial autocorrelation
 
 ``` r
-niters <- c (1, 2, 10)
+niters <- c (1, 2, 10, 100)
 log_scale <- TRUE
 sd0 <- 0.5
 alpha <- 0.5
@@ -496,7 +496,7 @@ for (j in 1:length (niters))
 }
 ```
 
-![](fig/brown-niters-plots.png)
+![](README_files/figure-markdown_github/brown-niters-plots-1.png)
 
 ... up to the interpretation here ...
 
@@ -523,7 +523,7 @@ test1 <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=0.1,
 ```
 
     ##    user  system elapsed 
-    ##   0.584   0.000   0.583
+    ##   0.584   0.004   0.587
 
 Then write an equivalent `R` `lapply` version
 
@@ -546,7 +546,7 @@ system.time ( test2 <- rloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.732   0.004   0.734
+    ##   0.640   0.000   0.641
 
 And then an `R`-internal parallel version. First the slightly different function definition:
 
@@ -591,7 +591,7 @@ system.time (test3 <- rParloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.020   0.004   0.455
+    ##   0.016   0.008   0.417
 
 ``` r
 stopCluster (clust)
@@ -605,7 +605,7 @@ lines (1:length (nbs), test3 [,2], col="gray")
 legend ("topright", lwd=1, col=c("black", "gray"), bty="n", legend=c("z", "ac"))
 ```
 
-![](fig/plot-parallel.png)
+![](README_files/figure-markdown_github/plot-parallel-1.png)
 
 The parallel version does not of course generate identical results, because each core starts with its own random seed, but nevertheless after
 
@@ -623,7 +623,7 @@ max (abs (test1 - test2)); max (abs (test1 - test3))
 
     ## [1] 1.665335e-15
 
-    ## [1] 0.004096253
+    ## [1] 0.003266344
 
 The first of these is mere machine rounding tolerance; the second is a measure of convergence of randomised mean profiles.
 

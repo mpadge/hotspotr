@@ -419,7 +419,7 @@ doplots ()
 And then examine the effect of multiple iterations of spatial autocorrelation
 
 ```{r brown-niters}
-niters <- c (1, 2, 10)
+niters <- c (1, 2, 10, 100)
 log_scale <- TRUE
 sd0 <- 0.5
 alpha <- 0.5

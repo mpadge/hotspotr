@@ -182,10 +182,10 @@ Note that although increasing the variance always decreases the relative probabi
 
 ------------------------------------------------------------------------
 
-<a name="2-brown-spatial"></a>2. A Spatial Version of Brown et al (1995)?
-=========================================================================
+<a name="2-brown-spatial"></a>2. A Spatial Version of Brown et al (1995)
+========================================================================
 
-There is no 'model' to speak of in *Brown et al (1995)*, rather they merely examine the rank-scale properties of normal distributions. Spatial relationships will act in this case simply by smoothing the normal distribution, which will do nothing other than again increase the distributional variance, as now demonstrated.
+There is no 'model' to speak of in *Brown et al (1995)*, rather they merely examine the rank-scale properties of normal distributions. Spatial relationships may nevertheless modify such generic normal distributions, as now demonstrated.
 
 First define a function to generate spatial autocorrelation on a grid, this time including autocorrelation statistics as well. An additional option controls whether values should be log-scaled or not.
 
@@ -197,7 +197,7 @@ dhi <- 1 # for rook; dhi=1.5 for queen
 nbs <- spdep::dnearneigh (xy, 0, dhi)
 ```
 
-The actual lists of neighbours can be obtained simply as:
+The actual lists of neighbours (although not required anywhere in the code) can be obtained simply as:
 
 ``` r
 indx_nbs_to <- unlist (lapply (seq (nbs), function (i) 
@@ -232,56 +232,6 @@ get_nbsi <- function (i)
 }
 ```
 
-And confirm that it works:
-
-``` r
-head (get_nbsi (1))
-```
-
-    ##   to from n
-    ## 1  1    2 2
-    ## 2  2    1 3
-    ## 3  3    2 3
-    ## 4  4    3 3
-    ## 5  5    4 3
-    ## 6  6    5 3
-
-``` r
-head (get_nbsi (2))
-```
-
-    ##   to from n
-    ## 1  1   11 2
-    ## 2  2    3 3
-    ## 3  3    4 3
-    ## 4  4    5 3
-    ## 5  5    6 3
-    ## 6  6    7 3
-
-``` r
-head (get_nbsi (3))
-```
-
-    ##   to from n
-    ## 1  2   12 3
-    ## 2  3   13 3
-    ## 3  4   14 3
-    ## 4  5   15 3
-    ## 5  6   16 3
-    ## 6  7   17 3
-
-``` r
-head (get_nbsi (4))
-```
-
-    ##   to from n
-    ## 1 12   22 4
-    ## 2 13   23 4
-    ## 3 14   24 4
-    ## 4 15   25 4
-    ## 5 16   26 4
-    ## 6 17   27 4
-
 Then the actual loop to implement the spatial autocorrelation is:
 
 ``` r
@@ -297,31 +247,31 @@ for (i in seq (maxnbs))
 }
 ```
 
-Then manually check the values
+This can be confirmed by manually checking the values
 
 ``` r
 z2 [1]; (1-alpha) * z1 [1] + alpha * (z1 [2] + z1 [11]) / 2
 ```
 
-    ## [1] 0.9285718
+    ## [1] 0.9415288
 
-    ## [1] 0.9285718
+    ## [1] 0.9415288
 
 ``` r
 z2 [2]; (1-alpha) * z1 [2] + alpha * (z1 [1] + z1 [3] + z1 [12]) / 3
 ```
 
-    ## [1] 1.105333
+    ## [1] 0.9908946
 
-    ## [1] 1.105333
+    ## [1] 0.9908946
 
 ``` r
 z2 [15]; (1-alpha) * z1 [15] + alpha * (z1 [5] + z1 [14] + z1 [16] + z1 [25]) / 4
 ```
 
-    ## [1] 1.274294
+    ## [1] 1.46646
 
-    ## [1] 1.274294
+    ## [1] 1.46646
 
 The final function definition
 
@@ -498,7 +448,44 @@ for (j in 1:length (niters))
 
 ![](fig/brown-niters-plots.png)
 
-... up to the interpretation here ...
+These functions are highly responsive, in particular to numbers of iterations, and in particular in terms of autocorrelation statistics. Note that these results were all generated using log-scaled values, while the linearly scaled equivalents look like this:
+
+``` r
+y1l <- lapply (niters, function (i) 
+               brown_space (sd0=0.1, alpha=0.5, size=size, niters=i,
+                            log_scale=FALSE))
+y2l <- lapply (niters, function (i) 
+               brown_space (sd0=0.9, alpha=0.5, size=size, niters=i,
+                            log_scale=FALSE))
+```
+
+``` r
+mts <- c ("sd0=0.1", "sd0=0.5")
+cols <- rainbow (length (niters))
+ltxt <- sapply (niters, function (i) paste0 ('(sd=0.1; niters=', i))
+ltxt <- c (ltxt, sapply (niters, function (i) paste0 ('sd=0.5; niters=', i)))
+plot.new ()
+par (mfrow=c(1,2))
+plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
+      main="raw data (linear)")
+for (j in 1:length (niters)) 
+{
+    lines (seq (size^2), y1l [[j]] [,1], col=cols [j])
+    lines (seq (size^2), y2l [[j]] [,1], col=cols [j], lty=2)
+}
+legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
+        legend=ltxt)
+
+plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
+      main="AC (linear)")
+for (j in 1:length (niters)) 
+{
+    lines (seq (size^2), y1l [[j]] [,2], col=cols [j])
+    lines (seq (size^2), y2l [[j]] [,2], col=cols [j], lty=2)
+}
+```
+
+![](fig/brown-niters-lin-plots.png)
 
 ------------------------------------------------------------------------
 
@@ -523,7 +510,7 @@ test1 <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=0.1,
 ```
 
     ##    user  system elapsed 
-    ##   0.584   0.004   0.587
+    ##   0.592   0.000   0.592
 
 Then write an equivalent `R` `lapply` version
 
@@ -546,7 +533,7 @@ system.time ( test2 <- rloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.640   0.000   0.641
+    ##   0.636   0.000   0.637
 
 And then an `R`-internal parallel version. First the slightly different function definition:
 
@@ -591,7 +578,7 @@ system.time (test3 <- rParloop (ntests=ntests))
 ```
 
     ##    user  system elapsed 
-    ##   0.016   0.008   0.417
+    ##   0.028   0.004   0.455
 
 ``` r
 stopCluster (clust)
@@ -623,7 +610,7 @@ max (abs (test1 - test2)); max (abs (test1 - test3))
 
     ## [1] 1.665335e-15
 
-    ## [1] 0.003266344
+    ## [1] 0.007591826
 
 The first of these is mere machine rounding tolerance; the second is a measure of convergence of randomised mean profiles.
 

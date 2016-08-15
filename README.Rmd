@@ -217,13 +217,11 @@ nevertheless reveals that the response for a very large number of layers (here,
 
 --------
 
-# <a name="2-brown-spatial"></a>2. A Spatial Version of Brown et al (1995)?
+# <a name="2-brown-spatial"></a>2. A Spatial Version of Brown et al (1995)
 
 There is no 'model' to speak of in *Brown et al (1995)*, rather they merely
 examine the rank-scale properties of normal distributions. Spatial relationships
-will act in this case simply by smoothing the normal distribution, which will do
-nothing other than again increase the distributional variance, as now
-demonstrated.
+may nevertheless modify such generic normal distributions, as now demonstrated.
 
 First define a function to generate spatial autocorrelation on a grid, this time
 including autocorrelation statistics as well. An additional option controls
@@ -237,7 +235,8 @@ xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
 dhi <- 1 # for rook; dhi=1.5 for queen
 nbs <- spdep::dnearneigh (xy, 0, dhi)
 ```
-The actual lists of neighbours can be obtained simply as:
+The actual lists of neighbours (although not required anywhere in the code) can
+be obtained simply as: 
 ```{r}
 indx_nbs_to <- unlist (lapply (seq (nbs), function (i) 
                              rep (i, length (nbs [[i]]))))
@@ -264,13 +263,6 @@ get_nbsi <- function (i)
     data.frame (to=res [,1], from=res [,2], n=res [,3])
 }
 ```
-And confirm that it works:
-```{r}
-head (get_nbsi (1))
-head (get_nbsi (2))
-head (get_nbsi (3))
-head (get_nbsi (4))
-```
 Then the actual loop to implement the spatial autocorrelation is:
 ```{r}
 alpha <- 0.5
@@ -284,7 +276,7 @@ for (i in seq (maxnbs))
         alpha * z1 [nbsi$from]) / nbsi$n
 }
 ```
-Then manually check the values
+This can be confirmed by manually checking the values
 ```{r}
 z2 [1]; (1-alpha) * z1 [1] + alpha * (z1 [2] + z1 [11]) / 2
 z2 [2]; (1-alpha) * z1 [2] + alpha * (z1 [1] + z1 [3] + z1 [12]) / 3
@@ -292,7 +284,7 @@ z2 [15]; (1-alpha) * z1 [15] + alpha * (z1 [5] + z1 [14] + z1 [16] + z1 [25]) / 
 ```
 The final function definition
 
-```{r}
+```{r brown-space-definition}
 sd0 <- 0.1
 alpha <- 0.9
 size <- 10
@@ -418,7 +410,7 @@ doplots ()
 
 And then examine the effect of multiple iterations of spatial autocorrelation
 
-```{r brown-niters}
+```{r brown-niters, eval=FALSE}
 niters <- c (1, 2, 10, 100)
 log_scale <- TRUE
 sd0 <- 0.5
@@ -432,7 +424,7 @@ y2 <- lapply (niters, function (i)
                             log_scale=log_scale))
 ```
 
-```{r brown-niters-plots, fig.width=12}
+```{r brown-niters-plots, fig.width=12, eval=FALSE}
 mts <- c ("sd0=0.1", "sd0=0.5")
 cols <- rainbow (length (niters))
 ltxt <- sapply (niters, function (i) paste0 ('(sd=0.1; niters=', i))
@@ -457,8 +449,46 @@ for (j in 1:length (niters))
     lines (seq (size^2), y2 [[j]] [,2], col=cols [j], lty=2)
 }
 ```
+![](fig/brown-niters-plots.png)
 
-... up to the interpretation here ...
+These functions are highly responsive, in particular to numbers of iterations,
+and in particular in terms of autocorrelation statistics. Note that these
+results were all generated using log-scaled values, while the linearly scaled
+equivalents look like this:
+```{r brown-niters-linear, eval=FALSE}
+y1l <- lapply (niters, function (i) 
+               brown_space (sd0=0.1, alpha=0.5, size=size, niters=i,
+                            log_scale=FALSE))
+y2l <- lapply (niters, function (i) 
+               brown_space (sd0=0.9, alpha=0.5, size=size, niters=i,
+                            log_scale=FALSE))
+```
+```{r brown-niters-lin-plots, fig.width=12, eval=FALSE}
+mts <- c ("sd0=0.1", "sd0=0.5")
+cols <- rainbow (length (niters))
+ltxt <- sapply (niters, function (i) paste0 ('(sd=0.1; niters=', i))
+ltxt <- c (ltxt, sapply (niters, function (i) paste0 ('sd=0.5; niters=', i)))
+plot.new ()
+par (mfrow=c(1,2))
+plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
+      main="raw data (linear)")
+for (j in 1:length (niters)) 
+{
+    lines (seq (size^2), y1l [[j]] [,1], col=cols [j])
+    lines (seq (size^2), y2l [[j]] [,1], col=cols [j], lty=2)
+}
+legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
+        legend=ltxt)
+
+plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
+      main="AC (linear)")
+for (j in 1:length (niters)) 
+{
+    lines (seq (size^2), y1l [[j]] [,2], col=cols [j])
+    lines (seq (size^2), y2l [[j]] [,2], col=cols [j], lty=2)
+}
+```
+![](fig/brown-niters-lin-plots.png)
 
 
 

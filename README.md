@@ -115,7 +115,7 @@ ploty (nlayers, yi)
 title (main=paste ("ives"))
 ```
 
-![](README_files/figure-markdown_github/ives-vs-brown-plot-1.png)
+![](fig/ives-vs-brown-plot.png)
 
 And the difference is clearly that Brown is able to respond to differences in numbers of layers, while Ives remains entirely invariant. In other words, the model of Ives et al (1997) may *not* be used as a neutral model because it is does not respond to structural differences!
 
@@ -140,7 +140,7 @@ ploty (sd0, yi)
 title (main=paste ("ives"))
 ```
 
-![](README_files/figure-markdown_github/ives-vs-brown-plot2-1.png)
+![](fig/ives-vs-brown-plot2.png)
 
 And again, Ives does respond, but only marginally compared to Brown. Moreover, since the product of two normal distributions is also a normal distribution, changes in `nlayers` within the model of Brown et al (1995) are the same as changes in the distributional variance, and so only one of these parameters needs to be considered. The following graphs also include a Poisson distribution for comparison.
 
@@ -174,7 +174,7 @@ legend ("bottomleft", lwd=1, col=c (rep (cols, 2), "black"),
         lty=c (1,1,1,2,2,2,1), legend=ltxt)
 ```
 
-![](README_files/figure-markdown_github/brown-plot-1.png)
+![](fig/brown-plot.png)
 
 It's obviously far more computationally efficient to consider variance rather than `nlayers`, and this also seems to allow a greater range of possible forms of response. Moreover, the response with increasing variance clearly approaches a Poisson distribution.
 
@@ -430,7 +430,7 @@ par (mfrow=c(1,2))
 doplots ()
 ```
 
-![](README_files/figure-markdown_github/brown-space-plots-1.png)
+![](fig/brown-space-plots.png)
 
 Then repeat for log-scaled values
 
@@ -452,7 +452,7 @@ par (mfrow=c(1,2))
 doplots ()
 ```
 
-![](README_files/figure-markdown_github/brown-space-log-plots-1.png)
+![](fig/brown-space-log-plots.png)
 
 And then examine the effect of multiple iterations of spatial autocorrelation
 
@@ -496,7 +496,7 @@ for (j in 1:length (niters))
 }
 ```
 
-![](README_files/figure-markdown_github/brown-niters-plots-1.png)
+![](fig/brown-niters-plots.png)
 
 ... up to the interpretation here ...
 
@@ -605,7 +605,7 @@ lines (1:length (nbs), test3 [,2], col="gray")
 legend ("topright", lwd=1, col=c("black", "gray"), bty="n", legend=c("z", "ac"))
 ```
 
-![](README_files/figure-markdown_github/plot-parallel-1.png)
+![](fig/plot-parallel.png)
 
 The parallel version does not of course generate identical results, because each core starts with its own random seed, but nevertheless after
 

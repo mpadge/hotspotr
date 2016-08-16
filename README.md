@@ -15,6 +15,15 @@ The remainder of this README documents various exploratory and development phase
 
 ------------------------------------------------------------------------
 
+Status
+======
+
+-   `neutral-hotspots.R` and `neutral-hotspots-ntests.R` both work in new form; the former is `lapply`, while the latter is `parLapply`
+-   `neutral-hotspots.cpp` finished, with `rcpp_neutral_hotspots` doing one test, and so able to be looped with `parLapply`, while `rcpp_neutral_hotspots_ntests` performs the loop in `C++`.
+-   The `C++` functions now just have to be called from an `R`-wrapper (that needs to be constructed ...)
+
+------------------------------------------------------------------------
+
 Contents
 ========
 
@@ -253,25 +262,25 @@ This can be confirmed by manually checking the values
 z2 [1]; (1-alpha) * z1 [1] + alpha * (z1 [2] + z1 [11]) / 2
 ```
 
-    ## [1] 0.9415288
+    ## [1] 1.040746
 
-    ## [1] 0.9415288
+    ## [1] 1.040746
 
 ``` r
 z2 [2]; (1-alpha) * z1 [2] + alpha * (z1 [1] + z1 [3] + z1 [12]) / 3
 ```
 
-    ## [1] 0.9908946
+    ## [1] 1.097246
 
-    ## [1] 0.9908946
+    ## [1] 1.097246
 
 ``` r
 z2 [15]; (1-alpha) * z1 [15] + alpha * (z1 [5] + z1 [14] + z1 [16] + z1 [25]) / 4
 ```
 
-    ## [1] 1.46646
+    ## [1] 0.8171718
 
-    ## [1] 1.46646
+    ## [1] 0.8171718
 
 The final function definition
 
@@ -288,12 +297,6 @@ brown_space <- function (sd0=0.5, alpha=0.1, size=10, ntests=100,
     dhi <- 1 # for rook; dhi=1.5 for queen
     nbs <- spdep::dnearneigh (xy, 0, dhi)
     wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
-    # then convert nbs to 2 vectors of origins and destinations
-    indx_nbso <- unlist (lapply (seq (nbs), function (i) 
-                                 rep (i, length (nbs [[i]]))))
-    indx_nbs <- unlist (nbs)
-    indx_wts <- unlist (wts)
-    lens <- unlist (lapply (nbs, function (i) rep (length (i), length (i))))
 
     ac_type <- 'moran'
 
@@ -487,19 +490,50 @@ for (j in 1:length (niters))
 
 ![](fig/brown-niters-lin-plots.png)
 
+And log-scaling has pronounced effects only on the structure of the raw values, while the autocorrelation statistics remain largely unaffected.
+
 ------------------------------------------------------------------------
 
 <a name="3-parallel"></a>3. Parallel and Rcpp Tests
 ===================================================
 
-The current, non-parallel `Rcpp` version:
+Set up grid and list of spaital neighbours
 
 ``` r
-ntests <- 1000
-dat <- ives (size=10, seed=1)
-wts <- lapply (dat$nbs, function (x) rep (1, length (x)) / length (x))
-nbs <- dat$nbs
+ntests <- 10000
+size <- 10
+xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
+dhi <- 1 # for rook; dhi=1.5 for queen
+nbs <- spdep::dnearneigh (xy, 0, dhi)
 ```
+
+First time the pure `R` version:
+
+``` r
+set.seed (1)
+system.time (
+    dat <- neutral_hotspots (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
+)
+```
+
+    ##    user  system elapsed 
+    ##  39.852   0.012  39.862
+
+Then an equivalent parallel version, still entirely `R`-scripted and currently in `neutral-hotspots-ntests`:
+
+``` r
+set.seed (1)
+system.time (
+    dat <- neutral_hotspots_ntests (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
+)
+```
+
+    ##    user  system elapsed 
+    ##   0.336   0.068  25.046
+
+That takes longer because of the time needed to establish the parallel clusters, but the parallel version quickly becomes faster for higher values of `ntests`.
+
+Then current, non-parallel `Rcpp` version:
 
 ``` r
 set.seed (1)
@@ -508,9 +542,6 @@ test1 <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=0.1,
                   alpha_s=0.1, sd0=0.1, nt=10, ntests=ntests, ac_type='moran')
 )
 ```
-
-    ##    user  system elapsed 
-    ##   0.592   0.000   0.592
 
 Then write an equivalent `R` `lapply` version
 
@@ -531,9 +562,6 @@ rloop <- function (ntests=1000)
 set.seed (1)
 system.time ( test2 <- rloop (ntests=ntests))
 ```
-
-    ##    user  system elapsed 
-    ##   0.636   0.000   0.637
 
 And then an `R`-internal parallel version. First the slightly different function definition:
 
@@ -575,12 +603,6 @@ invisible (clusterCall (clust, function () {
 
 ``` r
 system.time (test3 <- rParloop (ntests=ntests))
-```
-
-    ##    user  system elapsed 
-    ##   0.028   0.004   0.455
-
-``` r
 stopCluster (clust)
 ```
 
@@ -592,25 +614,17 @@ lines (1:length (nbs), test3 [,2], col="gray")
 legend ("topright", lwd=1, col=c("black", "gray"), bty="n", legend=c("z", "ac"))
 ```
 
-![](fig/plot-parallel.png)
-
 The parallel version does not of course generate identical results, because each core starts with its own random seed, but nevertheless after
 
 ``` r
 ntests
 ```
 
-    ## [1] 1000
-
 the differences are very small:
 
 ``` r
 max (abs (test1 - test2)); max (abs (test1 - test3))
 ```
-
-    ## [1] 1.665335e-15
-
-    ## [1] 0.007591826
 
 The first of these is mere machine rounding tolerance; the second is a measure of convergence of randomised mean profiles.
 

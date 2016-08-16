@@ -36,6 +36,18 @@ phases ...
 
 --------
 
+# Status
+
+- `neutral-hotspots.R` and `neutral-hotspots-ntests.R` both work in new form;
+  the former is `lapply`, while the latter is `parLapply`
+- `neutral-hotspots.cpp` finished, with `rcpp_neutral_hotspots` doing one test,
+  and so able to be looped with `parLapply`, while
+  `rcpp_neutral_hotspots_ntests` performs the loop in `C++`.
+- The `C++` functions now just have to be called from an `R`-wrapper (that needs
+  to be constructed ...)
+
+--------
+
 # Contents
 
 [1. Brown vs Ives](#1-brown-ives) 
@@ -58,6 +70,7 @@ devtools::install_github ('mpadge/hotspotr')
 while (length (grep ('hotspotr', getwd ())) > 0) setwd ("..")
 #devtools::document ("hotspotr")
 #devtools::check ("hotspotr")
+#Rcpp::compileAttributes ("hotspotr")
 devtools::load_all ("hotspotr")
 setwd ("./hotspotr")
 ```
@@ -297,12 +310,6 @@ brown_space <- function (sd0=0.5, alpha=0.1, size=10, ntests=100,
     dhi <- 1 # for rook; dhi=1.5 for queen
     nbs <- spdep::dnearneigh (xy, 0, dhi)
     wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
-    # then convert nbs to 2 vectors of origins and destinations
-    indx_nbso <- unlist (lapply (seq (nbs), function (i) 
-                                 rep (i, length (nbs [[i]]))))
-    indx_nbs <- unlist (nbs)
-    indx_wts <- unlist (wts)
-    lens <- unlist (lapply (nbs, function (i) rep (length (i), length (i))))
 
     ac_type <- 'moran'
 
@@ -490,22 +497,46 @@ for (j in 1:length (niters))
 ```
 ![](fig/brown-niters-lin-plots.png)
 
+And log-scaling has pronounced effects only on the structure of the raw values,
+while the autocorrelation statistics remain largely unaffected.
 
 
 --------
 
 # <a name="3-parallel"></a>3. Parallel and Rcpp Tests
 
-
-The current, non-parallel `Rcpp` version:
+Set up grid and list of spaital neighbours
 ```{r}
 ntests <- 1000
-dat <- ives (size=10, seed=1)
-wts <- lapply (dat$nbs, function (x) rep (1, length (x)) / length (x))
-nbs <- dat$nbs
+size <- 10
+xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
+dhi <- 1 # for rook; dhi=1.5 for queen
+nbs <- spdep::dnearneigh (xy, 0, dhi)
 ```
 
-```{r rcpp-test, eval=TRUE}
+First time the pure `R` version:
+```{r R-test, eval=TRUE}
+set.seed (1)
+system.time (
+    dat <- neutral_hotspots (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
+)
+```
+
+Then an equivalent parallel version, still entirely `R`-scripted and currently
+in `neutral-hotspots-ntests`:
+```{r R-test-parallel, eval=TRUE}
+set.seed (1)
+system.time (
+    dat <- neutral_hotspots_ntests (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
+)
+```
+That takes longer because of the time needed to establish the parallel
+clusters, but the parallel version quickly becomes faster for higher values of
+`ntests`.
+
+Then current, non-parallel `Rcpp` version:
+
+```{r rcpp-test, eval=FALSE}
 set.seed (1)
 system.time (
 test1 <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=0.1,
@@ -514,7 +545,7 @@ test1 <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=0.1,
 ```
 
 Then write an equivalent `R` `lapply` version
-```{r rloop, eval=TRUE}
+```{r rloop, eval=FALSE}
 rloop <- function (ntests=1000)
 {
     z <- lapply (seq (ntests), function (i) {
@@ -533,7 +564,7 @@ system.time ( test2 <- rloop (ntests=ntests))
 ```
 And then an `R`-internal parallel version. First the slightly different function
 definition:
-```{r rparallel-fn, message=FALSE}
+```{r rparallel-fn, message=FALSE, eval=FALSE}
 require (parallel)
 rParloop <- function (ntests=1000)
 {
@@ -557,7 +588,7 @@ environment variables, but is not portable, as detailed here:
 [http://www.r-bloggers.com/how-to-go-parallel-in-r-basics-tips/](http://www.r-bloggers.com/how-to-go-parallel-in-r-basics-tips/).
 The `clusterExport` and `clusterCall` lines explicitly attach only the required
 bits.
-```{r cluster-setup, eval=TRUE}
+```{r cluster-setup, eval=FALSE}
 #clust <- makeCluster (parallel::detectCores () - 1, type="FORK")
 clust <- makeCluster (parallel::detectCores () - 1)
 clusterExport (clust, "dat")
@@ -570,14 +601,14 @@ invisible (clusterCall (clust, function () {
                         setwd ("./hotspotr")
                                          }))
 ```
-```{r rparallel-loop, eval=TRUE}
+```{r rparallel-loop, eval=FALSE}
 system.time (test3 <- rParloop (ntests=ntests))
 stopCluster (clust)
 ```
 
 And the results look like this ...
 
-```{r plot-parallel, eval=TRUE}
+```{r plot-parallel, eval=FALSE}
 plot (1:length (nbs), test3 [,1], "l", xlab="rank", ylab="scale")
 lines (1:length (nbs), test3 [,2], col="gray")
 legend ("topright", lwd=1, col=c("black", "gray"), bty="n", legend=c("z", "ac"))
@@ -585,11 +616,11 @@ legend ("topright", lwd=1, col=c("black", "gray"), bty="n", legend=c("z", "ac"))
 
 The parallel version does not of course generate identical results, because each
 core starts with its own random seed, but nevertheless after
-```{r}
+```{r, eval=FALSE}
 ntests
 ```
 the differences are very small:
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 max (abs (test1 - test2)); max (abs (test1 - test3))
 ```
 The first of these is mere machine rounding tolerance; the second is a measure

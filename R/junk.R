@@ -62,8 +62,7 @@ testn <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1, ac_type='moran',
                                NULL
                        })
         res <- res [lapply (res, length) != 0]
-        res <- do.call (rbind, res)
-        data.frame (to=res [,1], from=res [,2], n=res [,3])
+        do.call (rbind, res) # (to, from, n)
     }
     maxnbs <- max (sapply (nbs, length))
     nbsi <- lapply (seq (maxnbs), function (i) get_nbsi (i))

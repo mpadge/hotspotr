@@ -33,6 +33,8 @@ Rcpp::NumericVector rcpp_trunc_ndist (int len, double sd)
         if (tempd >= 0.0 && tempd <= 2.0)
             eps (Rcpp::which_min (eps)) = tempd;
     }
+
+    return eps;
 }
 
 //' rcpp_neutral_hotspots
@@ -78,10 +80,11 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
             nbs_to = tempmat (Rcpp::_, 0);
             nbs_from = tempmat (Rcpp::_, 1);
             nbs_n = tempmat (Rcpp::_, 2);
+            // Note that nbs are 1-indexed
             for (int k=0; k<nbs_to.size (); k++)
             {
-                z_copy (nbs_to (k)) += (1.0 - alpha) * z (nbs_to (k)) +
-                    alpha * z (nbs_from (k)) / (double) nbs_n (k);
+                z_copy (nbs_to (k) - 1) += (1.0 - alpha) * z (nbs_to (k) - 1) +
+                    alpha * z (nbs_from (k) - 1) / (double) nbs_n (k);
             }
             std::copy (z.begin (), z.end (), z_copy.begin ());
         } // end for j over nbsi

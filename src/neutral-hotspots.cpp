@@ -56,7 +56,7 @@ Rcpp::NumericVector rcpp_trunc_ndist (int len, double sd)
 //' @return A vector of simulated values of same size as \code{nbs}.
 //'
 // [[Rcpp::export]]
-Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
+Rcpp::NumericMatrix rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
         Rcpp::List nbsi, double alpha, double sd0, bool log_scale, int niters,
         std::string ac_type)
 {
@@ -136,19 +136,17 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests (Rcpp::List nbs,
 {
     const int size = nbs.size ();
 
+    Rcpp::NumericMatrix hs1;
     Rcpp::NumericVector z (size), z1 (size), ac (size), ac1 (size);
     std::fill (ac.begin (), ac.end (), 0.0);
     std::fill (z.begin (), z.end (), 0.0);
 
     for (int n=0; n<ntests; n++)
     {
-        z1 = rcpp_neutral_hotspots (nbs, wts, nbsi, alpha, sd0, log_scale,
+        hs1 = rcpp_neutral_hotspots (nbs, wts, nbsi, alpha, sd0, log_scale,
                 niters, ac_type);
-        ac1 = rcpp_ac_stats (z1, nbs, wts, ac_type); // sorted and normalised
-        ac += ac1;
-        std::sort (z1.begin (), z1.end (), std::greater<double> ());
-        z += (z1 - (double) Rcpp::min (z1)) /
-            ((double) Rcpp::max (z1) - (double) Rcpp::min (z1));
+        z += hs1 (Rcpp::_, 0);
+        ac += hs1 (Rcpp::_, 1);
     }
 
     Rcpp::NumericMatrix result (size, 2);

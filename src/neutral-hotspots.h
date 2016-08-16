@@ -4,7 +4,7 @@
 #define _RcppNEUTRAL_HOTSPOTS_H
 
 Rcpp::NumericVector rcpp_trunc_ndist (int len, double sd0);
-Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
+Rcpp::NumericMatrix rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
         Rcpp::List nbsi, double alpha, double sd0, bool log_scale, int niters,
         std::string ac_type);
 Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests (Rcpp::List nbs, 

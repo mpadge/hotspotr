@@ -76,7 +76,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_neutral_hotspots
-Rcpp::NumericVector rcpp_neutral_hotspots(Rcpp::List nbs, Rcpp::List wts, Rcpp::List nbsi, double alpha, double sd0, bool log_scale, int niters, std::string ac_type);
+Rcpp::NumericMatrix rcpp_neutral_hotspots(Rcpp::List nbs, Rcpp::List wts, Rcpp::List nbsi, double alpha, double sd0, bool log_scale, int niters, std::string ac_type);
 RcppExport SEXP hotspotr_rcpp_neutral_hotspots(SEXP nbsSEXP, SEXP wtsSEXP, SEXP nbsiSEXP, SEXP alphaSEXP, SEXP sd0SEXP, SEXP log_scaleSEXP, SEXP nitersSEXP, SEXP ac_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;

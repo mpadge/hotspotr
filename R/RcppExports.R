@@ -77,6 +77,20 @@ rcpp_ives_spatial <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
     .Call('hotspotr_rcpp_ives_spatial', PACKAGE = 'hotspotr', nbs, nt, alpha_t, alpha_s, svec, rvec)
 }
 
+#' rcpp_trunc_ndist
+#'
+#' Truncated normal distribution (mean 1, respective upper and lower limits of
+#' 0 and 2).
+#'
+#' @param len Number of elements to be simulated
+#' @param sd Standard deviation
+#'
+#' @return A vector of truncated normally distributed values
+#'
+rcpp_trunc_ndist <- function(len, sd) {
+    .Call('hotspotr_rcpp_trunc_ndist', PACKAGE = 'hotspotr', len, sd)
+}
+
 #' rcpp_neutral_hotspots
 #'
 #' Implements neutral model in two dimensions
@@ -85,17 +99,20 @@ rcpp_ives_spatial <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
 #' point. 
 #' @param wts Weighting factors for each neighbour; must have same length as
 #' nbs. 
-#' @param alpha_t Strength of temporal autocorrelation
-#' @param alpha_s Strength of spatial autocorrelation
+#' @param nbsi List of matrices as returned from \code{get_nbsi}. each element
+#' of which contains the i-th nearest neighbour to each point.
+#' @param alpha Strength of spatial autocorrelation
 #' @param sd0 Standard deviation of truncated normal distribution used to model
 #' environmental variation (with mean of 1)
-#' @param nt Number of successive layers of temporal and spatial autocorrelation
-#' used to generate final modelled values
+#' @param log_scale If TRUE, raw hotspot values are log-transformed
+#' @param niters Number of iterations of spatial autocorrelation
+#' @param ac_type Character string specifying type of aucorrelation
+#' (\code{moran}, \code{geary}, or code{getis-ord}).
 #'
 #' @return A vector of simulated values of same size as \code{nbs}.
 #'
-rcpp_neutral_hotspots <- function(nbs, wts, alpha_t, alpha_s, sd0, nt) {
-    .Call('hotspotr_rcpp_neutral_hotspots', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt)
+rcpp_neutral_hotspots <- function(nbs, wts, nbsi, alpha, sd0, log_scale, niters, ac_type) {
+    .Call('hotspotr_rcpp_neutral_hotspots', PACKAGE = 'hotspotr', nbs, wts, nbsi, alpha, sd0, log_scale, niters, ac_type)
 }
 
 #' rcpp_neutral_hotspots_ntests
@@ -107,6 +124,8 @@ rcpp_neutral_hotspots <- function(nbs, wts, alpha_t, alpha_s, sd0, nt) {
 #' point. 
 #' @param wts Weighting factors for each neighbour; must have same length as
 #' nbs. 
+#' @param nbsi List of matrices as returned from \code{get_nbsi}. each element
+#' of which contains the i-th nearest neighbour to each point.
 #' @param alpha_t Strength of temporal autocorrelation
 #' @param alpha_s Strength of spatial autocorrelation
 #' @param sd0 Standard deviation of truncated normal distribution used to model
@@ -121,7 +140,7 @@ rcpp_neutral_hotspots <- function(nbs, wts, alpha_t, alpha_s, sd0, nt) {
 #' sorted and re-scaled hotspot values, and second column containing sorted and
 #' re-scaled spatial autocorrelation statistics.
 #'
-rcpp_neutral_hotspots_ntests <- function(nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type) {
-    .Call('hotspotr_rcpp_neutral_hotspots_ntests', PACKAGE = 'hotspotr', nbs, wts, alpha_t, alpha_s, sd0, nt, ntests, ac_type)
+rcpp_neutral_hotspots_ntests <- function(nbs, wts, nbsi, alpha, sd0, niters, ac_type, log_scale, ntests) {
+    .Call('hotspotr_rcpp_neutral_hotspots_ntests', PACKAGE = 'hotspotr', nbs, wts, nbsi, alpha, sd0, niters, ac_type, log_scale, ntests)
 }
 

@@ -2,6 +2,39 @@
 #include "ac-stats.h"
 #include <fstream>
 
+//' rcpp_trunc_ndist
+//'
+//' Truncated normal distribution (mean 1, respective upper and lower limits of
+//' 0 and 2).
+//'
+//' @param len Number of elements to be simulated
+//' @param sd Standard deviation
+//'
+//' @return A vector of truncated normally distributed values
+//'
+// [[Rcpp::export]]
+Rcpp::NumericVector rcpp_trunc_ndist (int len, double sd)
+{
+    double tempd;
+
+    // Set up truncated normal distribution
+    Rcpp::NumericVector eps (len);
+    eps = Rcpp::rnorm (len, 1.0, sd);
+    // TODO: Check timing with simple explicit loop instead of any
+    while (Rcpp::is_true (Rcpp::any (eps <= 0.0)))
+    {
+        tempd = Rcpp::rnorm (1, 1.0, sd) (0);
+        if (tempd >= 0.0 && tempd <= 2.0)
+            eps (Rcpp::which_min (eps)) = tempd;
+    }
+    while (Rcpp::is_true (Rcpp::any (eps >= 2.0)))
+    {
+        tempd = Rcpp::rnorm (1, 1.0, sd) (0);
+        if (tempd >= 0.0 && tempd <= 2.0)
+            eps (Rcpp::which_min (eps)) = tempd;
+    }
+}
+
 //' rcpp_neutral_hotspots
 //'
 //' Implements neutral model in two dimensions
@@ -10,68 +43,65 @@
 //' point. 
 //' @param wts Weighting factors for each neighbour; must have same length as
 //' nbs. 
-//' @param alpha_t Strength of temporal autocorrelation
-//' @param alpha_s Strength of spatial autocorrelation
+//' @param nbsi List of matrices as returned from \code{get_nbsi}. each element
+//' of which contains the i-th nearest neighbour to each point.
+//' @param alpha Strength of spatial autocorrelation
 //' @param sd0 Standard deviation of truncated normal distribution used to model
 //' environmental variation (with mean of 1)
-//' @param nt Number of successive layers of temporal and spatial autocorrelation
-//' used to generate final modelled values
+//' @param log_scale If TRUE, raw hotspot values are log-transformed
+//' @param niters Number of iterations of spatial autocorrelation
+//' @param ac_type Character string specifying type of aucorrelation
+//' (\code{moran}, \code{geary}, or code{getis-ord}).
 //'
 //' @return A vector of simulated values of same size as \code{nbs}.
 //'
 // [[Rcpp::export]]
 Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
-        double alpha_t, double alpha_s, double sd0, int nt)
+        Rcpp::List nbsi, double alpha, double sd0, bool log_scale, int niters,
+        std::string ac_type)
 {
     const int size = nbs.size ();
 
     int indx;
     double wtsum, tempd;
 
-    // Set up truncated normal distribution
-    Rcpp::NumericVector eps (nt * size);
-    eps = Rcpp::rnorm (nt * size, 1.0, sd0);
-    // TODO: Check timing with simple explicit loop instead of any
-    while (is_true (any (eps <= 0.0)))
+    Rcpp::NumericMatrix tempmat;
+    Rcpp::NumericVector z = rcpp_trunc_ndist (size, sd0); 
+    Rcpp::NumericVector z_copy (size), nbs_to, nbs_from, nbs_n, ac;
+    // Spatial autocorrelation
+    for (int i=0; i<niters; i++)
     {
-        tempd = Rcpp::rnorm (1, 1.0, sd0) (0);
-        if (tempd >= 0.0 && tempd <= 2.0)
-            eps (Rcpp::which_min (eps)) = tempd;
-    }
-    while (is_true (any (eps >= 2.0)))
-    {
-        tempd = Rcpp::rnorm (1, 1.0, sd0) (0);
-        if (tempd >= 0.0 && tempd <= 2.0)
-            eps (Rcpp::which_max (eps)) = tempd;
-    }
-
-    Rcpp::NumericVector z (size), z2 (size);
-    std::fill (z.begin (), z.end (), 1.0);
-
-    Rcpp::NumericVector nbs1, wts1;
-    for (int t=0; t<nt; t++)
-    {
-        // time step first
-        for (int i=0; i<size; i++)
-            z (i) = (1.0 - alpha_t) * z (i) + alpha_t * eps (t * size + i);
-        // spatial autocorrelation
-        z2 = Rcpp::clone (z);
-        for (int i=0; i<size; i++)
+        std::fill (z_copy.begin (), z_copy.end (), 0.0);
+        for (int j=0; j<nbsi.size (); j++)
         {
-            tempd = wtsum = 0.0;
-            nbs1 = Rcpp::as <Rcpp::NumericVector> (nbs (i));
-            wts1 = Rcpp::as <Rcpp::NumericVector> (wts (i));
-            for (int j=0; j<nbs1.size (); j++)
+            tempmat = Rcpp::as <Rcpp::NumericMatrix> (nbsi (j));
+            nbs_to = tempmat (Rcpp::_, 0);
+            nbs_from = tempmat (Rcpp::_, 1);
+            nbs_n = tempmat (Rcpp::_, 2);
+            for (int k=0; k<nbs_to.size (); k++)
             {
-                tempd += z (nbs1 (j) - 1) * wts1 (j);
-                wtsum += wts1 (j);
+                z_copy (nbs_to (k)) += (1.0 - alpha) * z (nbs_to (k)) +
+                    alpha * z (nbs_from (k)) / (double) nbs_n (k);
             }
-            z2 (i) = (1.0 - alpha_s) * z (i) + alpha_s * tempd / wtsum;
-        }
-        z = Rcpp::clone (z2);
-    }
+            std::copy (z.begin (), z.end (), z_copy.begin ());
+        } // end for j over nbsi
+    } // end for i over niters
 
-    return z;
+    if (log_scale)
+        z = log10 (z);
+
+    ac = rcpp_ac_stats (z, nbs, wts, ac_type);
+    std::sort (z.begin (), z.end (), std::greater<double> ());
+    
+    z = (z - (double) Rcpp::min (z)) /
+        ((double) Rcpp::max (z) - (double) Rcpp::min (z));
+
+    Rcpp::NumericMatrix result (size, 2);
+    result (Rcpp::_, 0) = z;
+    result (Rcpp::_, 1) = ac;
+    Rcpp::colnames (result) = Rcpp::CharacterVector::create ("y", "ac");
+
+    return result;
 }
 
 //' rcpp_neutral_hotspots_ntests
@@ -83,6 +113,8 @@ Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
 //' point. 
 //' @param wts Weighting factors for each neighbour; must have same length as
 //' nbs. 
+//' @param nbsi List of matrices as returned from \code{get_nbsi}. each element
+//' of which contains the i-th nearest neighbour to each point.
 //' @param alpha_t Strength of temporal autocorrelation
 //' @param alpha_s Strength of spatial autocorrelation
 //' @param sd0 Standard deviation of truncated normal distribution used to model
@@ -99,8 +131,8 @@ Rcpp::NumericVector rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
 //'
 // [[Rcpp::export]]
 Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests (Rcpp::List nbs, 
-        Rcpp::List wts, double alpha_t, double alpha_s, double sd0, int nt, 
-        int ntests, std::string ac_type)
+        Rcpp::List wts, Rcpp::List nbsi, double alpha, double sd0, int niters,
+        std::string ac_type, bool log_scale, int ntests)
 {
     const int size = nbs.size ();
 
@@ -110,7 +142,8 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests (Rcpp::List nbs,
 
     for (int n=0; n<ntests; n++)
     {
-        z1 = rcpp_neutral_hotspots (nbs, wts, alpha_t, alpha_s, sd0, nt);
+        z1 = rcpp_neutral_hotspots (nbs, wts, nbsi, alpha, sd0, log_scale,
+                niters, ac_type);
         ac1 = rcpp_ac_stats (z1, nbs, wts, ac_type); // sorted and normalised
         ac += ac1;
         std::sort (z1.begin (), z1.end (), std::greater<double> ());

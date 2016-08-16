@@ -4,7 +4,8 @@
 \alias{neutral_hotspots}
 \title{neutral_hotspots}
 \usage{
-neutral_hotspots(nbs, wts, alpha = c(0.1, 0.1), nt = 100, sd0 = 0.1, seed)
+neutral_hotspots(nbs, wts, alpha = 0.1, sd0 = 0.1, niters = 1,
+  log_scale = TRUE, ntests = 100, seed)
 }
 \arguments{
 \item{nbs}{An \code{spdep} \code{nb} object listing all neighbours of each
@@ -13,14 +14,16 @@ point}
 \item{wts}{Weighting factors for each neighbour; must have same length as
 nbs. Uniform weights used if not given.}
 
-\item{alpha}{Vector of two components respectively specifying the strength of
-autocorrelation in time and space.}
-
-\item{nt}{Number of successive layers of temporal and spatial autocorrelation
-used to generate final modelled values}
+\item{alpha}{strength of spatial autocorrelation}
 
 \item{sd0}{Standard deviation of truncated normal distribution used to model
 environmental variation (with mean of 1)}
+
+\item{niters}{Number of successive layers of spatial autocorrelation}
+
+\item{log_scale}{If TRUE, raw hotspot values are log-transformed}
+
+\item{ntests}{Number of tests over which to generate an average result}
 
 \item{seed}{Random seed}
 }
@@ -28,7 +31,10 @@ environmental variation (with mean of 1)}
 A vector of hotspot values sorted from high to low
 }
 \description{
-Implements neutral model in two dimensions
+Implements neutral model of hotspot values and associated autocorrelation
+statustics. Current version is a simply internal R loop, while
+\code{neutral_hotspots_ntests} is a parallel version of exactly the same
+thing.
 }
 \examples{
 nbs <- ives (size=10)$nbs

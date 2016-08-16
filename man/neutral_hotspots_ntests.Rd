@@ -5,7 +5,7 @@
 \title{neutral_hotspots_ntests}
 \usage{
 neutral_hotspots_ntests(nbs, wts, alpha = 0.1, sd0 = 0.1, ntests = 1000,
-  niters = 1, ac_type = "moran", seed)
+  niters = 1, log_scale = TRUE, ac_type = "moran", seed)
 }
 \arguments{
 \item{nbs}{An \code{spdep} \code{nb} object listing all neighbours of each
@@ -24,6 +24,8 @@ rank--scale distribution}
 
 \item{niters}{Number of sequential iterations of spatial autocorrelation}
 
+\item{log_scale}{If TRUE, raw hotspot values are log-transformed}
+
 \item{ac_type}{type of autocorrelation statistic to use in tests
 (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}
 
@@ -33,7 +35,9 @@ rank--scale distribution}
 A vector of hotspot values sorted from high to low
 }
 \description{
-Averages results of a number of neutral models
+Implements neutral model of hotspot values and associated autocorrelation
+statustics. Current version is a parallel internal R loop, while
+\code{neutral_hotspotss} is a non-parallel version of exactly the same thing.
 }
 \examples{
 nbs <- ives (size=10)$nbs

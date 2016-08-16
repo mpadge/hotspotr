@@ -1,6 +1,8 @@
 #' neutral_hotspots_ntests
 #'
-#' Averages results of a number of neutral models
+#' Implements neutral model of hotspot values and associated autocorrelation
+#' statustics. Current version is a parallel internal R loop, while
+#' \code{neutral_hotspotss} is a non-parallel version of exactly the same thing.
 #'
 #' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
 #' point
@@ -10,6 +12,7 @@
 #' @param sd0 Standard deviation of truncated normal distribution used to model
 #' environmental variation (with mean of 1)
 #' @param niters Number of sequential iterations of spatial autocorrelation
+#' @param log_scale If TRUE, raw hotspot values are log-transformed
 #' @param ntests Number of repeats of neutral model used to calculate mean
 #' rank--scale distribution
 #' @param ac_type type of autocorrelation statistic to use in tests
@@ -26,7 +29,8 @@
 #'
 #' @export
 neutral_hotspots_ntests <- function (nbs, wts, alpha=0.1, sd0=0.1, ntests=1000,
-                                     niters=1, ac_type='moran', seed)
+                                     niters=1, log_scale=TRUE, ac_type='moran', 
+                                     seed)
 {
     if (missing (nbs)) stop ('nbs must be provided')
     if (!is (nbs, 'nb')) stop ('nbs must of class spdep::nb')
@@ -59,8 +63,6 @@ neutral_hotspots_ntests <- function (nbs, wts, alpha=0.1, sd0=0.1, ntests=1000,
     # Set up parallel cluster:
     clust <- parallel::makeCluster (parallel::detectCores () - 1)
     # "envir" necessary to get variables from this environment
-    #parallel::clusterExport (clust, list ("nbs", "wts", "alpha", "sd0", "nt",
-    #                                      "ac_type"), envir=environment ())
     exports <- list ("size", "nbs", "wts", "ac_type", "alpha", "sd0",
                      "ntests", "get_nbsi", "maxnbs")
     parallel::clusterExport (clust, exports, envir=environment ())
@@ -71,18 +73,6 @@ neutral_hotspots_ntests <- function (nbs, wts, alpha=0.1, sd0=0.1, ntests=1000,
                             setwd ("./hotspotr")
                                              }))
 
-    #z <- parallel::parLapply (clust, seq (ntests), function (i) 
-    #                {
-    #                    z1 <- rcpp_neutral_hotspots (nbs, wts, 
-    #                                                 alpha_t=alpha [1], 
-    #                                                 alpha_s=alpha [2], sd0=sd0,
-    #                                                 nt=nt)
-    #                    ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
-    #                    z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / 
-    #                            diff (range (z1)) 
-    #                    rbind (z1, ac1)
-    #                })
-
     z <- parallel::parLapply (clust, seq (ntests), function (i) 
                               {
                                   z1 <- msm::rtnorm (size, mean=1, sd=sd0,
@@ -90,7 +80,7 @@ neutral_hotspots_ntests <- function (nbs, wts, alpha=0.1, sd0=0.1, ntests=1000,
 
                                   for (j in seq (niters))
                                   {
-                                      z2 <- rep (0, size ^ 2)
+                                      z2 <- rep (0, size)
                                       for (k in seq (maxnbs))
                                       {
                                           nbsi <- get_nbsi (k)
@@ -100,12 +90,11 @@ neutral_hotspots_ntests <- function (nbs, wts, alpha=0.1, sd0=0.1, ntests=1000,
                                       }
                                       z1 <- z2
                                   }
+                                  if (log_scale) z1 <- log10 (z1)
 
                                   ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
                                   z1 <- (sort (z1, decreasing=TRUE) - 
                                          min (z1)) / diff (range (z1)) 
-                                  #z1 <- sort (log10 (z1), decreasing=TRUE)
-                                  #z1 <- (z1 - min (z1)) / diff (range (z1))
                                   rbind (z1, ac1)
                               })
 

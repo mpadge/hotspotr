@@ -103,6 +103,10 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
 
     opt_fn <- function (x)
     {
+        # x [1] = sd0
+        # x [2] = alpha
+        # x [3] = niters
+        # x [4] = log_scale
         parallel::clusterExport (clust, list ("x"), envir=environment ())
         z <- parallel::parLapply (clust, seq (ntests), function (i) 
                                   {
@@ -122,12 +126,11 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
                                           }
                                           z1 <- z2
                                       }
+                                      if (x [4]) z1 <- log10 (z1)
 
                                       ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
                                       z1 <- (sort (z1, decreasing=TRUE) - 
                                              min (z1)) / diff (range (z1)) 
-                                      #z1 <- sort (log10 (z1), decreasing=TRUE)
-                                      #z1 <- (z1 - min (z1)) / diff (range (z1))
                                       rbind (z1, ac1)
                                   })
         ac1 <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))

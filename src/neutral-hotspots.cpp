@@ -115,8 +115,7 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
 //' nbs. 
 //' @param nbsi List of matrices as returned from \code{get_nbsi}. each element
 //' of which contains the i-th nearest neighbour to each point.
-//' @param alpha_t Strength of temporal autocorrelation
-//' @param alpha_s Strength of spatial autocorrelation
+//' @param alpha Strength of spatial autocorrelation
 //' @param sd0 Standard deviation of truncated normal distribution used to model
 //' environmental variation (with mean of 1)
 //' @param nt Number of successive layers of temporal and spatial autocorrelation

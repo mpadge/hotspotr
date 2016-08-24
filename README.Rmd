@@ -519,7 +519,7 @@ Five different versions are examined here:
 
 Fist set up grid and list of spaital neighbours
 ```{r}
-ntests <- 1000
+ntests <- 10000
 size <- 10
 xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
 dhi <- 1 # for rook; dhi=1.5 for queen
@@ -599,10 +599,16 @@ invisible (clusterCall (clust, function () {
 st4 <- system.time (test4 <- rParloop (ntests=ntests))
 stopCluster (clust)
 ```
+Then finally the whole loop over `ntests` constructed in `Rcpp`, and therefore
+in non-parallel form.
+```{r rcpp-loop, eval=TRUE}
+set.seed (1)
+st5 <- system.time (test5 <- neutral_hotspots_ntests2 (nbs, ntests=ntests))
+```
 
-The final time differences are:
+The final system times are:
 ```{r}
-st1; st2; st3; st4
+st1; st2; st3; st4; st5
 ```
 
 The parallel versions do not of course generate identical results, because each

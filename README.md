@@ -262,25 +262,25 @@ This can be confirmed by manually checking the values
 z2 [1]; (1-alpha) * z1 [1] + alpha * (z1 [2] + z1 [11]) / 2
 ```
 
-    ## [1] 1.040746
+    ## [1] 1.010741
 
-    ## [1] 1.040746
+    ## [1] 1.010741
 
 ``` r
 z2 [2]; (1-alpha) * z1 [2] + alpha * (z1 [1] + z1 [3] + z1 [12]) / 3
 ```
 
-    ## [1] 1.097246
+    ## [1] 0.7845194
 
-    ## [1] 1.097246
+    ## [1] 0.7845194
 
 ``` r
 z2 [15]; (1-alpha) * z1 [15] + alpha * (z1 [5] + z1 [14] + z1 [16] + z1 [25]) / 4
 ```
 
-    ## [1] 0.8171718
+    ## [1] 0.9336436
 
-    ## [1] 0.8171718
+    ## [1] 0.9336436
 
 The final function definition
 
@@ -497,7 +497,19 @@ And log-scaling has pronounced effects only on the structure of the raw values, 
 <a name="3-parallel"></a>3. Parallel and Rcpp Tests
 ===================================================
 
-Set up grid and list of spaital neighbours
+Five different versions are examined here:
+
+1.  A purely `R` version using `lapply`
+
+2.  A parallel equivalent using `parLapply`
+
+3.  An `R::lapply` on an internal `Rcpp` core
+
+4.  An `R::parLapply` on an internal `Rcpp` core
+
+5.  A (non-parallel) loop constructed entirely in `C++`
+
+Fist set up grid and list of spaital neighbours
 
 ``` r
 ntests <- 10000
@@ -507,60 +519,43 @@ dhi <- 1 # for rook; dhi=1.5 for queen
 nbs <- spdep::dnearneigh (xy, 0, dhi)
 ```
 
+``` r
+junk <- testn (nbs)
+```
+
 First time the pure `R` version:
 
 ``` r
 set.seed (1)
-system.time (
-    dat <- neutral_hotspots (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
+st1 <- system.time (
+    test1 <- neutral_hotspots (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
 )
 ```
-
-    ##    user  system elapsed 
-    ##  39.852   0.012  39.862
 
 Then an equivalent parallel version, still entirely `R`-scripted and currently in `neutral-hotspots-ntests`:
 
 ``` r
 set.seed (1)
-system.time (
-    dat <- neutral_hotspots_ntests (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
+st2 <- system.time (
+    test2 <- neutral_hotspots_ntests (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
 )
 ```
-
-    ##    user  system elapsed 
-    ##   0.336   0.068  25.046
 
 That takes longer because of the time needed to establish the parallel clusters, but the parallel version quickly becomes faster for higher values of `ntests`.
 
-Then current, non-parallel `Rcpp` version:
-
-``` r
-set.seed (1)
-system.time (
-test1 <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=0.1,
-                  alpha_s=0.1, sd0=0.1, nt=10, ntests=ntests, ac_type='moran')
-)
-```
-
-Then write an equivalent `R` `lapply` version
+Then current, non-parallel `Rcpp` version, called `neutral_hotspots2`, wrapped here in an `lapply`.
 
 ``` r
 rloop <- function (ntests=1000)
 {
-    z <- lapply (seq (ntests), function (i) {
-                 z1 <- rcpp_neutral_hotspots (nbs, wts, alpha_t=0.1, 
-                                              alpha_s=0.1, sd0=0.1, nt=10)
-                 ac1 <- rcpp_ac_stats (z1, nbs, wts, "moran")
-                 z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / diff (range (z1))
-                 rbind (z1, ac1)
-                })
-    ac <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
-    z <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
+    dat <- lapply (seq (ntests), function (i) 
+                 neutral_hotspots2 (nbs, alpha=0.1, sd0=0.1, ntests=ntests))
+    z <- colMeans (do.call (rbind, lapply (dat, function (i) i [,1])))
+    ac <- colMeans (do.call (rbind, lapply (dat, function (i) i [,2])))
     cbind (z, ac)
 }
 set.seed (1)
-system.time ( test2 <- rloop (ntests=ntests))
+st3 <- system.time ( test3 <- rloop (ntests=ntests))
 ```
 
 And then an `R`-internal parallel version. First the slightly different function definition:
@@ -569,18 +564,10 @@ And then an `R`-internal parallel version. First the slightly different function
 require (parallel)
 rParloop <- function (ntests=1000)
 {
-    z <- parLapply (clust, seq (ntests), function (i) 
-                    {
-                        z1 <- rcpp_neutral_hotspots (nbs, wts, alpha_t=0.1, 
-                                                     alpha_s=0.1, sd0=0.1,
-                                                     nt=10)
-                        ac1 <- rcpp_ac_stats (z1, nbs, wts, "moran")
-                        z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / 
-                                diff (range (z1)) 
-                        rbind (z1, ac1)
-                    })
-    ac <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
-    z <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
+    dat <- parLapply (clust, seq (ntests), function (i) 
+                    neutral_hotspots2 (nbs, alpha=0.1, sd0=0.1, ntests=ntests))
+    z <- colMeans (do.call (rbind, lapply (dat, function (i) i [,1])))
+    ac <- colMeans (do.call (rbind, lapply (dat, function (i) i [,2])))
     cbind (z, ac)
 }
 ```
@@ -590,8 +577,6 @@ Note that `makeCluster` with `type="FORK"` automatically attaches all environmen
 ``` r
 #clust <- makeCluster (parallel::detectCores () - 1, type="FORK")
 clust <- makeCluster (parallel::detectCores () - 1)
-clusterExport (clust, "dat")
-clusterExport (clust, "wts")
 clusterExport (clust, "nbs")
 invisible (clusterCall (clust, function () {
                         while (length (grep ('hotspotr', getwd ())) > 0) 
@@ -602,31 +587,73 @@ invisible (clusterCall (clust, function () {
 ```
 
 ``` r
-system.time (test3 <- rParloop (ntests=ntests))
+st4 <- system.time (test4 <- rParloop (ntests=ntests))
 stopCluster (clust)
 ```
 
-And the results look like this ...
+Then finally the whole loop over `ntests` constructed in `Rcpp`, and therefore in non-parallel form.
 
 ``` r
-plot (1:length (nbs), test3 [,1], "l", xlab="rank", ylab="scale")
-lines (1:length (nbs), test3 [,2], col="gray")
-legend ("topright", lwd=1, col=c("black", "gray"), bty="n", legend=c("z", "ac"))
+set.seed (1)
+st5 <- system.time (test5 <- neutral_hotspots_ntests2 (nbs, ntests=ntests))
 ```
 
-The parallel version does not of course generate identical results, because each core starts with its own random seed, but nevertheless after
+The final system times are:
+
+``` r
+st1; st2; st3; st4; st5
+```
+
+    ##    user  system elapsed 
+    ##  43.400   0.016  43.450
+
+    ##    user  system elapsed 
+    ##   0.328   0.052  27.304
+
+    ##    user  system elapsed 
+    ##  30.500   0.012  30.521
+
+    ##    user  system elapsed 
+    ##   0.148   0.004  16.663
+
+    ##    user  system elapsed 
+    ##   1.544   0.000   1.554
+
+The parallel versions do not of course generate identical results, because each core starts with its own random seed, but nevertheless after
 
 ``` r
 ntests
 ```
 
+    ## [1] 10000
+
 the differences are very small:
 
 ``` r
-max (abs (test1 - test2)); max (abs (test1 - test3))
+max (abs (test1 - test2)); max (abs (test1 - test3)); max (abs (test1 - test4))
 ```
 
-The first of these is mere machine rounding tolerance; the second is a measure of convergence of randomised mean profiles.
+    ## [1] 0.001269244
+
+    ## [1] 0.006493741
+
+    ## [1] 0.006338555
+
+``` r
+max (abs (test2 - test3)); max (abs (test2 - test4))
+```
+
+    ## [1] 0.007052912
+
+    ## [1] 0.006839832
+
+``` r
+max (abs (test3 - test4))
+```
+
+    ## [1] 0.002061452
+
+These differences provide a measure of convergence of randomised mean profiles.
 
 ------------------------------------------------------------------------
 

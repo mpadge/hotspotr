@@ -618,9 +618,11 @@ ntests
 ```
 the differences are very small:
 ```{r, eval=TRUE}
-max (abs (test1 - test2)); max (abs (test1 - test3)); max (abs (test1 - test4))
-max (abs (test2 - test3)); max (abs (test2 - test4))
-max (abs (test3 - test4))
+max (abs (test1 - test2)); max (abs (test1 - test3)); max (abs (test1 - test4));
+max (abs (test1 - test5))
+max (abs (test2 - test3)); max (abs (test2 - test4)); max (abs (test2 - test5))
+max (abs (test3 - test4)); max (abs (test3 - test5))
+max (abs (test4 - test5))
 ```
 These differences provide a measure of convergence of randomised mean profiles.
 

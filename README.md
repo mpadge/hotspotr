@@ -262,25 +262,25 @@ This can be confirmed by manually checking the values
 z2 [1]; (1-alpha) * z1 [1] + alpha * (z1 [2] + z1 [11]) / 2
 ```
 
-    ## [1] 1.010741
+    ## [1] 1.08659
 
-    ## [1] 1.010741
+    ## [1] 1.08659
 
 ``` r
 z2 [2]; (1-alpha) * z1 [2] + alpha * (z1 [1] + z1 [3] + z1 [12]) / 3
 ```
 
-    ## [1] 0.7845194
+    ## [1] 1.107347
 
-    ## [1] 0.7845194
+    ## [1] 1.107347
 
 ``` r
 z2 [15]; (1-alpha) * z1 [15] + alpha * (z1 [5] + z1 [14] + z1 [16] + z1 [25]) / 4
 ```
 
-    ## [1] 0.9336436
+    ## [1] 0.9343498
 
-    ## [1] 0.9336436
+    ## [1] 0.9343498
 
 The final function definition
 
@@ -605,19 +605,19 @@ st1; st2; st3; st4; st5
 ```
 
     ##    user  system elapsed 
-    ##  43.400   0.016  43.450
+    ##  40.492   0.008  40.500
 
     ##    user  system elapsed 
-    ##   0.328   0.052  27.304
+    ##   0.312   0.064  25.607
 
     ##    user  system elapsed 
-    ##  30.500   0.012  30.521
+    ##  28.352   0.016  28.372
 
     ##    user  system elapsed 
-    ##   0.148   0.004  16.663
+    ##   0.152   0.008  15.443
 
     ##    user  system elapsed 
-    ##   1.544   0.000   1.554
+    ##   1.468   0.000   1.469
 
 The parallel versions do not of course generate identical results, because each core starts with its own random seed, but nevertheless after
 
@@ -630,28 +630,44 @@ ntests
 the differences are very small:
 
 ``` r
-max (abs (test1 - test2)); max (abs (test1 - test3)); max (abs (test1 - test4))
+max (abs (test1 - test2)); max (abs (test1 - test3)); max (abs (test1 - test4));
 ```
 
-    ## [1] 0.001269244
+    ## [1] 0.001316296
 
     ## [1] 0.006493741
 
-    ## [1] 0.006338555
+    ## [1] 0.006728869
 
 ``` r
-max (abs (test2 - test3)); max (abs (test2 - test4))
+max (abs (test1 - test5))
 ```
 
-    ## [1] 0.007052912
-
-    ## [1] 0.006839832
+    ## [1] 0.006493741
 
 ``` r
-max (abs (test3 - test4))
+max (abs (test2 - test3)); max (abs (test2 - test4)); max (abs (test2 - test5))
 ```
 
-    ## [1] 0.002061452
+    ## [1] 0.006725885
+
+    ## [1] 0.006892212
+
+    ## [1] 0.006725885
+
+``` r
+max (abs (test3 - test4)); max (abs (test3 - test5))
+```
+
+    ## [1] 0.001185259
+
+    ## [1] 4.218847e-15
+
+``` r
+max (abs (test4 - test5))
+```
+
+    ## [1] 0.001185259
 
 These differences provide a measure of convergence of randomised mean profiles.
 

@@ -2,12 +2,8 @@ language: r
 warnings_are_errors: true
 sudo: required
 
-apt_packages:
-    - libcgal-dev
-    - libgmp3-dev
-
 r:
-    #- devel
+    - devel
     - release
 
 r_github_packages:

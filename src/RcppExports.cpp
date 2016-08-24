@@ -19,18 +19,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// rcpp_get_neighbours
-Rcpp::List rcpp_get_neighbours(Rcpp::NumericVector x, Rcpp::NumericVector y);
-RcppExport SEXP hotspotr_rcpp_get_neighbours(SEXP xSEXP, SEXP ySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type y(ySEXP);
-    __result = Rcpp::wrap(rcpp_get_neighbours(x, y));
-    return __result;
-END_RCPP
-}
 // rcpp_ives
 Rcpp::NumericVector rcpp_ives(Rcpp::List nbs, int nt, double alpha_t, double alpha_s, Rcpp::NumericVector svec, Rcpp::NumericVector rvec);
 RcppExport SEXP hotspotr_rcpp_ives(SEXP nbsSEXP, SEXP ntSEXP, SEXP alpha_tSEXP, SEXP alpha_sSEXP, SEXP svecSEXP, SEXP rvecSEXP) {

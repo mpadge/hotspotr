@@ -18,19 +18,6 @@ rcpp_ac_stats <- function(z, nbs, wts, ac_type) {
     .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', z, nbs, wts, ac_type)
 }
 
-#' rcpp_get_neighbours
-#'
-#' Determines neighbours of points (x, y) using Delaunay triangulation
-#'
-#' @param x Vector of x-coordinates
-#' @param y Vector of y-coordinates
-#'
-#' @return List of neighbours
-#'
-rcpp_get_neighbours <- function(x, y) {
-    .Call('hotspotr_rcpp_get_neighbours', PACKAGE = 'hotspotr', x, y)
-}
-
 #' rcpp_ives
 #'
 #' Implements neutral model of Ives & Klopfer (Ecology 1997).

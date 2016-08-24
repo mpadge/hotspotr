@@ -56,7 +56,7 @@ phases ...
 
 [3. Parallel and Rcpp Tests](#3-parallel)
 
-[4. Tests (currently rubbish)](#4-tests)
+[4. Tests](#4-tests)
 
 --------
 
@@ -73,6 +73,7 @@ while (length (grep ('hotspotr', getwd ())) > 0) setwd ("..")
 #Rcpp::compileAttributes ("hotspotr")
 devtools::load_all ("hotspotr")
 setwd ("./hotspotr")
+#testthat::test_package ('hotspotr')
 ```
 
 --------
@@ -646,7 +647,9 @@ neighbours (constructed here as `knearneigh`), and a matching list of weights
 xy <- cbind (meuse$x, meuse$y)
 nbs <- spdep::knn2nb (spdep::knearneigh (xy, k=4))
 dists <- spdep::nbdists (nbs, xy)
+# wts calculated in 2 steps to make it explicit
 d1 <- lapply (dists, function (i) 1/i)
+wts <- lapply (d1, function (i) i / sum (i))
 ```
 
 Spatial patterns for the different metals can then be statistically compared
@@ -655,7 +658,7 @@ with neutral models:
 analyse <- function (metal='copper', ntests=1000)
 {
     z <- meuse [metal] [,1]
-    mod <- fit_hotspot_model (z=z, nbs=nbs, verbose=FALSE)
+    mod <- fit_hotspot_model (z=z, nbs=nbs, wts=wts, verbose=FALSE)
     p_values (z=z, nbs=nbs, sd0=mod$sd0, alpha=mod$ac, ntests=ntests, plot=TRUE)
 }
 ```

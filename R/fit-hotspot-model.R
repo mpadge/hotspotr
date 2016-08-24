@@ -71,71 +71,20 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
 
     size <- length (z)
 
-    get_nbsi <- function (i)
-    {
-        res <- lapply (seq (nbs), function (j)
-                       {
-                           if (length (nbs [[j]]) >= i)
-                               c (j, nbs [[j]] [i], length (nbs [[j]]))
-                           else
-                               NULL
-                       })
-        res <- res [lapply (res, length) != 0]
-        res <- do.call (rbind, res)
-        data.frame (to=res [,1], from=res [,2], n=res [,3])
-    }
-    maxnbs <- max (sapply (nbs, length))
-
-    ac <- rcpp_ac_stats (z, nbs, wts, ac_type)
-    zs <- sort ((z - min (z)) / diff (range (z)), decreasing=TRUE)
-
-    # Optimise over 2D space of (sd0, alpha)
-    clust <- parallel::makeCluster (parallel::detectCores () - 1)
-    exports <- list ("size", "nbs", "wts", "ac_type", "alpha", "sd0",
-                     "ntests", "get_nbsi", "maxnbs")
-    parallel::clusterExport (clust, exports, envir=environment ())
-    invisible (parallel::clusterCall (clust, function () {
-                            while (length (grep ('hotspotr', getwd ())) > 0) 
-                                setwd ("..")
-                            devtools::load_all ("hotspotr")
-                            setwd ("./hotspotr")
-                                             }))
+    # Get reference distributions of raw values and associated AC coefficients
+    zs <- sort (z, decreasing=TRUE)
+    zs <- (zs - min (zs)) / diff (range (zs))
+    acs <- rcpp_ac_stats (z, nbs, wts, ac_type)
+    acs <- (acs - min (acs)) / diff (range (acs))
 
     opt_fn <- function (x)
     {
-        # x [1] = sd0
-        # x [2] = alpha
+        # x [1] = alpha
+        # x [2] = sd0
         # x [3] = niters
-        # x [4] = log_scale
-        parallel::clusterExport (clust, list ("x"), envir=environment ())
-        z <- parallel::parLapply (clust, seq (ntests), function (i) 
-                                  {
-                                      z1 <- msm::rtnorm (size, mean=1, sd=x [1], 
-                                                         lower=0, upper=2)
-
-                                      for (j in seq (x [3]))
-                                      {
-                                          z2 <- rep (0, size ^ 2)
-                                          for (k in seq (maxnbs))
-                                          {
-                                              nbsi <- get_nbsi (k)
-                                              z2 [nbsi$to] <- z2 [nbsi$to] + 
-                                                  ((1 - x [2]) * z1 [nbsi$to] +
-                                                   x [2] * z1 [nbsi$from]) / 
-                                                  nbsi$n
-                                          }
-                                          z1 <- z2
-                                      }
-                                      if (x [4]) z1 <- log10 (z1)
-
-                                      ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
-                                      z1 <- (sort (z1, decreasing=TRUE) - 
-                                             min (z1)) / diff (range (z1)) 
-                                      rbind (z1, ac1)
-                                  })
-        ac1 <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
-        z1 <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
-        sum ((z1 - zs) ^ 2) + sum ((ac1 - ac) ^ 2)
+        dat <- neutral_hotspots_ntests2 (nbs=nbs, wts=wts, alpha=x[1], sd0=x[2],
+                                         niters=x[3])
+        sum ((dat [,1] - zs) ^ 2) + sum ((dat [,2] - acs) ^ 2)
     }
 
     # opt_fn is too noisy for optim to work
@@ -152,7 +101,11 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
     sd_lims <- c (1e-6, 1)
     alpha <- seq (alpha_lims [1], alpha_lims [2], length.out=50)
     sd0 <- seq (sd_lims [1], sd_lims [2], length.out=50)
-    err <- opt_fn (c (mean (sd0), mean (alpha)))
+    niters <- 1
+    x <- c (0.1, 0.5, 1)
+    x <- c (mean (alpha), mean (sd0), niters)
+    err <- opt_fn (x)
+    err <- opt_fn (c (mean (alpha), mean (sd0), niters))
     tol <- 1e-3
     iter <- 0
     maxiters <- 10
@@ -183,8 +136,6 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
         if (verbose)
             message ('(alpha, sd) = (', alpha1, ', ', sd1, '), err = ', err)
     }
-
-    parallel::stopCluster (clust)
 
     #list (sd0=op$par [1], ac=op$par [2])
     list (sd0=sd1, ac=alpha1)

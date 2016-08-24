@@ -34,8 +34,8 @@ neutral_hotspots_ntests2 <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1,
     if (missing (wts)) 
         wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
 
-    if (alpha [1] <= 0)
-        stop ('neutral model only makes sense with finite temporal autocorrelation')
+    #if (alpha [1] <= 0)
+    #    stop ('neutral model only makes sense with finite temporal autocorrelation')
 
     if (!missing (seed)) set.seed (seed)
 

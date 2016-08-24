@@ -3,6 +3,7 @@
 export(fit_hotspot_model)
 export(ives)
 export(neutral_hotspots)
+export(neutral_hotspots2)
 export(neutral_hotspots_ntests)
 export(p_values)
 export(rs_dist_diff)

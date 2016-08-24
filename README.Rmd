@@ -505,7 +505,19 @@ while the autocorrelation statistics remain largely unaffected.
 
 # <a name="3-parallel"></a>3. Parallel and Rcpp Tests
 
-Set up grid and list of spaital neighbours
+Five different versions are examined here:
+
+1. A purely `R` version using `lapply`
+
+2. A parallel equivalent using `parLapply`
+
+3. An `R::lapply` on an internal `Rcpp` core
+
+4. An `R::parLapply` on an internal `Rcpp` core
+
+5. A (non-parallel) loop constructed entirely in `C++`
+
+Fist set up grid and list of spaital neighbours
 ```{r}
 ntests <- 1000
 size <- 10
@@ -514,11 +526,15 @@ dhi <- 1 # for rook; dhi=1.5 for queen
 nbs <- spdep::dnearneigh (xy, 0, dhi)
 ```
 
+```{r}
+junk <- testn (nbs)
+```
+
 First time the pure `R` version:
 ```{r R-test, eval=TRUE}
 set.seed (1)
-system.time (
-    dat <- neutral_hotspots (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
+st1 <- system.time (
+    test1 <- neutral_hotspots (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
 )
 ```
 
@@ -526,60 +542,40 @@ Then an equivalent parallel version, still entirely `R`-scripted and currently
 in `neutral-hotspots-ntests`:
 ```{r R-test-parallel, eval=TRUE}
 set.seed (1)
-system.time (
-    dat <- neutral_hotspots_ntests (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
+st2 <- system.time (
+    test2 <- neutral_hotspots_ntests (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
 )
 ```
 That takes longer because of the time needed to establish the parallel
 clusters, but the parallel version quickly becomes faster for higher values of
 `ntests`.
 
-Then current, non-parallel `Rcpp` version:
+Then current, non-parallel `Rcpp` version, called `neutral_hotspots2`, wrapped
+here in an `lapply`.
 
-```{r rcpp-test, eval=FALSE}
-set.seed (1)
-system.time (
-test1 <- rcpp_neutral_hotspots_ntests (nbs=nbs, wts=wts, alpha_t=0.1,
-                  alpha_s=0.1, sd0=0.1, nt=10, ntests=ntests, ac_type='moran')
-)
-```
-
-Then write an equivalent `R` `lapply` version
-```{r rloop, eval=FALSE}
+```{r rloop, eval=TRUE}
 rloop <- function (ntests=1000)
 {
-    z <- lapply (seq (ntests), function (i) {
-                 z1 <- rcpp_neutral_hotspots (nbs, wts, alpha_t=0.1, 
-                                              alpha_s=0.1, sd0=0.1, nt=10)
-                 ac1 <- rcpp_ac_stats (z1, nbs, wts, "moran")
-                 z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / diff (range (z1))
-                 rbind (z1, ac1)
-                })
-    ac <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
-    z <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
+    dat <- lapply (seq (ntests), function (i) 
+                 neutral_hotspots2 (nbs, alpha=0.1, sd0=0.1, ntests=ntests))
+    z <- colMeans (do.call (rbind, lapply (dat, function (i) i [,1])))
+    ac <- colMeans (do.call (rbind, lapply (dat, function (i) i [,2])))
     cbind (z, ac)
 }
 set.seed (1)
-system.time ( test2 <- rloop (ntests=ntests))
+st3 <- system.time ( test3 <- rloop (ntests=ntests))
 ```
+
 And then an `R`-internal parallel version. First the slightly different function
 definition:
-```{r rparallel-fn, message=FALSE, eval=FALSE}
+```{r rparallel-fn, message=FALSE, eval=TRUE}
 require (parallel)
 rParloop <- function (ntests=1000)
 {
-    z <- parLapply (clust, seq (ntests), function (i) 
-                    {
-                        z1 <- rcpp_neutral_hotspots (nbs, wts, alpha_t=0.1, 
-                                                     alpha_s=0.1, sd0=0.1,
-                                                     nt=10)
-                        ac1 <- rcpp_ac_stats (z1, nbs, wts, "moran")
-                        z1 <- (sort (z1, decreasing=TRUE) - min (z1)) / 
-                                diff (range (z1)) 
-                        rbind (z1, ac1)
-                    })
-    ac <- colMeans (do.call (rbind, lapply (z, function (i) i [2,])))
-    z <- colMeans (do.call (rbind, lapply (z, function (i) i [1,])))
+    dat <- parLapply (clust, seq (ntests), function (i) 
+                    neutral_hotspots2 (nbs, alpha=0.1, sd0=0.1, ntests=ntests))
+    z <- colMeans (do.call (rbind, lapply (dat, function (i) i [,1])))
+    ac <- colMeans (do.call (rbind, lapply (dat, function (i) i [,2])))
     cbind (z, ac)
 }
 ```
@@ -588,11 +584,9 @@ environment variables, but is not portable, as detailed here:
 [http://www.r-bloggers.com/how-to-go-parallel-in-r-basics-tips/](http://www.r-bloggers.com/how-to-go-parallel-in-r-basics-tips/).
 The `clusterExport` and `clusterCall` lines explicitly attach only the required
 bits.
-```{r cluster-setup, eval=FALSE}
+```{r cluster-setup, eval=TRUE}
 #clust <- makeCluster (parallel::detectCores () - 1, type="FORK")
 clust <- makeCluster (parallel::detectCores () - 1)
-clusterExport (clust, "dat")
-clusterExport (clust, "wts")
 clusterExport (clust, "nbs")
 invisible (clusterCall (clust, function () {
                         while (length (grep ('hotspotr', getwd ())) > 0) 
@@ -601,30 +595,28 @@ invisible (clusterCall (clust, function () {
                         setwd ("./hotspotr")
                                          }))
 ```
-```{r rparallel-loop, eval=FALSE}
-system.time (test3 <- rParloop (ntests=ntests))
+```{r rparallel-loop, eval=TRUE}
+st4 <- system.time (test4 <- rParloop (ntests=ntests))
 stopCluster (clust)
 ```
 
-And the results look like this ...
-
-```{r plot-parallel, eval=FALSE}
-plot (1:length (nbs), test3 [,1], "l", xlab="rank", ylab="scale")
-lines (1:length (nbs), test3 [,2], col="gray")
-legend ("topright", lwd=1, col=c("black", "gray"), bty="n", legend=c("z", "ac"))
+The final time differences are:
+```{r}
+st1; st2; st3; st4
 ```
 
-The parallel version does not of course generate identical results, because each
+The parallel versions do not of course generate identical results, because each
 core starts with its own random seed, but nevertheless after
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 ntests
 ```
 the differences are very small:
-```{r, eval=FALSE}
-max (abs (test1 - test2)); max (abs (test1 - test3))
+```{r, eval=TRUE}
+max (abs (test1 - test2)); max (abs (test1 - test3)); max (abs (test1 - test4))
+max (abs (test2 - test3)); max (abs (test2 - test4))
+max (abs (test3 - test4))
 ```
-The first of these is mere machine rounding tolerance; the second is a measure
-of convergence of randomised mean profiles.
+These differences provide a measure of convergence of randomised mean profiles.
 
 
 --------

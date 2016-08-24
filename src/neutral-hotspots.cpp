@@ -70,6 +70,7 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
     Rcpp::NumericMatrix tempmat;
     Rcpp::NumericVector z = rcpp_trunc_ndist (size, sd0); 
     Rcpp::NumericVector z_copy (size), nbs_to, nbs_from, nbs_n, ac;
+
     // Spatial autocorrelation
     for (int i=0; i<niters; i++)
     {

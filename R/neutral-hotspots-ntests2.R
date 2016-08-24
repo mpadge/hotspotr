@@ -1,4 +1,4 @@
-#' neutral_hotspots
+#' neutral_hotspots_ntests2
 #'
 #' Implements neutral model of hotspot values and associated autocorrelation
 #' statustics. Current version is a simply internal R loop, while
@@ -26,8 +26,8 @@
 #' z <- neutral_hotspots (nbs=nbs)
 #'
 #' @export
-neutral_hotspots <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1, 
-                              log_scale=TRUE, ntests=100, seed)
+neutral_hotspots_ntests2 <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1, 
+                                      log_scale=TRUE, ntests=100, seed)
 {
     if (missing (nbs)) stop ('nbs must be given')
 
@@ -53,34 +53,12 @@ neutral_hotspots <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1,
                                NULL
                        })
         res <- res [lapply (res, length) != 0]
-        res <- do.call (rbind, res)
-        data.frame (to=res [,1], from=res [,2], n=res [,3])
+        do.call (rbind, res)
     }
     maxnbs <- max (sapply (nbs, length))
+    nbsi <- lapply (seq (maxnbs), function (i) get_nbsi (i))
 
-    z <- lapply (seq (ntests), function (i) 
-                 {
-                     z1 <- msm::rtnorm (size, mean=1, sd=sd0, lower=0, upper=2)
-                     for (j in seq (niters))
-                     {
-                         z2 <- rep (0, size)
-                         for (k in seq (maxnbs))
-                         {
-                             nbsi <- get_nbsi (k)
-                             z2 [nbsi$to] <- z2 [nbsi$to] + 
-                                 ((1 - alpha) * z1 [nbsi$to] +
-                                  alpha * z1 [nbsi$from]) / nbsi$n
-                         }
-                         z1 <- z2
-                     }
-                     if (log_scale) z1 <- log10 (z1)
-                     ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
-                     z1 <- sort (z1, decreasing=TRUE)
-                     z1 <- (z1 - min (z1)) / diff (range (z1))
-                     cbind (z1, ac1)
-                 })
-
-    ac1 <- colMeans (do.call (rbind, lapply (z, function (i) i [,2])))
-    z <- colMeans (do.call (rbind, lapply (z, function (i) i [,1])))
-    data.frame (z=z, ac=ac1)
+    rcpp_neutral_hotspots_ntests (nbs, wts, nbsi, alpha=alpha, sd0=sd0,
+                                  niters=niters, ac_type=ac_type,
+                                  log_scale=log_scale, ntests=ntests)
 }

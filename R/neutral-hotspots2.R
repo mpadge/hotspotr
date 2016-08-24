@@ -39,8 +39,6 @@ neutral_hotspots2 <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1,
 
     if (!missing (seed)) set.seed (seed)
 
-    #rcpp_neutral_hotspots (nbs=nbs, wts=wts, alpha_t=alpha [1], alpha_s=alpha [2],
-    #                       sd0=sd0, nt=nt)
     size <- length (nbs)
 
     ac_type <- 'moran'
@@ -55,16 +53,11 @@ neutral_hotspots2 <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1,
                                NULL
                        })
         res <- res [lapply (res, length) != 0]
-        #res <- do.call (rbind, res)
-        #data.frame (to=res [,1], from=res [,2], n=res [,3])
         do.call (rbind, res)
     }
     maxnbs <- max (sapply (nbs, length))
     nbsi <- lapply (seq (maxnbs), function (i) get_nbsi (i))
 
-    #rcpp_neutral_hotspots_ntests (nbs, wts, nbsi, alpha=alpha, sd0=sd0,
-    #                              niters=niters, ac_type=ac_type,
-    #                              log_scale=log_scale, ntests=ntests)
     rcpp_neutral_hotspots (nbs, wts, nbsi, alpha=alpha, sd0=sd0,
                            log_scale=log_scale, niters=niters, ac_type=ac_type)
 }

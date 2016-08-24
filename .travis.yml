@@ -7,7 +7,8 @@ apt_packages:
     - libgmp3-dev
 
 r:
-    - devel
+    #- devel
+    - release
 
 r_github_packages:
       - jimhester/covr

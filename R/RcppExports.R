@@ -67,7 +67,9 @@ rcpp_ives_spatial <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
 #' rcpp_trunc_ndist
 #'
 #' Truncated normal distribution (mean 1, respective upper and lower limits of
-#' 0 and 2).
+#' 0 and 2). Code copied directly from `github.com/mpadge/tnorm`, with the
+#' readme of that repo demonstrating the speed advantages of using this rather
+#' than pre-existing approaches (the R package `truncnorm`).
 #'
 #' @param len Number of elements to be simulated
 #' @param sd Standard deviation

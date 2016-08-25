@@ -82,8 +82,9 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
         # x [1] = alpha
         # x [2] = sd0
         # x [3] = niters
+        # x [4] = ntests
         dat <- neutral_hotspots_ntests2 (nbs=nbs, wts=wts, alpha=x[1], sd0=x[2],
-                                         niters=x[3])
+                                         niters=x[3], ntests=x[4])
         sum ((dat [,1] - zs) ^ 2) + sum ((dat [,2] - acs) ^ 2)
     }
 
@@ -101,26 +102,23 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
     sd_lims <- c (1e-6, 1)
     alpha <- seq (alpha_lims [1], alpha_lims [2], length.out=50)
     sd0 <- seq (sd_lims [1], sd_lims [2], length.out=50)
-    niters <- 1
-    x <- c (0.1, 0.5, 1)
-    x <- c (mean (alpha), mean (sd0), niters)
-    err <- opt_fn (x)
-    err <- opt_fn (c (mean (alpha), mean (sd0), niters))
     tol <- 1e-3
     iter <- 0
     maxiters <- 10
     alpha1 <- mean (alpha) # arbitrary values used to calculate err
     sd1 <- mean (sd0)
+    niters <- 1
+    err <- opt_fn (c (alpha1, sd1, niters, ntests))
     while (err > tol & iter < maxiters)
     {
         if (verbose) message ('iteration#', iter, ': ', appendLF=FALSE)
         alpha2 <- alpha1
         sd2 <- sd1
 
-        yac <- sapply (alpha, function (i) opt_fn (c (sd1, i)))
+        yac <- sapply (alpha, function (i) opt_fn (c (i, sd1, niters, ntests)))
         mod <- loess (yac ~ alpha, span=0.5)$fitted
         alpha1 <- alpha [which.min (mod)]
-        ysd <- sapply (sd0, function (i) opt_fn (c (i, alpha1)))
+        ysd <- sapply (sd0, function (i) opt_fn (c (alpha1, i, niters, ntests)))
         mod <- loess (ysd ~ sd0, span=0.5)$fitted
         sd1 <- sd0 [which.min (mod)]
 

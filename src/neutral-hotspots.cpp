@@ -5,7 +5,9 @@
 //' rcpp_trunc_ndist
 //'
 //' Truncated normal distribution (mean 1, respective upper and lower limits of
-//' 0 and 2).
+//' 0 and 2). Code copied directly from `github.com/mpadge/tnorm`, with the
+//' readme of that repo demonstrating the speed advantages of using this rather
+//' than pre-existing approaches (the R package `truncnorm`).
 //'
 //' @param len Number of elements to be simulated
 //' @param sd Standard deviation
@@ -19,20 +21,21 @@ Rcpp::NumericVector rcpp_trunc_ndist (int len, double sd)
 
     // Set up truncated normal distribution
     Rcpp::NumericVector eps (len);
-    eps = Rcpp::rnorm (len, 1.0, sd);
-    // TODO: Check timing with simple explicit loop instead of any
-    while (Rcpp::is_true (Rcpp::any (eps <= 0.0)))
+
+    std::vector <double> z;
+    z.resize (0);
+    while (z.size () < len)
     {
-        tempd = Rcpp::rnorm (1, 1.0, sd) (0);
-        if (tempd >= 0.0 && tempd <= 2.0)
-            eps (Rcpp::which_min (eps)) = tempd;
+        eps = Rcpp::rnorm (len, 1.0, sd);
+        for (Rcpp::NumericVector::iterator it = eps.begin ();
+                it != eps.end (); ++it)
+            if (*it >= 0.0 && *it <= 2.0)
+                z.push_back (*it);
     }
-    while (Rcpp::is_true (Rcpp::any (eps >= 2.0)))
-    {
-        tempd = Rcpp::rnorm (1, 1.0, sd) (0);
-        if (tempd >= 0.0 && tempd <= 2.0)
-            eps (Rcpp::which_min (eps)) = tempd;
-    }
+    z.resize (len);
+
+    std::copy (z.begin (), z.end (), eps.begin ());
+    z.resize (0);
 
     return eps;
 }

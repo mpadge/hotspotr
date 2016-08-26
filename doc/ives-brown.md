@@ -17,13 +17,11 @@
 
 [5.1 Constructing Lists of Neighbours](#5.1-neighbours)
 
-[5.2 Function Definition](#5.2-function)
+[5.2 Comparison of *α* and SD](#5.2-plots1)
 
-[5.3 Comparison of *α* and SD](#5.3-plots1)
+[5.3 Comparison of *α* and SD (log scale)](#5.3-plots2)
 
-[5.4 Comparison of *α* and SD (log scale)](#5.4-plots2)
-
-[5.5 Comparison of numbers of AC iterations](#5.5-plots3)
+[5.4 Comparison of numbers of AC iterations](#5.4-plots3)
 
 <a name="1-install"></a>1. Install
 ----------------------------------
@@ -121,7 +119,7 @@ ploty (nlayers, yi)
 title (main=paste ("ives"))
 ```
 
-![](fig/ives-vs-brown-plot-1.png)
+![](ives-brown_files/figure-markdown_github/ives-vs-brown-plot-1.png)
 
 And the difference is clearly that Brown is able to respond to differences in numbers of layers, while Ives remains entirely invariant. In other words, the model of *Ives et al* (1997) may *not* be used as a neutral model because it is does not respond to structural differences!
 
@@ -150,7 +148,7 @@ ploty (sd0, yi)
 title (main=paste ("ives"))
 ```
 
-![](fig/ives-vs-brown-plot2-1.png)
+![](ives-brown_files/figure-markdown_github/ives-vs-brown-plot2-1.png)
 
 And again, Ives does respond, but only marginally compared to Brown.
 
@@ -191,7 +189,7 @@ legend ("bottomleft", lwd=1, col=c (rep (cols, 2), "black"),
         lty=c (1,1,1,2,2,2,1), legend=ltxt)
 ```
 
-![](fig/brown-plot-1.png)
+![](ives-brown_files/figure-markdown_github/brown-plot-1.png)
 
 It's obviously far more computationally efficient to consider variance rather than `nlayers`, and this also seems to allow a greater range of possible forms of response. Moreover, the response with increasing variance clearly approaches a Poisson distribution.
 
@@ -202,9 +200,7 @@ Note that although increasing the variance always decreases the relative probabi
 <a name="5-brown-spatial"></a>5. A Spatial Version of Brown et al (1995)
 ========================================================================
 
-There is no 'model' to speak of in *Brown et al* (1995), rather they merely examine the rank-scale properties of normal distributions. Spatial relationships may nevertheless modify such generic normal distributions, as now demonstrated.
-
-First define a function to generate spatial autocorrelation on a grid, this time including autocorrelation statistics as well. An additional option controls whether values should be log-scaled or not.
+There is no 'model' to speak of in *Brown et al* (1995), rather they merely examine the rank-scale properties of normal distributions. Spatial relationships may nevertheless modify such generic normal distributions, requiring the use of simulation models rather than simple transformation of the cumulative density distributions of truncated normal distributions. The fastest simulations are contained in the `Rcpp` function currently names `neutral_hotspots_ntests2`.
 
 <a name="5.1-neighbours"></a>5.1 Constructing Lists of Neighbours
 =================================================================
@@ -225,165 +221,28 @@ indx_nbs_to <- unlist (lapply (seq (nbs), function (i)
                                rep (i, length (nbs [[i]]))))
 indx_nbs_from <- unlist (nbs)
 lens <- unlist (lapply (nbs, function (i) rep (length (i), length (i))))
-head(indx_nbs_to, 10); head(indx_nbs_from, 10); head(lens, 10);
 ```
 
-    ##  [1] 1 1 2 2 2 3 3 3 4 4
-
-    ##  [1]  2 11  1  3 12  2  4 13  3  5
-
-    ##  [1] 2 2 3 3 3 3 3 3 3 3
-
-Then define a function to extract the iterative lists of neighbours (the lengths of each list are also needed):
-
-``` r
-maxnbs <- max (sapply (nbs, length))
-get_nbsi <- function (i)
-{
-    res <- lapply (seq (nbs), function (j)
-                   {
-                       if (length (nbs [[j]]) >= i)
-                           c (j, nbs [[j]] [i], length (nbs [[j]]))
-                       else
-                           NULL
-                   })
-    res <- res [lapply (res, length) != 0]
-    res <- do.call (rbind, res)
-    data.frame (to=res [,1], from=res [,2], n=res [,3])
-}
-```
-
-Then the actual loop to implement the spatial autocorrelation is:
-
-``` r
-alpha <- 0.5
-sd0 <- 0.1
-z1 <- msm::rtnorm (size ^ 2, mean=1, sd=sd0, lower=0, upper=2)
-maxnbs <- max (sapply (nbs, length))
-z2 <- rep (0, length (z1))
-for (i in seq (maxnbs))
-{
-    nbsi <- get_nbsi (i)
-    z2 [nbsi$to] <- z2 [nbsi$to] + ((1 - alpha) * z1 [nbsi$to] +
-        alpha * z1 [nbsi$from]) / nbsi$n
-}
-```
-
-This can be confirmed by manually checking the values
-
-``` r
-z2 [1]; (1-alpha) * z1 [1] + alpha * (z1 [2] + z1 [11]) / 2
-```
-
-    ## [1] 1.031836
-
-    ## [1] 1.031836
-
-``` r
-z2 [2]; (1-alpha) * z1 [2] + alpha * (z1 [1] + z1 [3] + z1 [12]) / 3
-```
-
-    ## [1] 1.100946
-
-    ## [1] 1.100946
-
-``` r
-z2 [15]; (1-alpha) * z1 [15] + alpha * (z1 [5] + z1 [14] + z1 [16] + z1 [25]) / 4
-```
-
-    ## [1] 1.048706
-
-    ## [1] 1.048706
+List of neighbours are extracted in the (internal) function `get_nbsi()`, defined within `neutral_hotspots_ntests2()`.
 
 ------------------------------------------------------------------------
 
-<a name="5.2-function"></a>5.2 Function Definition
-==================================================
-
-The final function definition
-
-``` r
-brown_space <- function (nbs, sd0=0.5, alpha=0.1, ntests=100, 
-                         niters=1, log_scale=FALSE)
-{
-    wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
-    size <- length (nbs)
-
-    ac_type <- 'moran'
-
-    get_nbsi <- function (i)
-    {
-        res <- lapply (seq (nbs), function (j)
-                       {
-                           if (length (nbs [[j]]) >= i)
-                               c (j, nbs [[j]] [i], length (nbs [[j]]))
-                           else
-                               NULL
-                       })
-        res <- res [lapply (res, length) != 0]
-        res <- do.call (rbind, res)
-        # Only converted to a df here, not in working version
-        data.frame (to=res [,1], from=res [,2], n=res [,3])
-    }
-    maxnbs <- max (sapply (nbs, length))
-
-    z <- lapply (seq (ntests), function (i) 
-                 {
-                     z1 <- rcpp_trunc_ndist (size, sd0); 
-                     for (j in seq (niters))
-                     {
-                         z2 <- rep (0, size)
-                         for (k in seq (maxnbs))
-                         {
-                             nbsi <- get_nbsi (k)
-                             z2 [nbsi$to] <- z2 [nbsi$to] + 
-                                 ((1 - alpha) * z1 [nbsi$to] +
-                                  alpha * z1 [nbsi$from]) / nbsi$n
-                         }
-                         z1 <- z2
-                     }
-                     if (log_scale) z1 <- log10 (z1)
-                     ac1 <- rcpp_ac_stats (z1, nbs, wts, ac_type)
-                     z1 <- sort (z1, decreasing=TRUE)
-                     z1 <- (z1 - min (z1)) / diff (range (z1))
-                     cbind (z1, ac1)
-                 })
-
-    ac1 <- colMeans (do.call (rbind, lapply (z, function (i) i [,2])))
-    z <- colMeans (do.call (rbind, lapply (z, function (i) i [,1])))
-    cbind (z, ac1)
-}
-```
-
 ------------------------------------------------------------------------
 
-<a name="5.3-plots1"></a>5.3 Comparison of *α* and SD
+<a name="5.2-plots1"></a>5.2 Comparison of *α* and SD
 =====================================================
 
 Then compare different values of `alpha` and of `sd`. The two methods of calculation are explicitly incorporated here - the first being the above, purely `R` version, and the second the entirely `Rcpp` version. (From hereon, only the second, much faster version will be kept.)
 
 ``` r
-log_scale <- FALSE
-sd0 <- c (0.00001, 0.3, 1)
-sd0 <- c (0.01, 0.3, 1)
-size <- 10
-ysd <- lapply (sd0, function (i) 
-               brown_space (sd0=i, alpha=0, size=size, log_scale=log_scale))
-alpha <- c (0.1, 0.5, 0.9)
-yalpha <- lapply (alpha, function (i) 
-               brown_space (sd0=sd0 [1], alpha=i, size=size, log_scale=log_scale))
-```
-
-``` r
-log_scale <- FALSE
 sd0 <- c (0.01, 0.3, 1)
 size <- 10
 ysd <- lapply (sd0, function (i)
-               neutral_hotspots_ntests2 (nbs, alpha=0, sd=i, log_scale=log_scale))
+               neutral_hotspots_ntests2 (nbs, alpha=0, sd=i, log_scale=FALSE))
 alpha <- c (0.1, 0.5, 0.9)
 yalpha <- lapply (alpha, function (i)
-                  neutral_hotspots_ntests2 (nbs, alpha=i, sd=sd0 [1], 
-                                            log_scale=log_scale))
+                  neutral_hotspots_ntests2 (nbs, alpha=i, sd=sd0 [1],
+                                            log_scale=FALSE))
 ```
 
 ``` r
@@ -414,40 +273,25 @@ par (mfrow=c(1,2))
 doplots ()
 ```
 
-![](fig/brown-space-plots-1.png)
+![](ives-brown_files/figure-markdown_github/brown-space-plots-1.png)
 
 ------------------------------------------------------------------------
 
-<a name="5.4-plots2"></a>5.4 Comparison of *α* and SD (log scale)
+<a name="5.3-plots2"></a>5.3 Comparison of *α* and SD (log scale)
 =================================================================
 
 Then repeat for log-scaled values
 
 ``` r
-log_scale <- TRUE
-sd0 <- c (0.00001, 0.3, 1)
-sd0 <- c (0.01, 0.3, 1)
-size <- 10
-ysd <- lapply (sd0, function (i) 
-               brown_space (sd0=i, alpha=0, size=size, log_scale=log_scale))
-alpha <- c (0.1, 0.5, 0.9)
-yalpha <- lapply (alpha, function (i) 
-               brown_space (sd0=sd0 [1], alpha=i, size=size, log_scale=log_scale))
-ysd <- lapply (sd0, function (i)
-               neutral_hotspots_ntests2 (nbs, alpha=0, sd=i, log_scale=log_scale))
-```
-
-``` r
-log_scale <- TRUE
 sd0 <- c (0.00001, 0.3, 1)
 sd0 <- c (0.01, 0.3, 1)
 size <- 10
 ysd <- lapply (sd0, function (i)
-               neutral_hotspots_ntests2 (nbs, alpha=0, sd=i, log_scale=log_scale))
+               neutral_hotspots_ntests2 (nbs, alpha=0, sd=i, log_scale=TRUE))
 alpha <- c (0.1, 0.5, 0.9)
 yalpha <- lapply (alpha, function (i)
                   neutral_hotspots_ntests2 (nbs, alpha=i, sd=sd0 [1], 
-                                            log_scale=log_scale))
+                                            log_scale=TRUE))
 ```
 
 ``` r
@@ -456,108 +300,79 @@ par (mfrow=c(1,2))
 doplots ()
 ```
 
-![](fig/brown-space-log-plots-1.png)
+![](ives-brown_files/figure-markdown_github/brown-space-log-plots-1.png)
 
 ------------------------------------------------------------------------
 
-<a name="5.5-plots3"></a>5.5 Comparison of numbers of AC iterations
+<a name="5.4-plots3"></a>5.4 Comparison of numbers of AC iterations
 ===================================================================
 
 And then examine the effect of multiple iterations of spatial autocorrelation
 
 ``` r
 niters <- c (1, 2, 10, 100)
-log_scale <- TRUE
 sd0 <- 0.5
 alpha <- 0.5
-#y1 <- lapply (niters, function (i) 
-#               brown_space (sd0=0.1, alpha=0.5, size=size, niters=i,
-#                            log_scale=log_scale))
-#y2 <- lapply (niters, function (i) 
-#               brown_space (sd0=0.9, alpha=0.5, size=size, niters=i,
-#                            log_scale=log_scale))
 y1 <- lapply (niters, function (i)
               neutral_hotspots_ntests2 (nbs, alpha=0.5, sd=0.1, niters=i,
-                                        log_scale=log_scale))
+                                        log_scale=TRUE))
 y2 <- lapply (niters, function (i)
               neutral_hotspots_ntests2 (nbs, alpha=0.5, sd=0.9, niters=i,
-                                        log_scale=log_scale))
+                                        log_scale=TRUE))
 ```
 
 ``` r
-mts <- c ("sd0=0.1", "sd0=0.5")
-cols <- rainbow (length (niters))
-ltxt <- sapply (niters, function (i) paste0 ('(sd=0.1; niters=', i))
-ltxt <- c (ltxt, sapply (niters, function (i) paste0 ('sd=0.5; niters=', i)))
-plot.new ()
-par (mfrow=c(1,2))
-plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
-      main="raw data")
-for (j in 1:length (niters)) 
+doplots2 <- function (y1, y2, mtxt)
 {
-    lines (seq (size^2), y1 [[j]] [,1], col=cols [j])
-    lines (seq (size^2), y2 [[j]] [,1], col=cols [j], lty=2)
-}
-legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
-        legend=ltxt)
+    mts <- c ("sd0=0.1", "sd0=0.5")
+    cols <- rainbow (length (niters))
+    ltxt <- sapply (niters, function (i) paste0 ('(sd=0.1; niters=', i))
+    ltxt <- c (ltxt, sapply (niters, function (i) paste0 ('sd=0.5; niters=', i)))
+    plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
+          main=mtxt [1])
+    for (j in 1:length (niters)) 
+    {
+        lines (seq (size^2), y1 [[j]] [,1], col=cols [j])
+        lines (seq (size^2), y2 [[j]] [,1], col=cols [j], lty=2)
+    }
+    legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
+            legend=ltxt)
 
-plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
-      main="AC")
-for (j in 1:length (niters)) 
-{
-    lines (seq (size^2), y1 [[j]] [,2], col=cols [j])
-    lines (seq (size^2), y2 [[j]] [,2], col=cols [j], lty=2)
+    plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
+          main=mtxt [2])
+    for (j in 1:length (niters)) 
+    {
+        lines (seq (size^2), y1 [[j]] [,2], col=cols [j])
+        lines (seq (size^2), y2 [[j]] [,2], col=cols [j], lty=2)
+    }
 }
 ```
 
-![](fig/brown-niters-plots-1.png)
+``` r
+plot.new ()
+par (mfrow=c(1,2))
+doplots2 (y1, y2, mtxt=c("raw data", "AC"))
+```
+
+![](ives-brown_files/figure-markdown_github/brown-niters-plots-1.png)
 
 These functions are highly responsive, in particular to numbers of iterations, and in particular in terms of autocorrelation statistics. Note that these results were all generated using log-scaled values, while the linearly scaled equivalents look like this:
 
 ``` r
-y1l <- lapply (niters, function (i) 
-               brown_space (sd0=0.1, alpha=0.5, size=size, niters=i,
-                            log_scale=FALSE))
-y2l <- lapply (niters, function (i) 
-               brown_space (sd0=0.9, alpha=0.5, size=size, niters=i,
-                            log_scale=FALSE))
-```
-
-``` r
 y1l <- lapply (niters, function (i)
                neutral_hotspots_ntests2 (nbs, alpha=0.5, sd=0.1, niters=i,
-                                         log_scale=log_scale))
+                                         log_scale=FALSE))
 y2l <- lapply (niters, function (i)
               neutral_hotspots_ntests2 (nbs, alpha=0.5, sd=0.9, niters=i,
-                                        log_scale=log_scale))
+                                        log_scale=FALSE))
 ```
 
 ``` r
-mts <- c ("sd0=0.1", "sd0=0.5")
-cols <- rainbow (length (niters))
-ltxt <- sapply (niters, function (i) paste0 ('(sd=0.1; niters=', i))
-ltxt <- c (ltxt, sapply (niters, function (i) paste0 ('sd=0.5; niters=', i)))
 plot.new ()
 par (mfrow=c(1,2))
-plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
-      main="raw data (linear)")
-for (j in 1:length (niters)) 
-{
-    lines (seq (size^2), y1l [[j]] [,1], col=cols [j])
-    lines (seq (size^2), y2l [[j]] [,1], col=cols [j], lty=2)
-}
-legend ("bottomleft", lwd=1, col=rep (cols, 2), lty=c (1,1,1,2,2,2),
-        legend=ltxt)
-
-plot (NULL, NULL, xlim=c (1, size^2), ylim=c(0,1), xlab="rank", ylab="scale",
-      main="AC (linear)")
-for (j in 1:length (niters)) 
-{
-    lines (seq (size^2), y1l [[j]] [,2], col=cols [j])
-    lines (seq (size^2), y2l [[j]] [,2], col=cols [j], lty=2)
-}
+doplots2 (y1l, y2l, mtxt=c("raw data (linear)", "AC (linear)"))
 ```
 
-![](fig/brown-niters-lin-plots-1.png)
+![](ives-brown_files/figure-markdown_github/brown-niters-lin-plots-1.png)
 
 And log-scaling has pronounced effects only on the structure of the raw values, while the autocorrelation statistics remain largely unaffected.

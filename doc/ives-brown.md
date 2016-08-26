@@ -121,7 +121,7 @@ ploty (nlayers, yi)
 title (main=paste ("ives"))
 ```
 
-![](ives-vs-brown-plot-1.png)
+![](fig/ives-vs-brown-plot-1.png)
 
 And the difference is clearly that Brown is able to respond to differences in numbers of layers, while Ives remains entirely invariant. In other words, the model of *Ives et al* (1997) may *not* be used as a neutral model because it is does not respond to structural differences!
 
@@ -150,7 +150,7 @@ ploty (sd0, yi)
 title (main=paste ("ives"))
 ```
 
-![](ives-vs-brown-plot2-1.png)
+![](fig/ives-vs-brown-plot2-1.png)
 
 And again, Ives does respond, but only marginally compared to Brown.
 
@@ -191,7 +191,7 @@ legend ("bottomleft", lwd=1, col=c (rep (cols, 2), "black"),
         lty=c (1,1,1,2,2,2,1), legend=ltxt)
 ```
 
-![](brown-plot-1.png)
+![](fig/brown-plot-1.png)
 
 It's obviously far more computationally efficient to consider variance rather than `nlayers`, and this also seems to allow a greater range of possible forms of response. Moreover, the response with increasing variance clearly approaches a Poisson distribution.
 
@@ -414,7 +414,7 @@ par (mfrow=c(1,2))
 doplots ()
 ```
 
-![](brown-space-plots-1.png)
+![](fig/brown-space-plots-1.png)
 
 ------------------------------------------------------------------------
 
@@ -456,7 +456,7 @@ par (mfrow=c(1,2))
 doplots ()
 ```
 
-![](brown-space-log-plots-1.png)
+![](fig/brown-space-log-plots-1.png)
 
 ------------------------------------------------------------------------
 
@@ -510,7 +510,7 @@ for (j in 1:length (niters))
 }
 ```
 
-![](brown-niters-plots-1.png)
+![](fig/brown-niters-plots-1.png)
 
 These functions are highly responsive, in particular to numbers of iterations, and in particular in terms of autocorrelation statistics. Note that these results were all generated using log-scaled values, while the linearly scaled equivalents look like this:
 
@@ -558,6 +558,6 @@ for (j in 1:length (niters))
 }
 ```
 
-![](brown-niters-lin-plots-1.png)
+![](fig/brown-niters-lin-plots-1.png)
 
 And log-scaling has pronounced effects only on the structure of the raw values, while the autocorrelation statistics remain largely unaffected.

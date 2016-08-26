@@ -37,8 +37,10 @@ statustics. Current version is a simply internal R loop, while
 thing.
 }
 \examples{
+\dontrun{
 nbs <- ives (size=10)$nbs
 z <- neutral_hotspots (nbs=nbs)
+}
 
 }
 \seealso{

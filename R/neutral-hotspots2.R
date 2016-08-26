@@ -22,8 +22,11 @@
 #' @seealso \code{ives}
 #'
 #' @examples
-#' nbs <- ives (size=10)$nbs
-#' z <- neutral_hotspots (nbs=nbs)
+#' size <- 10
+#' xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
+#' dhi <- 1 # for rook; dhi=1.5 for queen
+#' nbs <- spdep::dnearneigh (xy, 0, dhi)
+#' z <- neutral_hotspots2 (nbs=nbs)
 #'
 #' @export
 neutral_hotspots2 <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1, 

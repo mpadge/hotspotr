@@ -40,11 +40,13 @@ statustics. Current version is a parallel internal R loop, while
 \code{neutral_hotspotss} is a non-parallel version of exactly the same thing.
 }
 \examples{
-nbs <- ives (size=10)$nbs
-z <- neutral_hotspots (nbs=nbs)
-
+\dontrun{
+size <- 10
+xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
+dhi <- 1 # for rook; dhi=1.5 for queen
+nbs <- spdep::dnearneigh (xy, 0, dhi)
+z <- neutral_hotspots_ntests (nbs=nbs)
 }
-\seealso{
-\code{ives}
+
 }
 

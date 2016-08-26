@@ -7,7 +7,7 @@ There are a number of statistical tools for evaluating the significance of obser
 
 The `R` package `hotspotr` enables the global significance of an observed spatial data set to be quantified by comparing both raw values and their local spatial relationships with those generated from a neutral model. If the global pattern of observed values is able to be reproduced by a neutral model, then any local hotspots may not be presumed significant regardless of the values of local statistics. Conversely, if the global pattern is unable to be reproduced by a neutral model, then local hotspots may indeed be presumed to be statistically significant.
 
-The package is inspired by the work of Brown, Mehlman, & Stevens (Ecology 1995) and Ives & Klopfer (Ecology 1997). `hotspotr` follows the same premises as these two papers, in examining the extent to which rank--scale distributions can be reproduced by simple neutral models. `hotspotr` compares rank--scale distributions not only of the data of interest, but of corresponding local autocorrelation statistics.
+The package is inspired by the work of *Brown, Mehlman, & Stevens* (Ecology 1995) and *Ives & Klopfer* (Ecology 1997). `hotspotr` follows the same premises as these two papers, in examining the extent to which rank--scale distributions can be reproduced by simple neutral models. `hotspotr` compares rank--scale distributions not only of the data of interest, but of corresponding local autocorrelation statistics.
 
 Analysis involves first fitting a model using the function `fit_hotspot_model`, and then testing the significance of that using the function `p-values`.
 
@@ -144,19 +144,19 @@ st1; st2; st3; st4; st5
 ```
 
     ##    user  system elapsed 
-    ##  54.912   0.056  55.061
+    ##  39.160   0.068  39.245
 
     ##    user  system elapsed 
-    ##   0.332   0.068  41.724
+    ##   0.476   0.088  26.122
 
     ##    user  system elapsed 
-    ##  27.052   0.004  27.091
+    ##  27.332   0.004  27.335
 
     ##    user  system elapsed 
-    ##   0.160   0.008  17.335
+    ##   0.428   0.004  15.437
 
     ##    user  system elapsed 
-    ##   1.392   0.000   1.392
+    ##   1.384   0.000   1.387
 
 The parallel versions do not of course generate identical results, because each core starts with its own random seed, but nevertheless after
 
@@ -172,11 +172,11 @@ the differences are very small:
 max (abs (test1 - test2)); max (abs (test1 - test3)); max (abs (test1 - test4));
 ```
 
-    ## [1] 0.002061456
+    ## [1] 0.001885411
 
     ## [1] 0
 
-    ## [1] 0.002443817
+    ## [1] 0.001608448
 
 ``` r
 max (abs (test1 - test5))
@@ -188,17 +188,17 @@ max (abs (test1 - test5))
 max (abs (test2 - test3)); max (abs (test2 - test4)); max (abs (test2 - test5))
 ```
 
-    ## [1] 0.002061456
+    ## [1] 0.001885411
 
-    ## [1] 0.001957932
+    ## [1] 0.002196237
 
-    ## [1] 0.002061456
+    ## [1] 0.001885411
 
 ``` r
 max (abs (test3 - test4)); max (abs (test3 - test5))
 ```
 
-    ## [1] 0.002443817
+    ## [1] 0.001608448
 
     ## [1] 5.218048e-15
 
@@ -206,7 +206,7 @@ max (abs (test3 - test4)); max (abs (test3 - test5))
 max (abs (test4 - test5))
 ```
 
-    ## [1] 0.002443817
+    ## [1] 0.001608448
 
 These differences provide a measure of convergence of randomised mean profiles.
 

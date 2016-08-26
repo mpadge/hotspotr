@@ -37,11 +37,11 @@ statustics. Current version is a simply internal R loop, while
 thing.
 }
 \examples{
-nbs <- ives (size=10)$nbs
+size <- 10
+xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
+dhi <- 1 # for rook; dhi=1.5 for queen
+nbs <- spdep::dnearneigh (xy, 0, dhi)
 z <- neutral_hotspots (nbs=nbs)
 
-}
-\seealso{
-\code{ives}
 }
 

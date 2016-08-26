@@ -20,10 +20,10 @@ statistics. Conversely, if the global pattern is unable to be reproduced by a
 neutral model, then local hotspots may indeed be presumed to be statistically
 significant.
 
-The package is inspired by the work of Brown, Mehlman, & Stevens (Ecology 1995)
-and Ives & Klopfer (Ecology 1997). `hotspotr` follows the same premises as these
-two papers, in examining the extent to which rank--scale distributions can be
-reproduced by simple neutral models. `hotspotr` compares rank--scale
+The package is inspired by the work of *Brown, Mehlman, & Stevens* (Ecology
+1995) and *Ives & Klopfer* (Ecology 1997). `hotspotr` follows the same premises
+as these two papers, in examining the extent to which rank--scale distributions
+can be reproduced by simple neutral models. `hotspotr` compares rank--scale
 distributions not only of the data of interest, but of corresponding local
 autocorrelation statistics.
 

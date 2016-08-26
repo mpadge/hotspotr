@@ -22,8 +22,10 @@
 #' @seealso \code{ives}
 #'
 #' @examples
+#' \dontrun{
 #' nbs <- ives (size=10)$nbs
 #' z <- neutral_hotspots (nbs=nbs)
+#' }
 #'
 #' @export
 neutral_hotspots_ntests2 <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1, 

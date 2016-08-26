@@ -21,11 +21,14 @@
 #'
 #' @return A vector of hotspot values sorted from high to low
 #'
-#' @seealso \code{ives}
-#'
 #' @examples
-#' nbs <- ives (size=10)$nbs
-#' z <- neutral_hotspots (nbs=nbs)
+#' \dontrun{
+#' size <- 10
+#' xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
+#' dhi <- 1 # for rook; dhi=1.5 for queen
+#' nbs <- spdep::dnearneigh (xy, 0, dhi)
+#' z <- neutral_hotspots_ntests (nbs=nbs)
+#'}
 #'
 #' @export
 neutral_hotspots_ntests <- function (nbs, wts, alpha=0.1, sd0=0.1, ntests=1000,

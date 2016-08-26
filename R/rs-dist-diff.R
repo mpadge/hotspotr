@@ -21,10 +21,6 @@
 #'
 #' @seealso \code{ives}
 #'
-#' @examples
-#' nbs <- ives (size=10)$nbs
-#' z <- neutral_hotspots (nbs=nbs)
-#'
 #' @export
 rs_dist_diff <- function (nbs, wts, alpha=0.1, sd0=0.1, ntests=1000,
                           niters=1, ac_type='moran', mean_stats)

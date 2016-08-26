@@ -36,11 +36,6 @@ A vector of hotspot values sorted from high to low
 \description{
 Averages results of a number of neutral models
 }
-\examples{
-nbs <- ives (size=10)$nbs
-z <- neutral_hotspots (nbs=nbs)
-
-}
 \seealso{
 \code{ives}
 }

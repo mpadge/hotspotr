@@ -18,52 +18,6 @@ rcpp_ac_stats <- function(z, nbs, wts, ac_type) {
     .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', z, nbs, wts, ac_type)
 }
 
-#' rcpp_ives
-#'
-#' Implements neutral model of Ives & Klopfer (Ecology 1997).
-#'
-#' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
-#' point. 
-#' @param alpha_t Strength of temporal autocorrelation
-#' @param alpha_s Strength of spatial autocorrelation
-#' @param nt Number of successive layers of temporal and spatial autocorrelation
-#' used to generate final modelled values
-#' @param svec Vector of random numbers for values of \code{s} drawn from a
-#' truncated normal ' distribution.
-#' @param rvec Vector of random numbers for values of \code{r} drawn from a
-#' truncated normal ' distribution.
-#'
-#' @return A vector of simulated values of same size as \code{nbs}.
-#'
-rcpp_ives <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
-    .Call('hotspotr_rcpp_ives', PACKAGE = 'hotspotr', nbs, nt, alpha_t, alpha_s, svec, rvec)
-}
-
-#' rcpp_ives_spatial
-#'
-#' Implements neutral model of Ives & Klopfer (Ecology 1997) with additional
-#' spatial ' structure, implented here through replacing generic local
-#' autocorrelation ' with movement along maximal local gradients. 
-#'
-#' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
-#' point. 
-#' @param alpha_t Strength of temporal autocorrelation
-#' @param alpha_s Strength of spatial autocorrelation
-#' @param nt Number of successive layers of temporal and spatial autocorrelation
-#' used to generate final modelled values
-#' @param svec Vector of random numbers for values of \code{s} drawn from a
-#' truncated normal ' distribution.
-#' @param rvec Vector of random numbers for values of \code{r} drawn from a
-#' truncated normal ' distribution.
-#'
-#' @return A vector of simulated values of same size as \code{nbs}.
-#'
-#' @section Note: This is not yet implemented! DO NOT USE!
-#'
-rcpp_ives_spatial <- function(nbs, nt, alpha_t, alpha_s, svec, rvec) {
-    .Call('hotspotr_rcpp_ives_spatial', PACKAGE = 'hotspotr', nbs, nt, alpha_t, alpha_s, svec, rvec)
-}
-
 #' rcpp_trunc_ndist
 #'
 #' Truncated normal distribution (mean 1, respective upper and lower limits of

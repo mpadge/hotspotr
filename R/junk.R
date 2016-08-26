@@ -24,10 +24,6 @@
 #' @section Note: Just a wrapper for test calls to \code{rcpp_neutral_hotspots}
 #' and \code{rcpp_neutral_hotspots_ntests}
 #'
-#' @examples
-#' nbs <- ives (size=10)$nbs
-#' z <- neutral_hotspots (nbs=nbs)
-#'
 #' @export
 testn <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1, ac_type='moran',
                    log_scale=TRUE, ntests=100, seed)

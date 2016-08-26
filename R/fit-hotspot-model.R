@@ -37,9 +37,11 @@
 #'
 #' @examples
 #' \dontrun{
-#' alpha <- c (0.1, 0.1)
-#' dat <- ives (size=10, nt=10, sd0=0.1, alpha=alpha)
-#' test <- fit_hotspot_model (z=dat$dat$z, nbs=dat$nbs, alpha=alpha, ntests=100)
+#' xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
+#' dhi <- 1 # for rook; dhi=1.5 for queen
+#' nbs <- spdep::dnearneigh (xy, 0, dhi)
+#' z <- runif (length (nbs))
+#' test <- fit_hotspot_model (z=z, nbs=dat$nbs, alpha=0.1, sd=0.1, ntests=100)
 #' }
 #'
 #' @export

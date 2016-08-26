@@ -71,40 +71,41 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
     double wtsum, tempd;
 
     Rcpp::NumericMatrix tempmat;
-    Rcpp::NumericVector z = rcpp_trunc_ndist (size, sd0); 
-    Rcpp::NumericVector z_copy (size), nbs_to, nbs_from, nbs_n, ac;
+    Rcpp::NumericVector z1 = rcpp_trunc_ndist (size, sd0); 
+    Rcpp::NumericVector z2 (size), nbs_to, nbs_from, nbs_n, ac;
 
     // Spatial autocorrelation
     for (int i=0; i<niters; i++)
     {
-        std::fill (z_copy.begin (), z_copy.end (), 0.0);
+        std::fill (z2.begin (), z2.end (), 0.0);
         for (int j=0; j<nbsi.size (); j++)
         {
             tempmat = Rcpp::as <Rcpp::NumericMatrix> (nbsi (j));
             nbs_to = tempmat (Rcpp::_, 0);
             nbs_from = tempmat (Rcpp::_, 1);
             nbs_n = tempmat (Rcpp::_, 2);
+
             // Note that nbs are 1-indexed
             for (int k=0; k<nbs_to.size (); k++)
             {
-                z_copy (nbs_to (k) - 1) += (1.0 - alpha) * z (nbs_to (k) - 1) +
-                    alpha * z (nbs_from (k) - 1) / (double) nbs_n (k);
+                z2 (nbs_to (k) - 1) += ((1.0 - alpha) * z1 (nbs_to (k) - 1) +
+                    alpha * z1 (nbs_from (k) - 1)) / (double) nbs_n (k);
             }
-            std::copy (z.begin (), z.end (), z_copy.begin ());
         } // end for j over nbsi
+        std::copy (z2.begin (), z2.end (), z1.begin ());
     } // end for i over niters
 
     if (log_scale)
-        z = log10 (z);
+        z1 = log10 (z1);
 
-    ac = rcpp_ac_stats (z, nbs, wts, ac_type);
-    std::sort (z.begin (), z.end (), std::greater<double> ());
+    ac = rcpp_ac_stats (z1, nbs, wts, ac_type);
+    std::sort (z1.begin (), z1.end (), std::greater<double> ());
     
-    z = (z - (double) Rcpp::min (z)) /
-        ((double) Rcpp::max (z) - (double) Rcpp::min (z));
+    z1 = (z1 - (double) Rcpp::min (z1)) /
+        ((double) Rcpp::max (z1) - (double) Rcpp::min (z1));
 
     Rcpp::NumericMatrix result (size, 2);
-    result (Rcpp::_, 0) = z;
+    result (Rcpp::_, 0) = z1;
     result (Rcpp::_, 1) = ac;
     Rcpp::colnames (result) = Rcpp::CharacterVector::create ("y", "ac");
 
@@ -151,6 +152,7 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests (Rcpp::List nbs,
     {
         hs1 = rcpp_neutral_hotspots (nbs, wts, nbsi, alpha, sd0, log_scale,
                 niters, ac_type);
+
         z += hs1 (Rcpp::_, 0);
         ac += hs1 (Rcpp::_, 1);
     }

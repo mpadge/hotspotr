@@ -12,3 +12,4 @@
 ^src/Makevars$
 ^man/rcpp_\w+\.Rd$
 ^fig/
+^doc/

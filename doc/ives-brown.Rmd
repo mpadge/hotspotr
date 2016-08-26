@@ -234,7 +234,6 @@ List of neighbours are extracted in the (internal) function `get_nbsi()`,
 defined within `neutral_hotspots_ntests2()`.
 
 
---------
 
 
 --------

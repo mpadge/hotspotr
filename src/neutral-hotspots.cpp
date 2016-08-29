@@ -96,7 +96,12 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
     } // end for i over niters
 
     if (log_scale)
+    {
+        // negative values sometimes arise for alpha < 0, but scale is
+        // arbitrary, so re-scaled here to ensure all values are > 0
+        z1 = 1.0 + z1 - (double) Rcpp::min (z1);
         z1 = log10 (z1);
+    }
 
     ac = rcpp_ac_stats (z1, nbs, wts, ac_type);
     std::sort (z1.begin (), z1.end (), std::greater<double> ());

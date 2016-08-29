@@ -27,16 +27,17 @@ rank--scale distribution}
 \item{plot}{If TRUE, produces a plot of rank--scale distributions}
 }
 \value{
-A vector of two values as estimated by the neutral model:
+A vector of three values as estimated by the neutral model:
 \enumerate{
   \item sd0 = standard deviation of normal distribution
   \item alpha = temporal autocorrelation coefficient
+  \item niters = number of iterations of spatial autocorrelation
 }
 }
 \description{
 Fits a neutral model to an observed series of hotspot values in terms of
-temporal and spatial autocorrelation parameters, and number of iterations of
-these.
+standard deviation of environmental variables, spatial autocorrelation
+parameters, and number of iterations of spatial autocorrelation.
 }
 \section{Note}{
 

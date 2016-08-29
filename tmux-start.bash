@@ -14,8 +14,7 @@ tmux send-keys -t $SESSION:1 ':' 'tabe R/p-values.R' C-m
 
 tmux new-window -t $SESSION:2 -k -n cpp
 tmux send-keys -t $SESSION:2 'cd ./src' C-m
-tmux send-keys -t $SESSION:2 'vim ives.cpp' C-m
-tmux send-keys -t $SESSION:2 ':' 'tabe neutral-hotspots.h' C-m
+tmux send-keys -t $SESSION:2 'vim neutral-hotspots.h' C-m
 tmux send-keys -t $SESSION:2 ':' 'tabe neutral-hotspots.cpp' C-m
 tmux split-window -h
 tmux send-keys -t $SESSION:2 'cd ./src' C-m

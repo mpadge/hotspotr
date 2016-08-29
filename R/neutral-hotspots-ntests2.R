@@ -15,6 +15,8 @@
 #' @param niters Number of successive layers of spatial autocorrelation
 #' @param log_scale If TRUE, raw hotspot values are log-transformed
 #' @param ntests Number of tests over which to generate an average result
+#' @param parallel If true, the tests are conducted using the \code{R} package
+#' \code{parallel}, otherwise using (non-parallel) code{Rcpp} loops.
 #' @param seed Random seed
 #'
 #' @return A vector of hotspot values sorted from high to low
@@ -29,7 +31,8 @@
 #'
 #' @export
 neutral_hotspots_ntests2 <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1, 
-                                      log_scale=TRUE, ntests=100, seed)
+                                      log_scale=TRUE, ntests=100, parallel=FALSE,
+                                      seed)
 {
     if (missing (nbs)) stop ('nbs must be given')
 
@@ -60,7 +63,40 @@ neutral_hotspots_ntests2 <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1,
     maxnbs <- max (sapply (nbs, length))
     nbsi <- lapply (seq (maxnbs), function (i) get_nbsi (i))
 
-    rcpp_neutral_hotspots_ntests (nbs, wts, nbsi, alpha=alpha, sd0=sd0,
-                                  niters=niters, ac_type=ac_type,
-                                  log_scale=log_scale, ntests=ntests)
+    if (!parallel)
+    {
+        rcpp_neutral_hotspots_ntests (nbs, wts, nbsi, alpha=alpha, sd0=sd0,
+                                      niters=niters, ac_type=ac_type,
+                                      log_scale=log_scale, ntests=ntests)
+    } else
+    {
+        # Note that `makeCluster` with `type="FORK"` automatically attaches all
+        # environment variables, but is not portable, as detailed at
+        # r-bloggers.com/how-to-go-parallel-in-r-basics-tips/ 
+        clust <- parallel::makeCluster (parallel::detectCores () - 1)
+        exports <- list ("nbs", "wts", "nbsi", "alpha", "sd0",
+                         "log_scale", "niters", "ac_type")
+        parallel::clusterExport (clust, exports, envir=environment ())
+        invisible (parallel::clusterCall (clust, function () {
+                              while (length (grep ('hotspotr', getwd ())) > 0) 
+                                  setwd ("..")
+                              devtools::load_all ("hotspotr")
+                              setwd ("./hotspotr")
+                    }))
+
+        z <- parallel::parLapply (clust, seq (ntests), function (i) 
+                                  {
+                                      rcpp_neutral_hotspots (nbs, wts, nbsi,
+                                                             alpha=alpha,
+                                                             sd0=sd0,
+                                                             log_scale=log_scale, 
+                                                             niters=niters,
+                                                             ac_type=ac_type)
+                                  })
+
+        parallel::stopCluster (clust)
+        ac <- colMeans (do.call (rbind, lapply (z, function (i) i [,2])))
+        z <- colMeans (do.call (rbind, lapply (z, function (i) i [,1])))
+        cbind (z, ac)
+    }
 }

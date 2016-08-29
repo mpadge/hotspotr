@@ -160,7 +160,7 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests (Rcpp::List nbs,
     Rcpp::NumericMatrix result (size, 2);
     result (Rcpp::_, 0) = z / (double) ntests;
     result (Rcpp::_, 1) = ac / (double) ntests;
-    Rcpp::colnames (result) = Rcpp::CharacterVector::create ("y", "ac");
+    Rcpp::colnames (result) = Rcpp::CharacterVector::create ("z", "ac");
 
     return result;
 }

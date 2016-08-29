@@ -65,18 +65,6 @@ setwd ("./hotspotr")
 
 # <a name="1-parallel"></a>1. Parallel and Rcpp Tests
 
-Five different versions are examined here:
-
-1. A purely `R` version using `lapply`
-
-2. A parallel equivalent using `parLapply`
-
-3. An `R::lapply` on an internal `Rcpp` core
-
-4. An `R::parLapply` on an internal `Rcpp` core
-
-5. A (non-parallel) loop constructed entirely in `C++`
-
 Fist set up grid and list of spaital neighbours
 ```{r}
 ntests <- 10000
@@ -86,118 +74,31 @@ dhi <- 1 # for rook; dhi=1.5 for queen
 nbs <- spdep::dnearneigh (xy, 0, dhi)
 ```
 
+The function `neutral_hotspots_ntests2` has a `parallel` option that determines
+whether the tests are conducting using an `Rcpp` (non-parallel) loop, or using
+`R:parellel`. The latter may be faster under some circumstances for large
+numbers of tests, although it will definitely be slower for smaller numbers
+because of the time needed to establish the parallel clusters. 
 
-First time the pure `R` version:
-```{r R-test, eval=FALSE}
-set.seed (1)
-st1 <- system.time (
-    test1 <- neutral_hotspots (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
-)
-```
-
-Then an equivalent parallel version, still entirely `R`-scripted and currently
-in `neutral-hotspots-ntests`:
-```{r R-test-parallel, eval=FALSE}
-set.seed (1)
-st2 <- system.time (
-    test2 <- neutral_hotspots_ntests (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
-)
-```
-That takes longer because of the time needed to establish the parallel
-clusters, but the parallel version quickly becomes faster for higher values of
-`ntests`.
-
-Then current, non-parallel `Rcpp` version, called `neutral_hotspots2`, wrapped
-here in an `lapply`.
-
-```{r rloop, eval=FALSE}
-rloop <- function (ntests=1000)
-{
-    dat <- lapply (seq (ntests), function (i) 
-                 neutral_hotspots2 (nbs, alpha=0.1, sd0=0.1, ntests=ntests))
-    z <- colMeans (do.call (rbind, lapply (dat, function (i) i [,1])))
-    ac <- colMeans (do.call (rbind, lapply (dat, function (i) i [,2])))
-    cbind (z, ac)
-}
-set.seed (1)
-st3 <- system.time ( test3 <- rloop (ntests=ntests))
-```
-
-And then an `R`-internal parallel version. First the slightly different function
-definition:
-```{r rparallel-fn, message=FALSE, eval=FALSE}
-require (parallel)
-rParloop <- function (ntests=1000)
-{
-    dat <- parLapply (clust, seq (ntests), function (i) 
-                    neutral_hotspots2 (nbs, alpha=0.1, sd0=0.1, ntests=ntests))
-    z <- colMeans (do.call (rbind, lapply (dat, function (i) i [,1])))
-    ac <- colMeans (do.call (rbind, lapply (dat, function (i) i [,2])))
-    cbind (z, ac)
-}
-```
-Note that `makeCluster` with `type="FORK"` automatically attaches all
-environment variables, but is not portable, as detailed here:
-[http://www.r-bloggers.com/how-to-go-parallel-in-r-basics-tips/](http://www.r-bloggers.com/how-to-go-parallel-in-r-basics-tips/).
-The `clusterExport` and `clusterCall` lines explicitly attach only the required
-bits.
-```{r cluster-setup, eval=FALSE}
-#clust <- makeCluster (parallel::detectCores () - 1, type="FORK")
-clust <- makeCluster (parallel::detectCores () - 1)
-clusterExport (clust, "nbs")
-invisible (clusterCall (clust, function () {
-                        while (length (grep ('hotspotr', getwd ())) > 0) 
-                            setwd ("..")
-                        devtools::load_all ("hotspotr")
-                        setwd ("./hotspotr")
-                                         }))
-```
-```{r rparallel-loop, eval=FALSE}
-st4 <- system.time (test4 <- rParloop (ntests=ntests))
-stopCluster (clust)
-```
-Then finally the whole loop over `ntests` constructed in `Rcpp`, and therefore
-in non-parallel form.
 ```{r rcpp-loop, eval=TRUE}
 set.seed (1)
-st5 <- system.time (test5 <- neutral_hotspots_ntests2 (nbs, ntests=ntests))
+st1 <- system.time (dat1 <- neutral_hotspots_ntests2 (nbs, ntests=ntests))
+set.seed (1)
+st2 <- system.time (dat2 <- neutral_hotspots_ntests2 (nbs, ntests=ntests,
+                                                       parallel=TRUE))
+st1; st2
 ```
 
-The final system times are:
-```{r, eval=FALSE}
-st1; st2; st3; st4; st5
-```
-```{r}
-##    user  system elapsed 
-##  39.160   0.068  39.245
-
-##    user  system elapsed 
-##   0.476   0.088  26.122
-
-##    user  system elapsed 
-##  27.332   0.004  27.335
-
-##    user  system elapsed 
-##   0.428   0.004  15.437
-
-##    user  system elapsed 
-##   1.384   0.000   1.387
-```
 
 The parallel versions do not of course generate identical results, because each
 core starts with its own random seed, but nevertheless after
-```{r, eval=TRUE}
+```{r}
 ntests
 ```
 the differences are very small:
-```{r, eval=FALSE}
-max (abs (test1 - test2)); max (abs (test1 - test3)); max (abs (test1 - test4));
-max (abs (test1 - test5))
-max (abs (test2 - test3)); max (abs (test2 - test4)); max (abs (test2 - test5))
-max (abs (test3 - test4)); max (abs (test3 - test5))
-max (abs (test4 - test5))
+```{r}
+max (abs (dat1 - dat2))
 ```
-These differences provide a measure of convergence of randomised mean profiles.
 
 
 --------

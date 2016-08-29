@@ -5,7 +5,7 @@
 \title{neutral_hotspots_ntests2}
 \usage{
 neutral_hotspots_ntests2(nbs, wts, alpha = 0.1, sd0 = 0.1, niters = 1,
-  log_scale = TRUE, ntests = 100, seed)
+  log_scale = TRUE, ntests = 100, parallel = FALSE, seed)
 }
 \arguments{
 \item{nbs}{An \code{spdep} \code{nb} object listing all neighbours of each
@@ -24,6 +24,9 @@ environmental variation (with mean of 1)}
 \item{log_scale}{If TRUE, raw hotspot values are log-transformed}
 
 \item{ntests}{Number of tests over which to generate an average result}
+
+\item{parallel}{If true, the tests are conducted using the \code{R} package
+\code{parallel}, otherwise using (non-parallel) code{Rcpp} loops.}
 
 \item{seed}{Random seed}
 }

@@ -2,9 +2,6 @@
 
 export(fit_hotspot_model)
 export(neutral_hotspots)
-export(neutral_hotspots2)
-export(neutral_hotspots_ntests)
-export(neutral_hotspots_ntests2)
 export(p_values)
 export(rs_dist_diff)
 importFrom(Rcpp,evalCpp)

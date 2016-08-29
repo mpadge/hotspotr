@@ -85,8 +85,8 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
         # x [2] = sd0
         # x [3] = niters
         # x [4] = ntests
-        dat <- neutral_hotspots_ntests2 (nbs=nbs, wts=wts, alpha=x[1], sd0=x[2],
-                                         niters=x[3], ntests=x[4])
+        dat <- neutral_hotspots (nbs=nbs, wts=wts, alpha=x[1], sd0=x[2],
+                                 niters=x[3], ntests=x[4])
         sum ((dat [,1] - zs) ^ 2) + sum ((dat [,2] - acs) ^ 2)
     }
 

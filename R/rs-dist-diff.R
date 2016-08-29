@@ -32,8 +32,8 @@ rs_dist_diff <- function (nbs, wts, alpha=0.1, sd0=0.1, ntests=1000,
 
     nt <- NULL # suppress no visisble binding package check note
     if (missing (mean_stats)) 
-        mean_stats <- neutral_hotspots_ntests (nbs, wts, alpha, ntests, nt,
-                                               sd0, ac_type)
+        mean_stats <- neutral_hotspots (nbs, wts, alpha, ntests, nt, sd0,
+                                        ac_type)
     z_mn <- mean_stats$z
     ac_mn <- mean_stats$ac
 

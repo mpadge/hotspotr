@@ -86,12 +86,9 @@ dhi <- 1 # for rook; dhi=1.5 for queen
 nbs <- spdep::dnearneigh (xy, 0, dhi)
 ```
 
-```{r}
-junk <- testn (nbs)
-```
 
 First time the pure `R` version:
-```{r R-test, eval=TRUE}
+```{r R-test, eval=FALSE}
 set.seed (1)
 st1 <- system.time (
     test1 <- neutral_hotspots (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
@@ -100,7 +97,7 @@ st1 <- system.time (
 
 Then an equivalent parallel version, still entirely `R`-scripted and currently
 in `neutral-hotspots-ntests`:
-```{r R-test-parallel, eval=TRUE}
+```{r R-test-parallel, eval=FALSE}
 set.seed (1)
 st2 <- system.time (
     test2 <- neutral_hotspots_ntests (nbs=nbs, alpha=0.1, sd0=0.1, ntests=ntests)
@@ -113,7 +110,7 @@ clusters, but the parallel version quickly becomes faster for higher values of
 Then current, non-parallel `Rcpp` version, called `neutral_hotspots2`, wrapped
 here in an `lapply`.
 
-```{r rloop, eval=TRUE}
+```{r rloop, eval=FALSE}
 rloop <- function (ntests=1000)
 {
     dat <- lapply (seq (ntests), function (i) 
@@ -128,7 +125,7 @@ st3 <- system.time ( test3 <- rloop (ntests=ntests))
 
 And then an `R`-internal parallel version. First the slightly different function
 definition:
-```{r rparallel-fn, message=FALSE, eval=TRUE}
+```{r rparallel-fn, message=FALSE, eval=FALSE}
 require (parallel)
 rParloop <- function (ntests=1000)
 {
@@ -144,7 +141,7 @@ environment variables, but is not portable, as detailed here:
 [http://www.r-bloggers.com/how-to-go-parallel-in-r-basics-tips/](http://www.r-bloggers.com/how-to-go-parallel-in-r-basics-tips/).
 The `clusterExport` and `clusterCall` lines explicitly attach only the required
 bits.
-```{r cluster-setup, eval=TRUE}
+```{r cluster-setup, eval=FALSE}
 #clust <- makeCluster (parallel::detectCores () - 1, type="FORK")
 clust <- makeCluster (parallel::detectCores () - 1)
 clusterExport (clust, "nbs")
@@ -155,7 +152,7 @@ invisible (clusterCall (clust, function () {
                         setwd ("./hotspotr")
                                          }))
 ```
-```{r rparallel-loop, eval=TRUE}
+```{r rparallel-loop, eval=FALSE}
 st4 <- system.time (test4 <- rParloop (ntests=ntests))
 stopCluster (clust)
 ```
@@ -167,8 +164,24 @@ st5 <- system.time (test5 <- neutral_hotspots_ntests2 (nbs, ntests=ntests))
 ```
 
 The final system times are:
-```{r}
+```{r, eval=FALSE}
 st1; st2; st3; st4; st5
+```
+```{r}
+##    user  system elapsed 
+##  39.160   0.068  39.245
+
+##    user  system elapsed 
+##   0.476   0.088  26.122
+
+##    user  system elapsed 
+##  27.332   0.004  27.335
+
+##    user  system elapsed 
+##   0.428   0.004  15.437
+
+##    user  system elapsed 
+##   1.384   0.000   1.387
 ```
 
 The parallel versions do not of course generate identical results, because each
@@ -177,7 +190,7 @@ core starts with its own random seed, but nevertheless after
 ntests
 ```
 the differences are very small:
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 max (abs (test1 - test2)); max (abs (test1 - test3)); max (abs (test1 - test4));
 max (abs (test1 - test5))
 max (abs (test2 - test3)); max (abs (test2 - test4)); max (abs (test2 - test5))

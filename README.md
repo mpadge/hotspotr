@@ -31,6 +31,9 @@ Install
 devtools::install_github ('mpadge/hotspotr')
 ```
 
+    ## Warning in setup_ns_exports(pkg, export_all): Objects listed as exports,
+    ## but not present in namespace: testn
+
 ------------------------------------------------------------------------
 
 <a name="1-parallel"></a>1. Parallel and Rcpp Tests
@@ -56,10 +59,6 @@ size <- 10
 xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
 dhi <- 1 # for rook; dhi=1.5 for queen
 nbs <- spdep::dnearneigh (xy, 0, dhi)
-```
-
-``` r
-junk <- testn (nbs)
 ```
 
 First time the pure `R` version:
@@ -143,20 +142,22 @@ The final system times are:
 st1; st2; st3; st4; st5
 ```
 
-    ##    user  system elapsed 
-    ##  39.160   0.068  39.245
+``` r
+##    user  system elapsed 
+##  39.160   0.068  39.245
 
-    ##    user  system elapsed 
-    ##   0.476   0.088  26.122
+##    user  system elapsed 
+##   0.476   0.088  26.122
 
-    ##    user  system elapsed 
-    ##  27.332   0.004  27.335
+##    user  system elapsed 
+##  27.332   0.004  27.335
 
-    ##    user  system elapsed 
-    ##   0.428   0.004  15.437
+##    user  system elapsed 
+##   0.428   0.004  15.437
 
-    ##    user  system elapsed 
-    ##   1.384   0.000   1.387
+##    user  system elapsed 
+##   1.384   0.000   1.387
+```
 
 The parallel versions do not of course generate identical results, because each core starts with its own random seed, but nevertheless after
 
@@ -170,43 +171,11 @@ the differences are very small:
 
 ``` r
 max (abs (test1 - test2)); max (abs (test1 - test3)); max (abs (test1 - test4));
-```
-
-    ## [1] 0.001885411
-
-    ## [1] 0
-
-    ## [1] 0.001608448
-
-``` r
 max (abs (test1 - test5))
-```
-
-    ## [1] 5.218048e-15
-
-``` r
 max (abs (test2 - test3)); max (abs (test2 - test4)); max (abs (test2 - test5))
-```
-
-    ## [1] 0.001885411
-
-    ## [1] 0.002196237
-
-    ## [1] 0.001885411
-
-``` r
 max (abs (test3 - test4)); max (abs (test3 - test5))
-```
-
-    ## [1] 0.001608448
-
-    ## [1] 5.218048e-15
-
-``` r
 max (abs (test4 - test5))
 ```
-
-    ## [1] 0.001608448
 
 These differences provide a measure of convergence of randomised mean profiles.
 

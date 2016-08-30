@@ -56,7 +56,7 @@ p_values <- function (z, nbs, wts, sd0=0.1, alpha=0.1, niters=1, ntests=1000,
         message ('rank-scale distributions ... ', appendLF=FALSE)
     }
     distributions <- rs_dist_diff (nbs=nbs, wts=wts, alpha=alpha, sd0=sd0,
-                                   ntests=ntests, ac_type=ac_type,
+                                   ntests=1e4, ac_type=ac_type,
                                    mean_stats=rs_means)
     if (verbose) message ('done')
 

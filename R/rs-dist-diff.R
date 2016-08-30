@@ -73,12 +73,12 @@ rs_dist_diff <- function (nbs, wts, alpha=0.1, sd0=0.1, niters=1, ntests=1000,
                                                          log_scale=log_scale, 
                                                          niters=niters,
                                                          ac_type=ac_type) -
-                                    cbind (z_mn, ac_mn)
+                                  cbind (z_mn, ac_mn)
                               })
     parallel::stopCluster (clust)
     ac <- do.call (rbind, lapply (z, function (i) i [,2]))
     z <- do.call (rbind, lapply (z, function (i) i [,1]))
 
     # result is two columns of summed squared differences for
-    cbind (rowSums (z), rowSums (ac))
+    cbind (rowSums (z ^ 2), rowSums (ac ^ 2))
 }

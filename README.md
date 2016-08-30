@@ -58,10 +58,10 @@ st1; st2
 ```
 
     ##    user  system elapsed 
-    ##   1.396   0.004   1.399
+    ##   1.424   0.004   1.429
 
     ##    user  system elapsed 
-    ##   0.704   0.044   4.674
+    ##   0.748   0.040   5.144
 
 The parallel versions do not of course generate identical results, because each core starts with its own random seed, but nevertheless after
 
@@ -77,12 +77,15 @@ the differences are very small:
 max (abs (dat1 - dat2))
 ```
 
-    ## [1] 0.002884018
+    ## [1] 0.002733351
 
 ------------------------------------------------------------------------
 
 <a name="2-tests"></a>2. Tests
 ==============================
+
+2.1 Set-up
+----------
 
 Test the distributional properties of the `meuse` data from the `sp` package, which contain topsoil heavy metal concentrations near Meuse, NL.
 
@@ -112,80 +115,68 @@ analyse <- function (metal='copper', ntests=1000)
 {
     z <- meuse [metal] [,1]
     mod <- fit_hotspot_model (z=z, nbs=nbs, wts=wts, ntests=ntests, verbose=FALSE)
-    cat (mod$sd0, ',', mod$ac, ',', mod$niters, '\n')
-    p_values (z=z, nbs=nbs, sd0=mod$sd0, alpha=mod$ac, niters=mod$niters,
-              ntests=ntests, plot=TRUE)
+    cat ('sd =', mod$sd0, ', alpha =', mod$ac, ', niters =', mod$niters, '\n')
+    p <- p_values (z=z, nbs=nbs, sd0=mod$sd0, alpha=mod$ac, niters=mod$niters,
+                   ntests=ntests, plot=TRUE)
 }
 ```
 
 For demonstration purposes, `ntests=1000` is sufficient, but larger values will generate more reliable estimates. These functions can be quite time-consuming.
 
+------------------------------------------------------------------------
+
+### 2.2a Cadmium
+
 ``` r
 analyse (metal='cadmium', ntests=1000)
 ```
 
-    ## stopping search because error is increasing
-
-    ## 0.000001 , 0.2744361 , 6
-
-![](README_files/figure-markdown_github/meuse-cadmium-1.png)![](README_files/figure-markdown_github/meuse-cadmium-2.png)
-
-    ## $p_z
-    ## [1] 0
-    ## 
-    ## $p_ac
-    ## [1] 0
-
 ![](fig/meuse-cadmium.png)
+
+``` r
+## sd = 0.000001 , alpha = 0.2744361 , niters = 6
+```
+
+------------------------------------------------------------------------
+
+### 2.2b Copper
 
 ``` r
 analyse (metal='copper', ntests=1000)
 ```
 
-    ## 0.000001 , 0.593985 , 2
-
-![](README_files/figure-markdown_github/meuse-copper-1.png)![](README_files/figure-markdown_github/meuse-copper-2.png)
-
-    ## $p_z
-    ## [1] 0
-    ## 
-    ## $p_ac
-    ## [1] 0.9669162
-
 ![](fig/meuse-copper.png)
+
+``` r
+## sd = 0.000001 , alpha = 0.593985 , niters = 2
+```
+
+------------------------------------------------------------------------
+
+### 2.2c Lead
 
 ``` r
 analyse (metal='lead', ntests=1000)
 ```
 
-    ## 0.000001 , 0.2132116 , 6
-
-![](README_files/figure-markdown_github/meuse-lead-1.png)![](README_files/figure-markdown_github/meuse-lead-2.png)
-
-    ## $p_z
-    ## [1] 0
-    ## 
-    ## $p_ac
-    ## [1] 0.9999729
-
 ![](fig/meuse-lead.png)
+
+``` r
+## sd = 0.000001 , alpha = 0.2132116 , niters = 6
+```
+
+------------------------------------------------------------------------
+
+### 2.2d Zinc
 
 ``` r
 analyse (metal='zinc', ntests=1000)
 ```
 
-    ## stopping search because error is increasing
-
-    ## 0.000001 , 0.792696 , 1
-
-![](README_files/figure-markdown_github/meuse-zinc-1.png)![](README_files/figure-markdown_github/meuse-zinc-2.png)
-
-    ## $p_z
-    ## [1] 0
-    ## 
-    ## $p_ac
-    ## [1] 0.2105138
-
 ![](fig/meuse-zinc.png)
+
+``` r
+## sd = 0.000001 , alpha = 0.792696 , niters = 1
+```
 
 These plots demonstrate that in all cases, the observed values themselves (`z` in the figures) can not be reproduced by a neutral model, yet the actual spatial relationships between them can. This indicates that the generating processes can be modelled by assuming nothing other than simple spatial autocorrelation acting on a more complex, non-spatial process.

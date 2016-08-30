@@ -50,18 +50,18 @@ The function `neutral_hotspots_ntests2` has a `parallel` option that determines 
 
 ``` r
 set.seed (1)
-st1 <- system.time (dat1 <- neutral_hotspots_ntests2 (nbs, ntests=ntests))
+st1 <- system.time (dat1 <- neutral_hotspots (nbs, ntests=ntests))
 set.seed (1)
-st2 <- system.time (dat2 <- neutral_hotspots_ntests2 (nbs, ntests=ntests,
-                                                       parallel=TRUE))
+st2 <- system.time (dat2 <- neutral_hotspots (nbs, ntests=ntests,
+                                              parallel=TRUE))
 st1; st2
 ```
 
     ##    user  system elapsed 
-    ##   1.376   0.000   1.378
+    ##   1.396   0.004   1.399
 
     ##    user  system elapsed 
-    ##   0.660   0.064   4.880
+    ##   0.704   0.044   4.674
 
 The parallel versions do not of course generate identical results, because each core starts with its own random seed, but nevertheless after
 
@@ -77,7 +77,7 @@ the differences are very small:
 max (abs (dat1 - dat2))
 ```
 
-    ## [1] 0.00135243
+    ## [1] 0.002884018
 
 ------------------------------------------------------------------------
 
@@ -111,8 +111,10 @@ Spatial patterns for the different metals can then be statistically compared wit
 analyse <- function (metal='copper', ntests=1000)
 {
     z <- meuse [metal] [,1]
-    mod <- fit_hotspot_model (z=z, nbs=nbs, wts=wts, verbose=FALSE)
-    p_values (z=z, nbs=nbs, sd0=mod$sd0, alpha=mod$ac, ntests=ntests, plot=TRUE)
+    mod <- fit_hotspot_model (z=z, nbs=nbs, wts=wts, ntests=ntests, verbose=FALSE)
+    cat (mod$sd0, ',', mod$ac, ',', mod$niters, '\n')
+    p_values (z=z, nbs=nbs, sd0=mod$sd0, alpha=mod$ac, niters=mod$niters,
+              ntests=ntests, plot=TRUE)
 }
 ```
 
@@ -122,11 +124,33 @@ For demonstration purposes, `ntests=1000` is sufficient, but larger values will 
 analyse (metal='cadmium', ntests=1000)
 ```
 
+    ## stopping search because error is increasing
+
+    ## 0.000001 , 0.2744361 , 6
+
+![](README_files/figure-markdown_github/meuse-cadmium-1.png)![](README_files/figure-markdown_github/meuse-cadmium-2.png)
+
+    ## $p_z
+    ## [1] 0
+    ## 
+    ## $p_ac
+    ## [1] 0
+
 ![](fig/meuse-cadmium.png)
 
 ``` r
 analyse (metal='copper', ntests=1000)
 ```
+
+    ## 0.000001 , 0.593985 , 2
+
+![](README_files/figure-markdown_github/meuse-copper-1.png)![](README_files/figure-markdown_github/meuse-copper-2.png)
+
+    ## $p_z
+    ## [1] 0
+    ## 
+    ## $p_ac
+    ## [1] 0.9669162
 
 ![](fig/meuse-copper.png)
 
@@ -134,11 +158,33 @@ analyse (metal='copper', ntests=1000)
 analyse (metal='lead', ntests=1000)
 ```
 
+    ## 0.000001 , 0.2132116 , 6
+
+![](README_files/figure-markdown_github/meuse-lead-1.png)![](README_files/figure-markdown_github/meuse-lead-2.png)
+
+    ## $p_z
+    ## [1] 0
+    ## 
+    ## $p_ac
+    ## [1] 0.9999729
+
 ![](fig/meuse-lead.png)
 
 ``` r
 analyse (metal='zinc', ntests=1000)
 ```
+
+    ## stopping search because error is increasing
+
+    ## 0.000001 , 0.792696 , 1
+
+![](README_files/figure-markdown_github/meuse-zinc-1.png)![](README_files/figure-markdown_github/meuse-zinc-2.png)
+
+    ## $p_z
+    ## [1] 0
+    ## 
+    ## $p_ac
+    ## [1] 0.2105138
 
 ![](fig/meuse-zinc.png)
 

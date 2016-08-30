@@ -139,19 +139,19 @@ analyse <- function (metal='copper', ntests=1000)
 ```
 For demonstration purposes, `ntests=1000` is sufficient, but larger values will
 generate more reliable estimates. These functions can be quite time-consuming.
-```{r meuse-cadmium, eval=FALSE}
+```{r meuse-cadmium, eval=TRUE}
 analyse (metal='cadmium', ntests=1000)
 ```
 ![](fig/meuse-cadmium.png)
-```{r meuse-copper, eval=FALSE}
+```{r meuse-copper, eval=TRUE}
 analyse (metal='copper', ntests=1000)
 ```
 ![](fig/meuse-copper.png)
-```{r meuse-lead, eval=FALSE}
+```{r meuse-lead, eval=TRUE}
 analyse (metal='lead', ntests=1000)
 ```
 ![](fig/meuse-lead.png)
-```{r meuse-zinc, eval=FALSE}
+```{r meuse-zinc, eval=TRUE}
 analyse (metal='zinc', ntests=1000)
 ```
 ![](fig/meuse-zinc.png)

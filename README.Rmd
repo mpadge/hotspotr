@@ -82,10 +82,10 @@ because of the time needed to establish the parallel clusters.
 
 ```{r rcpp-loop, eval=TRUE}
 set.seed (1)
-st1 <- system.time (dat1 <- neutral_hotspots_ntests2 (nbs, ntests=ntests))
+st1 <- system.time (dat1 <- neutral_hotspots (nbs, ntests=ntests))
 set.seed (1)
-st2 <- system.time (dat2 <- neutral_hotspots_ntests2 (nbs, ntests=ntests,
-                                                       parallel=TRUE))
+st2 <- system.time (dat2 <- neutral_hotspots (nbs, ntests=ntests,
+                                              parallel=TRUE))
 st1; st2
 ```
 
@@ -131,8 +131,10 @@ with neutral models:
 analyse <- function (metal='copper', ntests=1000)
 {
     z <- meuse [metal] [,1]
-    mod <- fit_hotspot_model (z=z, nbs=nbs, wts=wts, verbose=FALSE)
-    p_values (z=z, nbs=nbs, sd0=mod$sd0, alpha=mod$ac, ntests=ntests, plot=TRUE)
+    mod <- fit_hotspot_model (z=z, nbs=nbs, wts=wts, ntests=ntests, verbose=FALSE)
+    cat (mod$sd0, ',', mod$ac, ',', mod$niters, '\n')
+    p_values (z=z, nbs=nbs, sd0=mod$sd0, alpha=mod$ac, niters=mod$niters,
+              ntests=ntests, plot=TRUE)
 }
 ```
 For demonstration purposes, `ntests=1000` is sufficient, but larger values will

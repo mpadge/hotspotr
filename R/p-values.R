@@ -10,6 +10,8 @@
 #' @param sd0 Standard deviation of truncated normal distribution used to model
 #' environmental variation (with mean of 1)
 #' @param alpha Strength of spatial autocorrelation 
+#' @param log_scale If TRUE, raw hotspot values are log-transformed
+#' @param niters Number of successive layers of spatial autocorrelation
 #' @param ntests Number of tests to run, with statistics calculated from the
 #' mean of \code{ntests}
 #' @param ac_type type of autocorrelation statistic to use in tests
@@ -21,8 +23,8 @@
 #' @return Nothing (dumps statistics to screen)
 #'
 #' @export
-p_values <- function (z, nbs, wts, sd0, alpha, ntests=1000,
-                      ac_type='moran', plot=FALSE, verbose=FALSE)
+p_values <- function (z, nbs, wts, sd0=0.1, alpha=0.1, niters=1, ntests=1000,
+                      ac_type='moran', log_scale=FALSE, plot=FALSE, verbose=FALSE)
 {
     if (length (z) != length (nbs))
         stop ('z must be same size as nbs')
@@ -45,7 +47,7 @@ p_values <- function (z, nbs, wts, sd0, alpha, ntests=1000,
         message ('Generating mean rank-scale distributions ... ',
                  appendLF=FALSE)
     rs_means <- neutral_hotspots (nbs=nbs, wts=wts, alpha=alpha, sd0=sd0,
-                                  ntests=ntests, ac_type=ac_type)
+                                  niters=niters, ntests=ntests, ac_type=ac_type)
 
     # Summed squared differences in rank-scale distributions:
     if (verbose) 

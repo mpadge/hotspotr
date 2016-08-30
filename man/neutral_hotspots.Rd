@@ -2,7 +2,7 @@
 % Please edit documentation in R/neutral-hotspots.R
 \name{neutral_hotspots}
 \alias{neutral_hotspots}
-\title{neutral_hotspots_ntests2}
+\title{neutral_hotspots}
 \usage{
 neutral_hotspots(nbs, wts, alpha = 0.1, sd0 = 0.1, ac_type = "moran",
   niters = 1, log_scale = TRUE, ntests = 100, parallel = FALSE, seed)

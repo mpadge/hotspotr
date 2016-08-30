@@ -1,4 +1,4 @@
-#' neutral_hotspots_ntests2
+#' neutral_hotspots
 #'
 #' Implements neutral model of hotspot values and associated autocorrelation
 #' statustics. Current version is a simply internal R loop, while
@@ -58,42 +58,28 @@ neutral_hotspots <- function (nbs, wts, alpha=0.1, sd0=0.1, ac_type='moran',
 
     if (!missing (seed)) set.seed (seed)
 
-    size <- length (nbs)
-
-    get_nbsi <- function (i)
-    {
-        res <- lapply (seq (nbs), function (j)
-                       {
-                           if (length (nbs [[j]]) >= i)
-                               c (j, nbs [[j]] [i], length (nbs [[j]]))
-                           else
-                               NULL
-                       })
-        res <- res [lapply (res, length) != 0]
-        do.call (rbind, res)
-    }
     maxnbs <- max (sapply (nbs, length))
-    nbsi <- lapply (seq (maxnbs), function (i) get_nbsi (i))
+    nbsi <- lapply (seq (maxnbs), function (i) get_nbsi (i, nbs))
 
     if (!parallel)
     {
-        rcpp_neutral_hotspots_ntests (nbs, wts, nbsi, alpha=alpha, sd0=sd0,
-                                      niters=niters, ac_type=ac_type,
-                                      log_scale=log_scale, ntests=ntests)
+        dat <- rcpp_neutral_hotspots_ntests (nbs, wts, nbsi, alpha=alpha, sd0=sd0,
+                                             niters=niters, ac_type=ac_type,
+                                             log_scale=log_scale, ntests=ntests)
     } else
     {
         # Note that `makeCluster` with `type="FORK"` automatically attaches all
         # environment variables, but is not portable, as detailed at
         # r-bloggers.com/how-to-go-parallel-in-r-basics-tips/ 
         clust <- parallel::makeCluster (parallel::detectCores () - 1)
-        exports <- list ("nbs", "wts", "nbsi", "alpha", "sd0",
-                         "log_scale", "niters", "ac_type")
+        exports <- list ('nbs', 'wts', 'nbsi', 'alpha', 'sd0',
+                         'log_scale', 'niters', 'ac_type')
         parallel::clusterExport (clust, exports, envir=environment ())
         invisible (parallel::clusterCall (clust, function () {
                               while (length (grep ('hotspotr', getwd ())) > 0) 
-                                  setwd ("..")
-                              devtools::load_all ("hotspotr")
-                              setwd ("./hotspotr")
+                                  setwd ('..')
+                              devtools::load_all ('hotspotr')
+                              setwd ('./hotspotr')
                     }))
 
         z <- parallel::parLapply (clust, seq (ntests), function (i) 
@@ -109,6 +95,21 @@ neutral_hotspots <- function (nbs, wts, alpha=0.1, sd0=0.1, ac_type='moran',
         parallel::stopCluster (clust)
         ac <- colMeans (do.call (rbind, lapply (z, function (i) i [,2])))
         z <- colMeans (do.call (rbind, lapply (z, function (i) i [,1])))
-        cbind (z, ac)
+        dat <- cbind (z, ac)
     }
+    return (dat)
+}
+
+get_nbsi <- function (i, nbs)
+{
+
+    res <- lapply (seq (nbs), function (j)
+                   {
+                       if (length (nbs [[j]]) >= i)
+                           c (j, nbs [[j]] [i], length (nbs [[j]]))
+                       else
+                           NULL
+                   })
+    res <- res [lapply (res, length) != 0]
+    do.call (rbind, res)
 }

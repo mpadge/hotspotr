@@ -4,8 +4,8 @@
 \alias{rs_dist_diff}
 \title{rs_dist_diff}
 \usage{
-rs_dist_diff(nbs, wts, alpha = 0.1, sd0 = 0.1, ntests = 1000,
-  niters = 1, ac_type = "moran", mean_stats)
+rs_dist_diff(nbs, wts, alpha = 0.1, sd0 = 0.1, niters = 1,
+  ntests = 1000, ac_type = "moran", log_scale = TRUE, mean_stats)
 }
 \arguments{
 \item{nbs}{An \code{spdep} \code{nb} object listing all neighbours of each
@@ -19,16 +19,18 @@ nbs. Uniform weights used if not given.}
 \item{sd0}{Standard deviation of truncated normal distribution used to model
 environmental variation (with mean of 1)}
 
+\item{niters}{Number of sequential iterations of spatial autocorrelation}
+
 \item{ntests}{Number of repeats of neutral model used to calculate mean
 rank--scale distribution}
-
-\item{niters}{Number of sequential iterations of spatial autocorrelation}
 
 \item{ac_type}{type of autocorrelation statistic to use in tests
 (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}
 
+\item{log_scale}{If TRUE, raw hotspot values are log-transformed}
+
 \item{mean_stats}{Mean rank--scale distributions returned from
-\code{neutral_hotspots_ntests}: a matrix of 2 columns}
+\code{neutral_hotspots}: a matrix of 2 columns}
 }
 \value{
 A vector of hotspot values sorted from high to low

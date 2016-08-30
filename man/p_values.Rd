@@ -4,8 +4,8 @@
 \alias{p_values}
 \title{p_values}
 \usage{
-p_values(z, nbs, wts, sd0, alpha, ntests = 1000, ac_type = "moran",
-  plot = FALSE, verbose = FALSE)
+p_values(z, nbs, wts, sd0 = 0.1, alpha = 0.1, niters = 1, ntests = 1000,
+  ac_type = "moran", log_scale = FALSE, plot = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{z}{Vector of observed values to be tested}
@@ -21,11 +21,15 @@ environmental variation (with mean of 1)}
 
 \item{alpha}{Strength of spatial autocorrelation}
 
+\item{niters}{Number of successive layers of spatial autocorrelation}
+
 \item{ntests}{Number of tests to run, with statistics calculated from the
 mean of \code{ntests}}
 
 \item{ac_type}{type of autocorrelation statistic to use in tests
 (\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}
+
+\item{log_scale}{If TRUE, raw hotspot values are log-transformed}
 
 \item{plot}{If TRUE, plot mean and observed distributions of z and associated
 autocorrelation statistics}

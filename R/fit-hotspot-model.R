@@ -74,20 +74,8 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
 
     size <- length (z)
 
-    get_nbsi <- function (i)
-    {
-        res <- lapply (seq (nbs), function (j)
-                       {
-                           if (length (nbs [[j]]) >= i)
-                               c (j, nbs [[j]] [i], length (nbs [[j]]))
-                           else
-                               NULL
-                       })
-        res <- res [lapply (res, length) != 0]
-        do.call (rbind, res)
-    }
     maxnbs <- max (sapply (nbs, length))
-    nbsi <- lapply (seq (maxnbs), function (i) get_nbsi (i))
+    nbsi <- lapply (seq (maxnbs), function (i) get_nbsi (i, nbs))
 
     # Get reference distributions of raw values and associated AC coefficients
     zs <- sort (z, decreasing=TRUE)
@@ -99,12 +87,13 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
     {
         # x [1] = alpha
         # x [2] = sd0
-        # x [3] = niters
-        # x [4] = ntests
+        # x [3] = log_scale
+        # x [4] = niters
+        # x [5] = ntests
         dat <- rcpp_neutral_hotspots_ntests (nbs, wts, nbsi, 
                                              alpha=x [1], sd0=x [2],
-                                             niters=x [3], ac_type=ac_type,
-                                             log_scale=log_scale, ntests=x [4])
+                                             log_scale=x[3], niters=x [4], 
+                                             ac_type=ac_type, ntests=x [5])
         sum ((dat [,1] - zs) ^ 2) + sum ((dat [,2] - acs) ^ 2)
     }
 
@@ -118,6 +107,7 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
     #op <- optim (c (0.1, 0.1), opt_fn, control=control)
 
     # Instead, a succession of localised 1D loess-smoothed approaches are used
+    log_scale <- TRUE # constant throughout
     search_span <- 20 # length of vectors used for search
     niter_lims <- c (1, 10)
     alpha_lims <- c (-1, 1)
@@ -127,13 +117,13 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
     alpha <- seq (alpha_lims [1], alpha_lims [2], length.out=search_span)
     sd0 <- seq (sd_lims [1], sd_lims [2], length.out=search_span)
     tol <- 1e-3
-    trial <- 0
+    trial <- 1
     maxtrials <- 10
     niters1 <- round (mean (niters))
     alpha1 <- mean (alpha) # arbitrary values used to calculate err
     sd1 <- mean (sd0)
-    err <- ymin_old <- opt_fn (c (alpha1, sd1, niters, ntests))
-    while (err > tol & trial < maxtrials)
+    err <- ymin_old <- opt_fn (c (alpha1, sd1, log_scale, niters, ntests))
+    while (err > tol & trial <= maxtrials)
     {
         if (verbose) message ('trial#', trial, ': ', appendLF=FALSE)
         niters2 <- niters1
@@ -141,7 +131,7 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
         sd2 <- sd1
 
         yniters <- sapply (niters, function (i) 
-                           opt_fn (c (alpha1, sd1, i, ntests)))
+                           opt_fn (c (alpha1, sd1, log_scale, i, ntests)))
         if (all (diff (yniters) > 0) | all (diff (yniters) < 0) |
             length (niters) < 6)
         {
@@ -152,11 +142,13 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
             niters1 <- niters [which.min (mod)]
         }
 
-        yac <- sapply (alpha, function (i) opt_fn (c (i, sd1, niters1, ntests)))
+        yac <- sapply (alpha, function (i) 
+                       opt_fn (c (i, sd1, log_scale, niters1, ntests)))
         mod <- loess (yac ~ alpha, span=0.5)$fitted
         alpha1 <- alpha [which.min (mod)]
 
-        ysd <- sapply (sd0, function (i) opt_fn (c (alpha1, i, niters1, ntests)))
+        ysd <- sapply (sd0, function (i) 
+                       opt_fn (c (alpha1, i, log_scale, niters1, ntests)))
         mod <- loess (ysd ~ sd0, span=0.5)$fitted
         sd1 <- sd0 [which.min (mod)]
 
@@ -187,5 +179,5 @@ fit_hotspot_model <- function (z, nbs, wts, ac_type='moran', ntests=100,
     }
 
     #list (sd0=op$par [1], ac=op$par [2])
-    list (sd0=sd1, ac=alpha1)
+    list (sd0=sd1, ac=alpha1, niters=niters1)
 }

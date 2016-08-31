@@ -221,15 +221,23 @@ plotdists <- function (sd=0.1, n=1e4, logx=TRUE, niters=1, p0)
 
 The left panel demonstrates that distributions are equal in the non-iterated case
 (`niters=1`), while the right demonstrate the equivalence of multiple iterations
-to reductions in standard deviation.
+to reductions in standard deviation. (The numerical values are only approximate
+due to the low numbers of samples; higher values of $n\gtrapprox 10^4$ yield
+visually better alignment.) Note that the second standard deviation of `0.05` is
+only a guess.
 ```{r analytic-dists, fig.width=12}
 par (mfrow=c(1,2))
 n <- 100
 sd <- 0.1
 p0 <- order_one (n, sd)
 junk <- plotdists (sd=sd, n=n, p0=p0, niters=1)
+title (main="niters = 1")
 junk <- plotdists (sd=c (sd, 0.05), n=n, p0=p0, niters=4)
+title (main="niters = 4")
 ```
 
 Hotspot models can thus be fitted using analytic probability densities which
-depend on the single parameter of standard deviation.
+depend on the single parameter of standard deviation. No re-scaling is
+necessary, as a measure of fit can be obtained directly from the sum of squared
+residuals of a linear regression between the observed values and those returned
+from `plotdists`.

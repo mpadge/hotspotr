@@ -66,11 +66,11 @@ dim (dat); head (dat)
 
     ##              z        ac
     ## [1,] 1.0000000 1.0000000
-    ## [2,] 0.9421851 0.9727499
-    ## [3,] 0.9081232 0.9481898
-    ## [4,] 0.8833393 0.9242010
-    ## [5,] 0.8624903 0.9018130
-    ## [6,] 0.8455487 0.8795029
+    ## [2,] 0.9442549 0.9728813
+    ## [3,] 0.9095960 0.9484816
+    ## [4,] 0.8837475 0.9244268
+    ## [5,] 0.8635870 0.9015424
+    ## [6,] 0.8470577 0.8792660
 
 The two columns are simulated raw values and autocorrelation statistics, both sorted in decreasing order and scaled between 0 and 1, and so both providing respective rank-scale distribution to be compared with observed rank-scale distributions.
 
@@ -158,10 +158,10 @@ st1; st2
 ```
 
     ##    user  system elapsed 
-    ##   0.232   0.000   0.233
+    ##   0.224   0.000   0.226
 
     ##    user  system elapsed 
-    ##   0.092   0.028   3.150
+    ##   0.076   0.028   3.232
 
 ------------------------------------------------------------------------
 
@@ -210,7 +210,7 @@ plotdists <- function (sd=0.1, n=1e4, logx=TRUE, niters=1, p0)
 }
 ```
 
-The left panel demonstrates that distributions are equal in the non-iterated case (`niters=1`), while the right demonstrate the equivalence of multiple iterations to reductions in standard deviation.
+The left panel demonstrates that distributions are equal in the non-iterated case (`niters=1`), while the right demonstrate the equivalence of multiple iterations to reductions in standard deviation. (The numerical values are only approximate due to the low numbers of samples; higher values of *n* ⪆ 10<sup>4</sup> yield visually better alignment.) Note that the second standard deviation of `0.05` is only a guess.
 
 ``` r
 par (mfrow=c(1,2))
@@ -218,9 +218,11 @@ n <- 100
 sd <- 0.1
 p0 <- order_one (n, sd)
 junk <- plotdists (sd=sd, n=n, p0=p0, niters=1)
+title (main="niters = 1")
 junk <- plotdists (sd=c (sd, 0.05), n=n, p0=p0, niters=4)
+title (main="niters = 4")
 ```
 
 ![](fig/analytic-dists.png)
 
-Hotspot models can thus be fitted using analytic probability densities which depend on the single parameter of standard deviation.
+Hotspot models can thus be fitted using analytic probability densities which depend on the single parameter of standard deviation. No re-scaling is necessary, as a measure of fit can be obtained directly from the sum of squared residuals of a linear regression between the observed values and those returned from `plotdists`.

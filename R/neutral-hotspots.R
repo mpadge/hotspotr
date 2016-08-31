@@ -153,8 +153,15 @@ order_one <- function (sigma, n, ntrials=1e3)
     # > for (i in 2:length (p1)) p1 [i] <- 1 - (1 - p1 [i-1]) / 10
     # Because values for very low sds take (much) longer to compute, they may be
     # conveniently replaced by this relationship
+
     if (missing (sigma)) stop ('sigma must be given')
+
+    # Values of n have to be set sufficiently high to enable down-sampling. For
+    # sd=0.01, for example, n needs to be considerably more than 1/sd = 100 to
+    # ensure that sufficiently many non-zero points are sampled. The value of
+    # 100 / sd is thus used here.
     if (missing (n)) n <- 100 / sigma
+
     n <- min (1e6, n)
 
     temp <- rnorm (n=n, mean=1, sd=sigma)

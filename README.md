@@ -66,11 +66,11 @@ dim (dat); head (dat)
 
     ##              z        ac
     ## [1,] 1.0000000 1.0000000
-    ## [2,] 0.9420995 0.9736605
-    ## [3,] 0.9080397 0.9476223
-    ## [4,] 0.8831032 0.9238530
-    ## [5,] 0.8646860 0.9021098
-    ## [6,] 0.8479037 0.8801219
+    ## [2,] 0.9412000 0.9736802
+    ## [3,] 0.9085712 0.9486220
+    ## [4,] 0.8834129 0.9254086
+    ## [5,] 0.8630427 0.9041563
+    ## [6,] 0.8473512 0.8842978
 
 The two columns are simulated raw values and autocorrelation statistics, both sorted in decreasing order and scaled between 0 and 1, and so both providing respective rank-scale distribution to be compared with observed rank-scale distributions.
 
@@ -158,10 +158,10 @@ st1; st2
 ```
 
     ##    user  system elapsed 
-    ##   0.236   0.000   0.239
+    ##   0.244   0.000   0.246
 
     ##    user  system elapsed 
-    ##   0.096   0.004   3.183
+    ##   0.072   0.032   3.314
 
 ------------------------------------------------------------------------
 
@@ -171,7 +171,7 @@ st1; st2
 Analytic rank-scale distributions can be obtained from the order statistic for a normal distribution of `n` samples. The following function demonstrates that the effect of adding multiple truncated normal distributions can be quantified simply by changing the standard deviation of a single (non-iterated) probability density function.
 
 ``` r
-plotdists <- function (sd=0.1, n=1e4, logx=TRUE, niters=1, p0)
+plotdists <- function (sd=0.1, n=1e4, logx=TRUE, niters=1, p0, plot=TRUE)
 {
     if (length (sd) == 1)
         sd <- rep (sd, 2)
@@ -189,8 +189,7 @@ plotdists <- function (sd=0.1, n=1e4, logx=TRUE, niters=1, p0)
     xd <- truncnorm::dtruncnorm (x, a=0, b=2, mean=1, sd=sd [2])
     xd <- cumsum (xd / sum (xd))
 
-    if (missing (p0))
-        p0 <- max (0, order_one (n, sd))
+    if (missing (p0)) p0 <- order_one (n=n, sigma=sd [2])
 
     indx <- which (x >= p0 & x <= (2 - p0))
     x <- x [indx]
@@ -198,31 +197,59 @@ plotdists <- function (sd=0.1, n=1e4, logx=TRUE, niters=1, p0)
 
     if (logx) x <- log10 (x) 
 
-    plot (xd, x, "l", col="lawngreen", lwd=2, xlab="", ylab="")
-    lines (seq (n) / n, x1, col="blue", lwd=2, lty=2)
-    legend ("topright", lwd=1, lty=c(1, 2), col=c("blue", "lawngreen"), bty="n",
-            legend=c("numeric", "analytic"))
+    if (plot)
+    {
+        plot (xd, x, "l", col="lawngreen", lwd=2, xlab="", ylab="")
+        lines (seq (n) / n, x1, col="blue", lwd=2, lty=2)
+        legend ("topright", lwd=1, lty=c(1, 2), col=c("blue", "lawngreen"),
+                bty="n", legend=c("numeric", "analytic"))
+    }
 
     # Then interpolate x onto regular xd to return matching rank-scale dist
     xout <- approx (x=xd, y=x, xout=seq (0, 1, length.out=n))
-    lines (xout$x, xout$y, col="orange", lwd=2, lty=2)
+    if (plot)
+        lines (xout$x, xout$y, col="orange", lwd=2, lty=2)
+    # first and last values at [0,1] are always NA
+    xout$y <- xout$y [2:(length (xout$y) - 1)]
     return (xout$y)
 }
 ```
 
-The left panel demonstrates that distributions are equal in the non-iterated case (`niters=1`), while the right demonstrate the equivalence of multiple iterations to reductions in standard deviation. (The numerical values are only approximate due to the low numbers of samples; higher values of *n* ⪆ 10<sup>4</sup> yield visually better alignment.) Note that the second standard deviation of `0.05` is only a guess.
+The left panel in the following figure demonstrates that distributions are equal in the non-iterated case (`niters=1`), while the right demonstrate the equivalence of multiple iterations to reductions in standard deviation. Note that the second standard deviation of `0.05` is only a guess.
 
 ``` r
 par (mfrow=c(1,2))
-n <- 100
+n <- 1000
 sd <- 0.1
-p0 <- order_one (n, sd)
+p0 <- order_one (n=n, sigma=sd)
 junk <- plotdists (sd=sd, n=n, p0=p0, niters=1)
 title (main="niters = 1")
 junk <- plotdists (sd=c (sd, 0.05), n=n, p0=p0, niters=4)
 title (main="niters = 4")
 ```
 
-![](fig/analytic-dists.png)
+![](README_files/figure-markdown_github/analytic-dists-1.png)
 
 Hotspot models can thus be fitted using analytic probability densities which depend on the single parameter of standard deviation. No re-scaling is necessary, as a measure of fit can be obtained directly from the sum of squared residuals of a linear regression between the observed values and those returned from `plotdists`.
+
+Finally, to demonstrate the flexibility offered by log-scaled distributions of differing standard deviations (re-scaled here just to visualise them on the same plot):
+
+``` r
+sds <- c (1e-5, 1e-4, 1e-3, 0.01, 0.1, 0.3, 1)
+p0 <- c (0.9999471, 0.9995128, 0.9956159, 0.9614168, 0.6757358, NA, NA)
+cols <- rainbow (length (sds))
+plot (NULL, NULL, xlim=c(0, 1), ylim=c(0, 1), xlab="rank", ylab="scale")
+for (i in 1:length (sds))
+{
+    if (!is.na (p0 [i]))
+        y <- plotdists (sd=sds [i], n=100 / sds [i], p0=p0 [i], plot=FALSE)
+    else
+        y <- plotdists (sd=sds [i], n=100 / sds [i], plot=FALSE)
+    y <- (y - min (y)) / diff (range (y))
+    lines (1:length (y) / length (y), y, col=cols [i])
+}
+ltxt <- unlist (lapply (sds, function (i) paste0 ('sd=', i)))
+legend ('topright', lwd=1, col=cols, bty='n', legend=ltxt)
+```
+
+![](README_files/figure-markdown_github/sd-plots-1.png)

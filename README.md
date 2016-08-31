@@ -22,6 +22,8 @@ Contents
 
 [3 Parallel computation](#3-parallel)
 
+[4. Analytic Distributions](#4-analytic-dists)
+
 ------------------------------------------------------------------------
 
 Install
@@ -64,11 +66,11 @@ dim (dat); head (dat)
 
     ##              z        ac
     ## [1,] 1.0000000 1.0000000
-    ## [2,] 0.9422853 0.9723339
-    ## [3,] 0.9090473 0.9478614
-    ## [4,] 0.8833857 0.9242149
-    ## [5,] 0.8634859 0.9018642
-    ## [6,] 0.8468389 0.8802066
+    ## [2,] 0.9421851 0.9727499
+    ## [3,] 0.9081232 0.9481898
+    ## [4,] 0.8833393 0.9242010
+    ## [5,] 0.8624903 0.9018130
+    ## [6,] 0.8455487 0.8795029
 
 The two columns are simulated raw values and autocorrelation statistics, both sorted in decreasing order and scaled between 0 and 1, and so both providing respective rank-scale distribution to be compared with observed rank-scale distributions.
 
@@ -156,7 +158,69 @@ st1; st2
 ```
 
     ##    user  system elapsed 
-    ##   0.240   0.000   0.239
+    ##   0.232   0.000   0.233
 
     ##    user  system elapsed 
-    ##   0.088   0.032   3.247
+    ##   0.092   0.028   3.150
+
+------------------------------------------------------------------------
+
+<a name="4-analytic-dists"></a>4. Analytic Distributions
+--------------------------------------------------------
+
+Analytic rank-scale distributions can be obtained from the order statistic for a normal distribution of `n` samples. The following function demonstrates that the effect of adding multiple truncated normal distributions can be quantified simply by changing the standard deviation of a single (non-iterated) probability density function.
+
+``` r
+plotdists <- function (sd=0.1, n=1e4, logx=TRUE, niters=1, p0)
+{
+    if (length (sd) == 1)
+        sd <- rep (sd, 2)
+
+    # --------   numerically simulated distribution
+    xn <- rep (0, n)
+    for (i in 1:niters)
+        xn <- xn + truncnorm::rtruncnorm (n=n, a=0, b=2, mean=1, sd=sd [1])
+    xn <- xn / niters
+    if (logx) xn <- log10 (xn)
+    x1 <- sort (xn, decreasing=TRUE)
+
+    # --------   analytic distribution
+    x <- seq (2, 0, length.out=n)
+    xd <- truncnorm::dtruncnorm (x, a=0, b=2, mean=1, sd=sd [2])
+    xd <- cumsum (xd / sum (xd))
+
+    if (missing (p0))
+        p0 <- max (0, order_one (n, sd))
+
+    indx <- which (x >= p0 & x <= (2 - p0))
+    x <- x [indx]
+    xd <- xd [indx]
+
+    if (logx) x <- log10 (x) 
+
+    plot (xd, x, "l", col="lawngreen", lwd=2, xlab="", ylab="")
+    lines (seq (n) / n, x1, col="blue", lwd=2, lty=2)
+    legend ("topright", lwd=1, lty=c(1, 2), col=c("blue", "lawngreen"), bty="n",
+            legend=c("numeric", "analytic"))
+
+    # Then interpolate x onto regular xd to return matching rank-scale dist
+    xout <- approx (x=xd, y=x, xout=seq (0, 1, length.out=n))
+    lines (xout$x, xout$y, col="orange", lwd=2, lty=2)
+    return (xout$y)
+}
+```
+
+The left panel demonstrates that distributions are equal in the non-iterated case (`niters=1`), while the right demonstrate the equivalence of multiple iterations to reductions in standard deviation.
+
+``` r
+par (mfrow=c(1,2))
+n <- 100
+sd <- 0.1
+p0 <- order_one (n, sd)
+junk <- plotdists (sd=sd, n=n, p0=p0, niters=1)
+junk <- plotdists (sd=c (sd, 0.05), n=n, p0=p0, niters=4)
+```
+
+![](fig/analytic-dists.png)
+
+Hotspot models can thus be fitted using analytic probability densities which depend on the single parameter of standard deviation.

@@ -42,6 +42,7 @@ function `p-values`.
 
 [3 Parallel computation](#3-parallel)
 
+[4. Analytic Distributions](#4-analytic-dists)
 
 --------
 
@@ -167,3 +168,68 @@ st2 <- system.time (dat2 <- neutral_hotspots (nbs, ntests=ntests,
 st1; st2
 ```
 
+-------
+
+## <a name="4-analytic-dists"></a>4. Analytic Distributions
+
+Analytic rank-scale distributions can be obtained from the order statistic for a
+normal distribution of `n` samples. The following function demonstrates that the
+effect of adding multiple truncated normal distributions can be quantified
+simply by changing the standard deviation of a single (non-iterated) probability
+density function.
+
+
+```{r}
+plotdists <- function (sd=0.1, n=1e4, logx=TRUE, niters=1, p0)
+{
+    if (length (sd) == 1)
+        sd <- rep (sd, 2)
+
+    # --------   numerically simulated distribution
+    xn <- rep (0, n)
+    for (i in 1:niters)
+        xn <- xn + truncnorm::rtruncnorm (n=n, a=0, b=2, mean=1, sd=sd [1])
+    xn <- xn / niters
+    if (logx) xn <- log10 (xn)
+    x1 <- sort (xn, decreasing=TRUE)
+
+    # --------   analytic distribution
+    x <- seq (2, 0, length.out=n)
+    xd <- truncnorm::dtruncnorm (x, a=0, b=2, mean=1, sd=sd [2])
+    xd <- cumsum (xd / sum (xd))
+
+    if (missing (p0))
+        p0 <- max (0, order_one (n, sd))
+
+    indx <- which (x >= p0 & x <= (2 - p0))
+    x <- x [indx]
+    xd <- xd [indx]
+
+    if (logx) x <- log10 (x) 
+
+    plot (xd, x, "l", col="lawngreen", lwd=2, xlab="", ylab="")
+    lines (seq (n) / n, x1, col="blue", lwd=2, lty=2)
+    legend ("topright", lwd=1, lty=c(1, 2), col=c("blue", "lawngreen"), bty="n",
+            legend=c("numeric", "analytic"))
+
+    # Then interpolate x onto regular xd to return matching rank-scale dist
+    xout <- approx (x=xd, y=x, xout=seq (0, 1, length.out=n))
+    lines (xout$x, xout$y, col="orange", lwd=2, lty=2)
+    return (xout$y)
+}
+```
+
+The left panel demonstrates that distributions are equal in the non-iterated case
+(`niters=1`), while the right demonstrate the equivalence of multiple iterations
+to reductions in standard deviation.
+```{r analytic-dists, fig.width=12}
+par (mfrow=c(1,2))
+n <- 100
+sd <- 0.1
+p0 <- order_one (n, sd)
+junk <- plotdists (sd=sd, n=n, p0=p0, niters=1)
+junk <- plotdists (sd=c (sd, 0.05), n=n, p0=p0, niters=4)
+```
+
+Hotspot models can thus be fitted using analytic probability densities which
+depend on the single parameter of standard deviation.

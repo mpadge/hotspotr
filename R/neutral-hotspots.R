@@ -113,3 +113,37 @@ get_nbsi <- function (i, nbs)
     res <- res [lapply (res, length) != 0]
     do.call (rbind, res)
 }
+
+#' order_one
+#'
+#' First order statistic for normal distribution.
+#'
+#' @param n Number of samples of normal distribution
+#' @param sd Standard deviation of normal distribution
+#' @param ntrials Number of trials over which to average order statistics
+#'
+#' @section Note Analytic calculation is possible following the first equation
+#' from www.jstor.org/stable/2347982, as translated into R code adapted from
+#' here: stackoverflow.com/questions/24211595/order-statistics-in-r
+#'    integrand <- function (x, n, sigma=1) {
+#'        x * pnorm (x, mean=1, sd=sigma, lower.tail=FALSE) ^ (n - 1) * 
+#'            dnorm (x, mean=1, sd=sigma)
+#'    }
+#'
+#'    o1 <- function(n, sigma=1) {
+#'          integrate (integrand, -Inf, Inf, n, sigma)$value / beta (1, n)
+#'    }
+#' ... BUT the values of \code{o1} become wildly inaccurate for lower values of
+#' \code{sd}, as can be seen, for example, for o1 (1e6, 0.01) = 7.2. This is
+#' obviously nonsense, and the following numeric approximation is therefore
+#' necessary.
+#'
+#' @return First order statistic
+order_one <- function (n, sd, ntrials=1e4)
+{
+    if (missing (n)) stop ('n must be given')
+    if (missing (sd)) stop ('sd must be given')
+
+    mean (sapply (seq (ntrials), function (i) 
+                  min (rnorm (n=n, mean=1, sd=sd))))
+}

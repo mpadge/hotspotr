@@ -66,11 +66,11 @@ dim (dat); head (dat)
 
     ##              z        ac
     ## [1,] 1.0000000 1.0000000
-    ## [2,] 0.9442549 0.9728813
-    ## [3,] 0.9095960 0.9484816
-    ## [4,] 0.8837475 0.9244268
-    ## [5,] 0.8635870 0.9015424
-    ## [6,] 0.8470577 0.8792660
+    ## [2,] 0.9420995 0.9736605
+    ## [3,] 0.9080397 0.9476223
+    ## [4,] 0.8831032 0.9238530
+    ## [5,] 0.8646860 0.9021098
+    ## [6,] 0.8479037 0.8801219
 
 The two columns are simulated raw values and autocorrelation statistics, both sorted in decreasing order and scaled between 0 and 1, and so both providing respective rank-scale distribution to be compared with observed rank-scale distributions.
 
@@ -158,10 +158,10 @@ st1; st2
 ```
 
     ##    user  system elapsed 
-    ##   0.224   0.000   0.226
+    ##   0.236   0.000   0.239
 
     ##    user  system elapsed 
-    ##   0.076   0.028   3.232
+    ##   0.096   0.004   3.183
 
 ------------------------------------------------------------------------
 

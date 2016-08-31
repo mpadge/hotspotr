@@ -118,38 +118,60 @@ get_nbsi <- function (i, nbs)
 #'
 #' First order statistic for normal distribution.
 #'
-#' @param n Number of samples of normal distribution
 #' @param sd Standard deviation of normal distribution
+#' @param n Number of samples of normal distribution
 #' @param ntrials Number of trials over which to average order statistics
 #'
-#' @section Note Analytic calculation is possible following the first equation
-#' from www.jstor.org/stable/2347982, as translated into R code adapted from
-#' here: stackoverflow.com/questions/24211595/order-statistics-in-r
-#'    integrand <- function (x, n, sigma=1) {
-#'        x * pnorm (x, mean=1, sd=sigma, lower.tail=FALSE) ^ (n - 1) * 
-#'            dnorm (x, mean=1, sd=sigma)
-#'    }
-#'
-#'    o1 <- function(n, sigma=1) {
-#'          integrate (integrand, -Inf, Inf, n, sigma)$value / beta (1, n)
-#'    }
-#' ... BUT the values of \code{o1} become wildly inaccurate for lower values of
-#' \code{sd}, as can be seen, for example, for o1 (1e6, 0.01) = 7.2. This is
-#' obviously nonsense, and the following numeric approximation is therefore
-#' necessary.
-#'
 #' @return First order statistic
-order_one <- function (n, sd, ntrials=1e4)
+order_one <- function (sigma, n, ntrials=1e3)
 {
-    if (missing (n)) stop ('n must be given')
-    if (missing (sd)) stop ('sd must be given')
+    # NOTE: Analytic calculation is possible following the first equation
+    # from www.jstor.org/stable/2347982, as translated into R code given at start
+    # of function as adapted from
+    # stackoverflow.com/questions/24211595/order-statistics-in-r
+    #   integrand <- function (x, n, sigma=1) {
+    #   x * pnorm (x, mean=1, sd=sigma, lower.tail=FALSE) ^ (n - 1) * 
+    #         dnorm (x, mean=1, sd=sigma)
+    #   }
+    #
+    #   o1 <- function(n, sigma=1) {
+    #   integrate (integrand, -Inf, Inf, n, sigma)$value / beta (1, n)
+    #   }
+    # ... BUT the values of \code{o1} become wildly inaccurate for lower values of
+    # \code{sd}, as can be seen, for example, for o1 (1e6, 0.01) = 7.2. This is
+    # obviously nonsense, and the following numeric approximation is therefore
+    # necessary.
+    #
+    # Then note further that numeric values for 
+    # > sds <- 10 ^ (-1:-5)
+    # > p0 <- sapply (sds, function (i) order_one (i))
+    # are (rough values using n=100 only)
+    # > p0 <- c (0.6755308, 0.9616764, 0.9955890, 0.995141, 0.9999467)
+    # and that these can be very accurately reproduced using the first value
+    # only and the following lines:
+    # > p1 <- p0
+    # > for (i in 2:length (p1)) p1 [i] <- 1 - (1 - p1 [i-1]) / 10
+    # Because values for very low sds take (much) longer to compute, they may be
+    # conveniently replaced by this relationship
+    if (missing (sigma)) stop ('sigma must be given')
+    if (missing (n)) n <- 100 / sigma
+    n <- min (1e6, n)
 
-    temp <- rnorm (n=n, mean=1, sd=sd)
+    temp <- rnorm (n=n, mean=1, sd=sigma)
     if (min (temp) < 0)
+    {
         res <- 0
-    else
+    } else if (sigma >= 0.1)
+    {
         res <- mean (sapply (seq (ntrials), function (i) 
-                             min (rnorm (n=n, mean=1, sd=sd))))
+                             min (rnorm (n=n, mean=1, sd=sigma))))
+    } else
+    {
+        #p1 <- mean (sapply (seq (1e6), function (i) 
+        #                    min (rnorm (n=n, mean=1, sd=0.1))))
+        p1 <- 0.6758119
+        res <- 1 - (1 - p1) * sigma / 0.1
+    }
 
-    return (res)
+    return (max (c (0, res)))
 }

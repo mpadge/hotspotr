@@ -144,6 +144,12 @@ order_one <- function (n, sd, ntrials=1e4)
     if (missing (n)) stop ('n must be given')
     if (missing (sd)) stop ('sd must be given')
 
-    mean (sapply (seq (ntrials), function (i) 
-                  min (rnorm (n=n, mean=1, sd=sd))))
+    temp <- rnorm (n=n, mean=1, sd=sd)
+    if (min (temp) < 0)
+        res <- 0
+    else
+        res <- mean (sapply (seq (ntrials), function (i) 
+                             min (rnorm (n=n, mean=1, sd=sd))))
+
+    return (res)
 }

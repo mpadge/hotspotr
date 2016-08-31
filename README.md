@@ -228,7 +228,7 @@ junk <- plotdists (sd=c (sd, 0.05), n=n, p0=p0, niters=4)
 title (main="niters = 4")
 ```
 
-![](README_files/figure-markdown_github/analytic-dists-1.png)
+![](fig/analytic-dists.png)
 
 Hotspot models can thus be fitted using analytic probability densities which depend on the single parameter of standard deviation. No re-scaling is necessary, as a measure of fit can be obtained directly from the sum of squared residuals of a linear regression between the observed values and those returned from `plotdists`.
 
@@ -252,4 +252,4 @@ ltxt <- unlist (lapply (sds, function (i) paste0 ('sd=', i)))
 legend ('topright', lwd=1, col=cols, bty='n', legend=ltxt)
 ```
 
-![](README_files/figure-markdown_github/sd-plots-1.png)
+![](fig/sd-plots.png)

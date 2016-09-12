@@ -12,6 +12,7 @@ NeedsCompilation: yes
 LazyData: true
 Imports:
     devtools,
+    distr,
     methods,
     msm,
     Rcpp (>= 0.12.4),

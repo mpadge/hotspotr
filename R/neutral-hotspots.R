@@ -118,7 +118,7 @@ get_nbsi <- function (i, nbs)
 #'
 #' First order statistic for normal distribution.
 #'
-#' @param sd Standard deviation of normal distribution
+#' @param sigma Standard deviation of normal distribution
 #' @param n Number of samples of normal distribution
 #' @param ntrials Number of trials over which to average order statistics
 #'

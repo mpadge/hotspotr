@@ -5,9 +5,14 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // rcpp_ac_stats
 Rcpp::NumericVector rcpp_ac_stats(Rcpp::NumericVector z, Rcpp::List nbs, Rcpp::List wts, std::string ac_type);
-RcppExport SEXP hotspotr_rcpp_ac_stats(SEXP zSEXP, SEXP nbsSEXP, SEXP wtsSEXP, SEXP ac_typeSEXP) {
+RcppExport SEXP _hotspotr_rcpp_ac_stats(SEXP zSEXP, SEXP nbsSEXP, SEXP wtsSEXP, SEXP ac_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,7 +26,7 @@ END_RCPP
 }
 // rcpp_trunc_ndist
 Rcpp::NumericVector rcpp_trunc_ndist(int len, double sd);
-RcppExport SEXP hotspotr_rcpp_trunc_ndist(SEXP lenSEXP, SEXP sdSEXP) {
+RcppExport SEXP _hotspotr_rcpp_trunc_ndist(SEXP lenSEXP, SEXP sdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -33,7 +38,7 @@ END_RCPP
 }
 // rcpp_neutral_hotspots
 Rcpp::NumericMatrix rcpp_neutral_hotspots(Rcpp::List nbs, Rcpp::List wts, Rcpp::List nbsi, double alpha, double sd0, bool log_scale, int niters, std::string ac_type);
-RcppExport SEXP hotspotr_rcpp_neutral_hotspots(SEXP nbsSEXP, SEXP wtsSEXP, SEXP nbsiSEXP, SEXP alphaSEXP, SEXP sd0SEXP, SEXP log_scaleSEXP, SEXP nitersSEXP, SEXP ac_typeSEXP) {
+RcppExport SEXP _hotspotr_rcpp_neutral_hotspots(SEXP nbsSEXP, SEXP wtsSEXP, SEXP nbsiSEXP, SEXP alphaSEXP, SEXP sd0SEXP, SEXP log_scaleSEXP, SEXP nitersSEXP, SEXP ac_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -51,7 +56,7 @@ END_RCPP
 }
 // rcpp_neutral_hotspots_ntests
 Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests(Rcpp::List nbs, Rcpp::List wts, Rcpp::List nbsi, double alpha, double sd0, int niters, std::string ac_type, bool log_scale, int ntests);
-RcppExport SEXP hotspotr_rcpp_neutral_hotspots_ntests(SEXP nbsSEXP, SEXP wtsSEXP, SEXP nbsiSEXP, SEXP alphaSEXP, SEXP sd0SEXP, SEXP nitersSEXP, SEXP ac_typeSEXP, SEXP log_scaleSEXP, SEXP ntestsSEXP) {
+RcppExport SEXP _hotspotr_rcpp_neutral_hotspots_ntests(SEXP nbsSEXP, SEXP wtsSEXP, SEXP nbsiSEXP, SEXP alphaSEXP, SEXP sd0SEXP, SEXP nitersSEXP, SEXP ac_typeSEXP, SEXP log_scaleSEXP, SEXP ntestsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -67,4 +72,17 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(rcpp_neutral_hotspots_ntests(nbs, wts, nbsi, alpha, sd0, niters, ac_type, log_scale, ntests));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_hotspotr_rcpp_ac_stats", (DL_FUNC) &_hotspotr_rcpp_ac_stats, 4},
+    {"_hotspotr_rcpp_trunc_ndist", (DL_FUNC) &_hotspotr_rcpp_trunc_ndist, 2},
+    {"_hotspotr_rcpp_neutral_hotspots", (DL_FUNC) &_hotspotr_rcpp_neutral_hotspots, 8},
+    {"_hotspotr_rcpp_neutral_hotspots_ntests", (DL_FUNC) &_hotspotr_rcpp_neutral_hotspots_ntests, 9},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_hotspotr(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

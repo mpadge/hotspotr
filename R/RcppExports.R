@@ -14,8 +14,8 @@
 #' @return A vector of sorted spatial autocorrelation statistics scaled between
 #' zero and one.
 #'
-rcpp_ac_stats <- function(z, nbs, wts, ac_type) {
-    .Call('hotspotr_rcpp_ac_stats', PACKAGE = 'hotspotr', z, nbs, wts, ac_type)
+rcpp_ac_stats <- function (z, nbs, wts, ac_type) {
+    .Call ("_hotspotr_rcpp_ac_stats", PACKAGE = "hotspotr", z, nbs, wts, ac_type)
 }
 
 #' rcpp_trunc_ndist
@@ -30,8 +30,8 @@ rcpp_ac_stats <- function(z, nbs, wts, ac_type) {
 #'
 #' @return A vector of truncated normally distributed values
 #'
-rcpp_trunc_ndist <- function(len, sd) {
-    .Call('hotspotr_rcpp_trunc_ndist', PACKAGE = 'hotspotr', len, sd)
+rcpp_trunc_ndist <- function (len, sd) {
+    .Call ("_hotspotr_rcpp_trunc_ndist", PACKAGE = "hotspotr", len, sd)
 }
 
 #' rcpp_neutral_hotspots
@@ -39,9 +39,9 @@ rcpp_trunc_ndist <- function(len, sd) {
 #' Implements neutral model in two dimensions
 #'
 #' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
-#' point. 
+#' point.
 #' @param wts Weighting factors for each neighbour; must have same length as
-#' nbs. 
+#' nbs.
 #' @param nbsi List of matrices as returned from \code{get_nbsi}. each element
 #' of which contains the i-th nearest neighbour to each point.
 #' @param alpha Strength of spatial autocorrelation
@@ -54,8 +54,8 @@ rcpp_trunc_ndist <- function(len, sd) {
 #'
 #' @return A vector of simulated values of same size as \code{nbs}.
 #'
-rcpp_neutral_hotspots <- function(nbs, wts, nbsi, alpha, sd0, log_scale, niters, ac_type) {
-    .Call('hotspotr_rcpp_neutral_hotspots', PACKAGE = 'hotspotr', nbs, wts, nbsi, alpha, sd0, log_scale, niters, ac_type)
+rcpp_neutral_hotspots <- function (nbs, wts, nbsi, alpha, sd0, log_scale, niters, ac_type) {
+    .Call ("_hotspotr_rcpp_neutral_hotspots", PACKAGE = "hotspotr", nbs, wts, nbsi, alpha, sd0, log_scale, niters, ac_type)
 }
 
 #' rcpp_neutral_hotspots_ntests
@@ -64,9 +64,9 @@ rcpp_neutral_hotspots <- function(nbs, wts, nbsi, alpha, sd0, log_scale, niters,
 #' hotspot values and spatial autocorrelation statistics.
 #'
 #' @param nbs An \code{spdep} \code{nb} object listing all neighbours of each
-#' point. 
+#' point.
 #' @param wts Weighting factors for each neighbour; must have same length as
-#' nbs. 
+#' nbs.
 #' @param nbsi List of matrices as returned from \code{get_nbsi}. each element
 #' of which contains the i-th nearest neighbour to each point.
 #' @param alpha Strength of spatial autocorrelation
@@ -82,7 +82,6 @@ rcpp_neutral_hotspots <- function(nbs, wts, nbsi, alpha, sd0, log_scale, niters,
 #' sorted and re-scaled hotspot values, and second column containing sorted and
 #' re-scaled spatial autocorrelation statistics.
 #'
-rcpp_neutral_hotspots_ntests <- function(nbs, wts, nbsi, alpha, sd0, niters, ac_type, log_scale, ntests) {
-    .Call('hotspotr_rcpp_neutral_hotspots_ntests', PACKAGE = 'hotspotr', nbs, wts, nbsi, alpha, sd0, niters, ac_type, log_scale, ntests)
+rcpp_neutral_hotspots_ntests <- function (nbs, wts, nbsi, alpha, sd0, niters, ac_type, log_scale, ntests) {
+    .Call ("_hotspotr_rcpp_neutral_hotspots_ntests", PACKAGE = "hotspotr", nbs, wts, nbsi, alpha, sd0, niters, ac_type, log_scale, ntests)
 }
-

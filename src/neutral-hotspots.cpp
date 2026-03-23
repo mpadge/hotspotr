@@ -14,6 +14,7 @@
 //'
 //' @return A vector of truncated normally distributed values
 //'
+//' @noRd
 // [[Rcpp::export]]
 Rcpp::NumericVector rcpp_trunc_ndist (int len, double sd)
 {
@@ -60,6 +61,7 @@ Rcpp::NumericVector rcpp_trunc_ndist (int len, double sd)
 //'
 //' @return A vector of simulated values of same size as \code{nbs}.
 //'
+//' @noRd
 // [[Rcpp::export]]
 Rcpp::NumericMatrix rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
         Rcpp::List nbsi, double alpha, double sd0, bool log_scale, int niters,
@@ -141,6 +143,7 @@ Rcpp::NumericMatrix rcpp_neutral_hotspots (Rcpp::List nbs, Rcpp::List wts,
 //' sorted and re-scaled hotspot values, and second column containing sorted and
 //' re-scaled spatial autocorrelation statistics.
 //'
+//' @noRd
 // [[Rcpp::export]]
 Rcpp::NumericMatrix rcpp_neutral_hotspots_ntests (Rcpp::List nbs, 
         Rcpp::List wts, Rcpp::List nbsi, double alpha, double sd0, int niters,

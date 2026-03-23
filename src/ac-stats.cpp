@@ -14,6 +14,7 @@
 //' @return A vector of sorted spatial autocorrelation statistics scaled between
 //' zero and one.
 //'
+//' @noRd
 // [[Rcpp::export]]
 Rcpp::NumericVector rcpp_ac_stats (Rcpp::NumericVector z, Rcpp::List nbs, 
         Rcpp::List wts, std::string ac_type)

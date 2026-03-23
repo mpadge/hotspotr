@@ -14,6 +14,7 @@
 #' @return A vector of sorted spatial autocorrelation statistics scaled between
 #' zero and one.
 #'
+#' @noRd
 rcpp_ac_stats <- function (z, nbs, wts, ac_type) {
     .Call ("_hotspotr_rcpp_ac_stats", PACKAGE = "hotspotr", z, nbs, wts, ac_type)
 }
@@ -30,6 +31,7 @@ rcpp_ac_stats <- function (z, nbs, wts, ac_type) {
 #'
 #' @return A vector of truncated normally distributed values
 #'
+#' @noRd
 rcpp_trunc_ndist <- function (len, sd) {
     .Call ("_hotspotr_rcpp_trunc_ndist", PACKAGE = "hotspotr", len, sd)
 }
@@ -54,6 +56,7 @@ rcpp_trunc_ndist <- function (len, sd) {
 #'
 #' @return A vector of simulated values of same size as \code{nbs}.
 #'
+#' @noRd
 rcpp_neutral_hotspots <- function (nbs, wts, nbsi, alpha, sd0, log_scale, niters, ac_type) {
     .Call ("_hotspotr_rcpp_neutral_hotspots", PACKAGE = "hotspotr", nbs, wts, nbsi, alpha, sd0, log_scale, niters, ac_type)
 }
@@ -82,6 +85,7 @@ rcpp_neutral_hotspots <- function (nbs, wts, nbsi, alpha, sd0, log_scale, niters
 #' sorted and re-scaled hotspot values, and second column containing sorted and
 #' re-scaled spatial autocorrelation statistics.
 #'
+#' @noRd
 rcpp_neutral_hotspots_ntests <- function (nbs, wts, nbsi, alpha, sd0, niters, ac_type, log_scale, ntests) {
     .Call ("_hotspotr_rcpp_neutral_hotspots_ntests", PACKAGE = "hotspotr", nbs, wts, nbsi, alpha, sd0, niters, ac_type, log_scale, ntests)
 }

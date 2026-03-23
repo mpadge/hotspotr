@@ -32,7 +32,7 @@ of which contains the i-th nearest neighbour to each point.}
 environmental variation (with mean of 1)}
 
 \item{ac_type}{Character string specifying type of aucorrelation
-(\code{moran}, \code{geary}, or code{getis-ord}).}
+(\code{moran}, \code{geary}, or \code{getis-ord}).}
 
 \item{ntests}{Number of tests used to obtain average values}
 

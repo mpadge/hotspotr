@@ -76,7 +76,7 @@ rcpp_neutral_hotspots <- function (nbs, wts, nbsi, alpha, sd0, log_scale, niters
 #' used to generate final modelled values
 #' @param ntests Number of tests used to obtain average values
 #' @param ac_type Character string specifying type of aucorrelation
-#' (\code{moran}, \code{geary}, or code{getis-ord}).
+#' (`moran`, `geary`, or `getis-ord`).
 #'
 #' @return A matrix of dimension (size, 2), with first column containing
 #' sorted and re-scaled hotspot values, and second column containing sorted and

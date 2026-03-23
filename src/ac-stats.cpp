@@ -9,7 +9,7 @@
 //' point
 //' @param x Corresponding vector of values
 //' @param ac_type Character string specifying type of aucorrelation
-//' (\code{moran}, \code{geary}, or code{getis-ord}).
+//' (`moran`, `geary`, or `getis-ord`).
 //'
 //' @return A vector of sorted spatial autocorrelation statistics scaled between
 //' zero and one.

@@ -9,7 +9,7 @@
 #' point
 #' @param x Corresponding vector of values
 #' @param ac_type Character string specifying type of aucorrelation
-#' (\code{moran}, \code{geary}, or code{getis-ord}).
+#' (`moran`, `geary`, or `getis-ord`).
 #'
 #' @return A vector of sorted spatial autocorrelation statistics scaled between
 #' zero and one.
@@ -50,7 +50,7 @@ rcpp_trunc_ndist <- function (len, sd) {
 #' @param log_scale If TRUE, raw hotspot values are log-transformed
 #' @param niters Number of iterations of spatial autocorrelation
 #' @param ac_type Character string specifying type of aucorrelation
-#' (\code{moran}, \code{geary}, or code{getis-ord}).
+#' (`moran`, `geary`, or `getis-ord`).
 #'
 #' @return A vector of simulated values of same size as \code{nbs}.
 #'

@@ -56,7 +56,7 @@ Rcpp::NumericVector rcpp_trunc_ndist (int len, double sd)
 //' @param log_scale If TRUE, raw hotspot values are log-transformed
 //' @param niters Number of iterations of spatial autocorrelation
 //' @param ac_type Character string specifying type of aucorrelation
-//' (\code{moran}, \code{geary}, or code{getis-ord}).
+//' (`moran`, `geary`, or `getis-ord`).
 //'
 //' @return A vector of simulated values of same size as \code{nbs}.
 //'

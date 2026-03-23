@@ -4,8 +4,14 @@
 \alias{generate_hotspot_model}
 \title{generate_hotspot_model}
 \usage{
-generate_hotspot_model(n, alpha = 0.1, sd0 = 0.1, ac_type = "moran",
-  niters = 1, plot = FALSE)
+generate_hotspot_model(
+  n,
+  alpha = 0.1,
+  sd0 = 0.1,
+  ac_type = "moran",
+  niters = 1,
+  plot = FALSE
+)
 }
 \arguments{
 \item{n}{Number of observations to generate}
@@ -25,8 +31,8 @@ environmental variation (with mean of 1)}
 \value{
 A matrix of two columns containing sorted and scaled versions of
 \enumerate{
-  \item z = raw values
-  \item ac = associated spatial autocorrelation statistics
+\item z = raw values
+\item ac = associated spatial autocorrelation statistics
 }
 }
 \description{
@@ -34,4 +40,3 @@ Uses the parameters returned by \code{fit_hotspot_model} to generate
 rank-scale distributions both of raw values and associated spatial
 autocorrelation statistics.
 }
-

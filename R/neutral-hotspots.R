@@ -9,16 +9,16 @@
 #' point
 #' @param wts Weighting factors for each neighbour; must have same length as
 #' nbs. Uniform weights used if not given.
-#' @param alpha strength of spatial autocorrelation 
+#' @param alpha strength of spatial autocorrelation
 #' @param sd0 Standard deviation of truncated normal distribution used to model
 #' environmental variation (with mean of 1)
 #' @param ac_type Type of autocorrelation statistic to use in tests
-#' (\code{moran}, \code{geary}, or \code{getis-org}=\code{go})
+#' (`moran`, `geary`, or `getis-org`=`go`)
 #' @param niters Number of successive layers of spatial autocorrelation
 #' @param log_scale If TRUE, raw hotspot values are log-transformed
 #' @param ntests Number of tests over which to generate an average result
-#' @param parallel If true, the tests are conducted using the \code{R} package
-#' \code{parallel}, otherwise using (non-parallel) code{Rcpp} loops.
+#' @param parallel If true, the tests are conducted using the `R` package
+#' \pkg{parallel}, otherwise using (non-parallel) \pkg{Rcpp} loops.
 #' @param seed Random seed
 #'
 #' @return A vector of hotspot values sorted from high to low
@@ -34,82 +34,85 @@
 #' dat <- neutral_hotspots (nbs, ntests=1000)
 #'
 #' @export
-neutral_hotspots <- function (nbs, wts, alpha=0.1, sd0=0.1, ac_type='moran', 
-                              niters=1, log_scale=TRUE, ntests=100,
-                              parallel=FALSE, seed)
-{
-    if (missing (nbs)) stop ('nbs must be given')
+neutral_hotspots <- function (nbs, wts, alpha = 0.1, sd0 = 0.1, ac_type = "moran",
+                              niters = 1, log_scale = TRUE, ntests = 100,
+                              parallel = FALSE, seed) {
+    if (missing (nbs)) stop ("nbs must be given")
 
-    if (missing (wts)) 
+    if (missing (wts)) {
         wts <- lapply (nbs, function (x) rep (1, length (x)) / length (x))
+    }
 
-    #if (alpha [1] <= 0)
+    # if (alpha [1] <= 0)
     #    stop ('neutral model only makes sense with finite temporal autocorrelation')
 
     ac_type <- tolower (ac_type)
-    if (substring (ac_type, 1, 1) == 'g')
-    {
-        if (substring (ac_type, 3, 3) == 'a')
-            ac_type <- 'geary'
-        else
-            ac_type <- 'getis_ord'
-    } else
-        ac_type <- 'moran'
+    if (substring (ac_type, 1, 1) == "g") {
+        if (substring (ac_type, 3, 3) == "a") {
+            ac_type <- "geary"
+        } else {
+            ac_type <- "getis_ord"
+        }
+    } else {
+        ac_type <- "moran"
+    }
 
     if (!missing (seed)) set.seed (seed)
 
     maxnbs <- max (sapply (nbs, length))
     nbsi <- lapply (seq (maxnbs), function (i) get_nbsi (i, nbs))
 
-    if (!parallel)
-    {
-        dat <- rcpp_neutral_hotspots_ntests (nbs, wts, nbsi, alpha=alpha, sd0=sd0,
-                                             niters=niters, ac_type=ac_type,
-                                             log_scale=log_scale, ntests=ntests)
-    } else
-    {
+    if (!parallel) {
+        dat <- rcpp_neutral_hotspots_ntests (nbs, wts, nbsi,
+            alpha = alpha, sd0 = sd0,
+            niters = niters, ac_type = ac_type,
+            log_scale = log_scale, ntests = ntests
+        )
+    } else {
         # Note that `makeCluster` with `type="FORK"` automatically attaches all
         # environment variables, but is not portable, as detailed at
-        # r-bloggers.com/how-to-go-parallel-in-r-basics-tips/ 
+        # r-bloggers.com/how-to-go-parallel-in-r-basics-tips/
         clust <- parallel::makeCluster (parallel::detectCores () - 1)
-        exports <- list ('nbs', 'wts', 'nbsi', 'alpha', 'sd0',
-                         'log_scale', 'niters', 'ac_type')
-        parallel::clusterExport (clust, exports, envir=environment ())
+        exports <- list (
+            "nbs", "wts", "nbsi", "alpha", "sd0",
+            "log_scale", "niters", "ac_type"
+        )
+        parallel::clusterExport (clust, exports, envir = environment ())
         invisible (parallel::clusterCall (clust, function () {
-                              while (length (grep ('hotspotr', getwd ())) > 0) 
-                                  setwd ('..')
-                              devtools::load_all ('hotspotr')
-                              setwd ('./hotspotr')
-                    }))
+            while (length (grep ("hotspotr", getwd ())) > 0) {
+                setwd ("..")
+            }
+            devtools::load_all ("hotspotr")
+            setwd ("./hotspotr")
+        }))
 
-        z <- parallel::parLapply (clust, seq (ntests), function (i) 
-                                  {
-                                      rcpp_neutral_hotspots (nbs, wts, nbsi,
-                                                             alpha=alpha,
-                                                             sd0=sd0,
-                                                             log_scale=log_scale, 
-                                                             niters=niters,
-                                                             ac_type=ac_type)
-                                  })
+        z <- parallel::parLapply (clust, seq (ntests), function (i) {
+            rcpp_neutral_hotspots (nbs, wts, nbsi,
+                alpha = alpha,
+                sd0 = sd0,
+                log_scale = log_scale,
+                niters = niters,
+                ac_type = ac_type
+            )
+        })
 
         parallel::stopCluster (clust)
-        ac <- colMeans (do.call (rbind, lapply (z, function (i) i [,2])))
-        z <- colMeans (do.call (rbind, lapply (z, function (i) i [,1])))
+        ac <- colMeans (do.call (rbind, lapply (z, function (i) i [, 2])))
+        z <- colMeans (do.call (rbind, lapply (z, function (i) i [, 1])))
         dat <- cbind (z, ac)
     }
     return (dat)
 }
 
-get_nbsi <- function (i, nbs)
-{
+get_nbsi <- function (i, nbs) {
 
-    res <- lapply (seq (nbs), function (j)
-                   {
-                       if (length (nbs [[j]]) >= i)
-                           c (j, nbs [[j]] [i], length (nbs [[j]]))
-                       else
-                           NULL
-                   })
+    res <- lapply (seq (nbs), function (j) {
+        if (length (nbs [[j]]) >= i) {
+            c (j, nbs [[j]] [i], length (nbs [[j]]))
+        } else {
+            NULL
+        }
+    })
     res <- res [lapply (res, length) != 0]
     do.call (rbind, res)
 }
@@ -123,14 +126,13 @@ get_nbsi <- function (i, nbs)
 #' @param ntrials Number of trials over which to average order statistics
 #'
 #' @return First order statistic
-order_one <- function (sigma, n, ntrials=1e3)
-{
+order_one <- function (sigma, n, ntrials = 1e3) {
     # NOTE: Analytic calculation is possible following the first equation
     # from www.jstor.org/stable/2347982, as translated into R code given at start
     # of function as adapted from
     # stackoverflow.com/questions/24211595/order-statistics-in-r
     #   integrand <- function (x, n, sigma=1) {
-    #   x * pnorm (x, mean=1, sd=sigma, lower.tail=FALSE) ^ (n - 1) * 
+    #   x * pnorm (x, mean=1, sd=sigma, lower.tail=FALSE) ^ (n - 1) *
     #         dnorm (x, mean=1, sd=sigma)
     #   }
     #
@@ -142,7 +144,7 @@ order_one <- function (sigma, n, ntrials=1e3)
     # obviously nonsense, and the following numeric approximation is therefore
     # necessary.
     #
-    # Then note further that numeric values for 
+    # Then note further that numeric values for
     # > sds <- 10 ^ (-1:-5)
     # > p0 <- sapply (sds, function (i) order_one (i))
     # are (rough values using n=100 only)
@@ -154,7 +156,7 @@ order_one <- function (sigma, n, ntrials=1e3)
     # Because values for very low sds take (much) longer to compute, they may be
     # conveniently replaced by this relationship
 
-    if (missing (sigma)) stop ('sigma must be given')
+    if (missing (sigma)) stop ("sigma must be given")
 
     # Values of n have to be set sufficiently high to enable down-sampling. For
     # sd=0.01, for example, n needs to be considerably more than 1/sd = 100 to
@@ -164,17 +166,15 @@ order_one <- function (sigma, n, ntrials=1e3)
 
     n <- min (1e6, n)
 
-    temp <- rnorm (n=n, mean=1, sd=sigma)
-    if (min (temp) < 0)
-    {
+    temp <- rnorm (n = n, mean = 1, sd = sigma)
+    if (min (temp) < 0) {
         res <- 0
-    } else if (sigma >= 0.1)
-    {
-        res <- mean (sapply (seq (ntrials), function (i) 
-                             min (rnorm (n=n, mean=1, sd=sigma))))
-    } else
-    {
-        #p1 <- mean (sapply (seq (1e6), function (i) 
+    } else if (sigma >= 0.1) {
+        res <- mean (sapply (seq (ntrials), function (i) {
+            min (rnorm (n = n, mean = 1, sd = sigma))
+        }))
+    } else {
+        # p1 <- mean (sapply (seq (1e6), function (i)
         #                    min (rnorm (n=n, mean=1, sd=0.1))))
         p1 <- 0.6758119
         res <- 1 - (1 - p1) * sigma / 0.1

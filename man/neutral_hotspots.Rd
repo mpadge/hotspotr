@@ -4,8 +4,18 @@
 \alias{neutral_hotspots}
 \title{neutral_hotspots}
 \usage{
-neutral_hotspots(nbs, wts, alpha = 0.1, sd0 = 0.1, ac_type = "moran",
-  niters = 1, log_scale = TRUE, ntests = 100, parallel = FALSE, seed)
+neutral_hotspots(
+  nbs,
+  wts,
+  alpha = 0.1,
+  sd0 = 0.1,
+  ac_type = "moran",
+  niters = 1,
+  log_scale = TRUE,
+  ntests = 100,
+  parallel = FALSE,
+  seed
+)
 }
 \arguments{
 \item{nbs}{An \code{spdep} \code{nb} object listing all neighbours of each
@@ -29,7 +39,7 @@ environmental variation (with mean of 1)}
 \item{ntests}{Number of tests over which to generate an average result}
 
 \item{parallel}{If true, the tests are conducted using the \code{R} package
-\code{parallel}, otherwise using (non-parallel) code{Rcpp} loops.}
+\pkg{parallel}, otherwise using (non-parallel) \pkg{Rcpp} loops.}
 
 \item{seed}{Random seed}
 }
@@ -54,4 +64,3 @@ dat <- neutral_hotspots (nbs, ntests=1000)
 \seealso{
 \code{ives}
 }
-

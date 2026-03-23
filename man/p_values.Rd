@@ -4,8 +4,19 @@
 \alias{p_values}
 \title{p_values}
 \usage{
-p_values(z, nbs, wts, sd0 = 0.1, alpha = 0.1, niters = 1, ntests = 1000,
-  ac_type = "moran", log_scale = FALSE, plot = FALSE, verbose = FALSE)
+p_values(
+  z,
+  nbs,
+  wts,
+  sd0 = 0.1,
+  alpha = 0.1,
+  niters = 1,
+  ntests = 1000,
+  ac_type = "moran",
+  log_scale = FALSE,
+  plot = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{z}{Vector of observed values to be tested}
@@ -27,7 +38,7 @@ environmental variation (with mean of 1)}
 mean of \code{ntests}}
 
 \item{ac_type}{type of autocorrelation statistic to use in tests
-(\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}
+(\code{moran}, \code{geary}, or \code{getis-org}=\code{go})}
 
 \item{log_scale}{If TRUE, raw hotspot values are log-transformed}
 
@@ -42,4 +53,3 @@ Nothing (dumps statistics to screen)
 \description{
 Tests observed data (\code{z}) against a series of neutral models
 }
-

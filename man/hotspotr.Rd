@@ -2,8 +2,8 @@
 % Please edit documentation in R/hotspotr.R
 \docType{package}
 \name{hotspotr}
-\alias{hotspotr}
 \alias{hotspotr-package}
+\alias{hotspotr}
 \title{hotspotr}
 \description{
 Analyses whether the statistical properties of a spatial pattern of hotspots
@@ -21,3 +21,14 @@ model\cr
 }
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/mpadge/hotspotr}
+}
+
+}
+\author{
+\strong{Maintainer}: Mark Padgham \email{mark.padgham@email.com}
+
+}

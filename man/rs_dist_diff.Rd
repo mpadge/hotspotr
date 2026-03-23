@@ -4,8 +4,17 @@
 \alias{rs_dist_diff}
 \title{rs_dist_diff}
 \usage{
-rs_dist_diff(nbs, wts, alpha = 0.1, sd0 = 0.1, niters = 1,
-  ntests = 1000, ac_type = "moran", log_scale = TRUE, mean_stats)
+rs_dist_diff(
+  nbs,
+  wts,
+  alpha = 0.1,
+  sd0 = 0.1,
+  niters = 1,
+  ntests = 1000,
+  ac_type = "moran",
+  log_scale = TRUE,
+  mean_stats
+)
 }
 \arguments{
 \item{nbs}{An \code{spdep} \code{nb} object listing all neighbours of each
@@ -25,7 +34,7 @@ environmental variation (with mean of 1)}
 rank--scale distribution}
 
 \item{ac_type}{type of autocorrelation statistic to use in tests
-(\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}
+(\code{moran}, \code{geary}, or \code{getis-org}=\code{go})}
 
 \item{log_scale}{If TRUE, raw hotspot values are log-transformed}
 
@@ -41,4 +50,3 @@ Averages results of a number of neutral models
 \seealso{
 \code{ives}
 }
-

@@ -4,8 +4,15 @@
 \alias{fit_hotspot_model}
 \title{fit_hotspot_model}
 \usage{
-fit_hotspot_model(z, nbs, wts, ac_type = "moran", ntests = 100,
-  verbose = FALSE, plot = FALSE)
+fit_hotspot_model(
+  z,
+  nbs,
+  wts,
+  ac_type = "moran",
+  ntests = 100,
+  verbose = FALSE,
+  plot = FALSE
+)
 }
 \arguments{
 \item{z}{Vector of observed values to be tested}
@@ -17,7 +24,7 @@ point}
 nbs. Uniform weights used if not given.}
 
 \item{ac_type}{type of autocorrelation statistic to use in tests
-(\code{moran}, \code{geary}, or \code{getis-ord}=\code{go})}
+(\code{moran}, \code{geary}, or \code{getis-org}=\code{go})}
 
 \item{ntests}{Number of repeats of neutral model used to calculate mean
 rank--scale distribution}
@@ -29,9 +36,9 @@ rank--scale distribution}
 \value{
 A vector of three values as estimated by the neutral model:
 \enumerate{
-  \item sd0 = standard deviation of normal distribution
-  \item alpha = temporal autocorrelation coefficient
-  \item niters = number of iterations of spatial autocorrelation
+\item sd0 = standard deviation of normal distribution
+\item alpha = temporal autocorrelation coefficient
+\item niters = number of iterations of spatial autocorrelation
 }
 }
 \description{
@@ -41,7 +48,7 @@ parameters, and number of iterations of spatial autocorrelation.
 }
 \section{Note}{
 
-Fitting these neutral models is **not** a standard optimisation problem
+Fitting these neutral models is \strong{not} a standard optimisation problem
 because the models are very noisy. Although \code{optim} with
 \code{method="SANN"} may be used, it often generates extremely large values
 for \code{alpha} (for example, > 10). \code{DEoptim} could also be applied,
@@ -53,6 +60,7 @@ https://stat.ethz.ch/pipermail/r-help/2015-May/428751.html
 through simply producing regular series, fitting loess models, and taking the
 corresponding minima.
 }
+
 \examples{
 \dontrun{
 xy <- cbind (rep (seq (size), each=size), rep (seq (size), size))
@@ -63,4 +71,3 @@ test <- fit_hotspot_model (z=z, nbs=dat$nbs, alpha=0.1, sd=0.1, ntests=100)
 }
 
 }
-
